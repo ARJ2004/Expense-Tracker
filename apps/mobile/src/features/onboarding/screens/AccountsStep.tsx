@@ -1,10 +1,8 @@
 import React from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Button, Card, ListRow } from '../../../ui';
-import { AccountForm } from '../components/AccountForm';
 import { OnboardingFrame } from '../components/OnboardingFrame';
-import { useAccounts } from '../hooks';
-import { kindLabel } from '../labels';
+import { AccountForm, kindLabel, useAccounts } from '../../accounts';
 import type { OnboardingParamList } from '../OnboardingNavigator';
 
 type Props = NativeStackScreenProps<OnboardingParamList, 'Accounts'>;

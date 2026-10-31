@@ -6,9 +6,11 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { LoggerModule } from 'nestjs-pino';
 import { AccountsModule } from './accounts';
 import { AuthModule } from './auth';
+import { CategoriesModule } from './categories';
 import { CommonModule } from './common';
 import { validateConfig } from './config/app-config';
 import { HealthModule } from './health/health.module';
+import { TransactionsModule } from './transactions';
 import { UsersModule } from './users';
 
 @Module({
@@ -32,6 +34,8 @@ import { UsersModule } from './users';
     UsersModule,
     AuthModule,
     AccountsModule,
+    CategoriesModule,
+    TransactionsModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

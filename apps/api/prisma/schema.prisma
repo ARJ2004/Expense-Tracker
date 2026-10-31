@@ -101,12 +101,17 @@ model Account {
 
 model Category {
   id        String   @id @default(uuid(7)) @db.Uuid
-  /// Null for the 13 system categories.
+  /// Null for the 13 system categories (inserted by the ledger_core migration).
   userId    String?  @map("user_id") @db.Uuid
   name      String
+  /// One of CATEGORY_ICONS in @et/domain.
   icon      String
+  /// A theme palette key (CATEGORY_COLORS in @et/domain), not hex.
   color     String
   isExpense Boolean  @default(true) @map("is_expense")
+  /// Stable key for system rows (food_dining, other, ...); null for custom ones.
+  systemKey String?  @unique @map("system_key")
+  sortOrder Int      @default(100) @map("sort_order")
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
 
   user         User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -136,7 +141,9 @@ model Transaction {
   updatedAt      DateTime       @updatedAt @map("updated_at") @db.Timestamptz
 
   user     User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  account  Account?            @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  /// Restrict: an account with transactions can't be deleted (the API answers ACCOUNT_IN_USE).
+  account  Account?            @relation(fields: [accountId], references: [id], onDelete: Restrict)
+  /// SetNull, then ingest's category.deleted listener moves those rows to Other.
   category Category?           @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   sources  TransactionSource[]
 

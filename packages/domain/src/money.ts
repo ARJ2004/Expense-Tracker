@@ -18,6 +18,9 @@ export function paise(value: number): Paise {
  * Parses a rupee amount as typed or printed ("486", "486.5", "1,23,456.78", "₹ 250.00")
  * into paise without going through floating point.
  */
+/** Largest amount accepted anywhere: ₹99,99,99,999.99. */
+export const MAX_AMOUNT_PAISE = 99_99_99_99_999;
+
 export function toPaise(rupees: string): Paise {
   const cleaned = rupees.replace(/[₹,\s]/g, '');
   const match = RUPEE_PATTERN.exec(cleaned);

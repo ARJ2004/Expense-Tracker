@@ -4,20 +4,14 @@ import { createBottomTabNavigator, type BottomTabBarProps } from '@react-navigat
 import { HomeScreen } from '../features/home';
 import { ImportsScreen } from '../features/imports';
 import { SettingsScreen } from '../features/settings';
-import { TransactionsScreen } from '../features/transactions';
+import { useAccounts } from '../features/accounts';
+import { TransactionsScreen, useOpenAddSheet } from '../features/transactions';
+import type { MainTabParamList } from '../lib';
 import { TabBar } from '../ui';
 
-export type RootTabParamList = {
-  Home: undefined;
-  Transactions: undefined;
-  Add: undefined;
-  Imports: undefined;
-  Settings: undefined;
-};
+const Tab = createBottomTabNavigator<MainTabParamList>();
 
-const Tab = createBottomTabNavigator<RootTabParamList>();
-
-/** The Add tab never navigates; it will open the Add transaction sheet in Sprint 3. */
+/** The Add tab never navigates; pressing it opens the Add transaction sheet. */
 function AddPlaceholder() {
   return <View />;
 }
@@ -27,6 +21,9 @@ function renderTabBar(props: BottomTabBarProps) {
 }
 
 export function RootTabs() {
+  const openAdd = useOpenAddSheet();
+  // Keeps the accounts list cached so the Add sheet can pre-select one.
+  useAccounts();
   return (
     <Tab.Navigator screenOptions={{ headerShown: false }} tabBar={renderTabBar}>
       <Tab.Screen name="Home" component={HomeScreen} />
@@ -35,7 +32,12 @@ export function RootTabs() {
         name="Add"
         component={AddPlaceholder}
         options={{ tabBarAccessibilityLabel: 'Add transaction' }}
-        listeners={{ tabPress: (e) => e.preventDefault() }}
+        listeners={{
+          tabPress: (e) => {
+            e.preventDefault();
+            openAdd();
+          },
+        }}
       />
       <Tab.Screen name="Imports" component={ImportsScreen} />
       <Tab.Screen name="Settings" component={SettingsScreen} />

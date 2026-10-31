@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { radius, space, touchTarget, useTheme } from '../theme';
 import { Text } from './Text';
 
@@ -7,13 +7,15 @@ export interface ChipProps {
   label: string;
   selected?: boolean;
   onPress?: () => void;
+  /** Leading glyph, e.g. a category icon; receives the label colour. */
+  renderIcon?: (color: string) => React.ReactNode;
 }
 
 const HEIGHT = 36;
 const SLOP = (touchTarget - HEIGHT) / 2;
 
 /** Pill toggle. Selected: navy with white text (light), emerald with navy text (dark). 44 px touch area. */
-export function Chip({ label, selected = false, onPress }: ChipProps) {
+export function Chip({ label, selected = false, onPress, renderIcon }: ChipProps) {
   const { colors } = useTheme();
   return (
     <Pressable
@@ -28,6 +30,7 @@ export function Chip({ label, selected = false, onPress }: ChipProps) {
           : { backgroundColor: colors.surface, borderColor: colors.border },
       ]}
     >
+      {renderIcon?.(selected ? colors.chipOnFg : colors.text)}
       <Text variant="bodyStrong" style={[styles.label, { color: selected ? colors.chipOnFg : colors.text }]}>
         {label}
       </Text>
@@ -38,6 +41,7 @@ export function Chip({ label, selected = false, onPress }: ChipProps) {
 export interface ChipOption<T extends string> {
   value: T;
   label: string;
+  renderIcon?: ChipProps['renderIcon'];
 }
 
 export interface ChipGroupProps<T extends string> {
@@ -45,21 +49,26 @@ export interface ChipGroupProps<T extends string> {
   value: T | null;
   onChange: (value: T) => void;
   accessibilityLabel: string;
+  /** One scrolling row instead of wrapping lines. */
+  scroll?: boolean;
 }
 
 /** Single-choice row of chips that wraps onto new lines. */
-export function ChipGroup<T extends string>({ options, value, onChange, accessibilityLabel }: ChipGroupProps<T>) {
+export function ChipGroup<T extends string>({ options, value, onChange, accessibilityLabel, scroll = false }: ChipGroupProps<T>) {
+  const Container = scroll ? ScrollView : View;
+  const layout = scroll ? { horizontal: true, showsHorizontalScrollIndicator: false, contentContainerStyle: styles.row } : { style: styles.group };
   return (
-    <View accessibilityRole="radiogroup" accessibilityLabel={accessibilityLabel} style={styles.group}>
+    <Container accessibilityRole="radiogroup" accessibilityLabel={accessibilityLabel} {...layout}>
       {options.map((o) => (
-        <Chip key={o.value} label={o.label} selected={o.value === value} onPress={() => onChange(o.value)} />
+        <Chip key={o.value} label={o.label} renderIcon={o.renderIcon} selected={o.value === value} onPress={() => onChange(o.value)} />
       ))}
-    </View>
+    </Container>
   );
 }
 
 const styles = StyleSheet.create({
-  chip: { height: HEIGHT, paddingHorizontal: 14, borderRadius: radius.pill, borderWidth: 1, justifyContent: 'center' },
+  chip: { height: HEIGHT, paddingHorizontal: 14, borderRadius: radius.pill, borderWidth: 1, flexDirection: 'row', alignItems: 'center', gap: 6 },
   label: { fontSize: 14 },
   group: { flexDirection: 'row', flexWrap: 'wrap', gap: space.xs, rowGap: space.sm },
+  row: { flexDirection: 'row', gap: space.xs, paddingVertical: SLOP },
 });

@@ -8,7 +8,8 @@ export interface IconButtonProps {
   /** Required: icon-only controls must be announced by screen readers. */
   accessibilityLabel: string;
   onPress?: () => void;
-  variant?: 'plain' | 'outlined';
+  /** "filled" is the round close button on sheets (background-coloured disc). */
+  variant?: 'plain' | 'outlined' | 'filled';
 }
 
 export function IconButton({ icon, accessibilityLabel, onPress, variant = 'outlined' }: IconButtonProps) {
@@ -22,6 +23,7 @@ export function IconButton({ icon, accessibilityLabel, onPress, variant = 'outli
       style={({ pressed }) => [
         styles.base,
         variant === 'outlined' && { backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1 },
+        variant === 'filled' && { backgroundColor: colors.background },
         pressed && styles.pressed,
       ]}
     >

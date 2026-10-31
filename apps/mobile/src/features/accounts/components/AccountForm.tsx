@@ -1,21 +1,29 @@
 import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import type { AccountKind } from '@et/api-client';
+import type { Account, AccountKind } from '@et/api-client';
 import { POPULAR_BANKS } from '@et/domain';
 import { errorMessage } from '../../../lib';
 import { space } from '../../../theme';
 import { Button, Chip, ChipGroup, Text, TextField } from '../../../ui';
-import { useCreateAccount } from '../hooks';
+import { useCreateAccount, useUpdateAccount } from '../hooks';
 import { KIND_OPTIONS } from '../labels';
 
 const QUICK_BANKS = POPULAR_BANKS.slice(0, 6);
 
+export interface AccountFormProps {
+  /** Edit this account instead of adding a new one. */
+  account?: Account;
+  onSaved?: () => void;
+}
+
 /** Bank, kind and optional last 4 digits. Only the last 4 are ever asked for or stored. */
-export function AccountForm() {
+export function AccountForm({ account, onSaved }: AccountFormProps) {
   const create = useCreateAccount();
-  const [bankName, setBankName] = useState('');
-  const [kind, setKind] = useState<AccountKind>('savings');
-  const [last4, setLast4] = useState('');
+  const update = useUpdateAccount();
+  const mutation = account ? update : create;
+  const [bankName, setBankName] = useState(account?.bankName ?? '');
+  const [kind, setKind] = useState<AccountKind>(account?.kind ?? 'savings');
+  const [last4, setLast4] = useState(account?.maskedNumber ?? '');
   const [touched, setTouched] = useState(false);
 
   const bankError = touched && bankName.trim() === '' ? 'Enter the bank or wallet name' : undefined;
@@ -24,16 +32,19 @@ export function AccountForm() {
   const submit = () => {
     setTouched(true);
     if (bankName.trim() === '' || last4Error) return;
-    create.mutate(
-      { bankName: bankName.trim(), kind, ...(last4 ? { maskedNumber: last4 } : {}) },
-      {
-        onSuccess: () => {
+    const body = { bankName: bankName.trim(), kind, ...(last4 ? { maskedNumber: last4 } : {}) };
+    const done = {
+      onSuccess: () => {
+        if (!account) {
           setBankName('');
           setLast4('');
-          setTouched(false);
-        },
+        }
+        setTouched(false);
+        onSaved?.();
       },
-    );
+    };
+    if (account) update.mutate({ id: account.id, body }, done);
+    else create.mutate(body, done);
   };
 
   return (
@@ -58,12 +69,12 @@ export function AccountForm() {
         error={last4Error}
         hint="Only the last 4. We never store full numbers."
       />
-      {create.error && (
+      {mutation.error && (
         <Text variant="secondary" tone="spend" accessibilityLiveRegion="polite">
-          {errorMessage(create.error)}
+          {errorMessage(mutation.error)}
         </Text>
       )}
-      <Button variant="secondary" label="Add account" loading={create.isPending} onPress={submit} />
+      <Button variant={account ? 'primary' : 'secondary'} label={account ? 'Save changes' : 'Add account'} loading={mutation.isPending} onPress={submit} />
     </View>
   );
 }

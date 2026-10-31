@@ -19,4 +19,10 @@ export interface NormalizedTxn {
   balancePaise?: Paise;
   /** Original text for audit; never logged. */
   rawText?: string;
+  /** Manual entry only: the account the user picked (already known, no resolve needed). */
+  accountId?: string;
+  /** Manual entry only: the category the user picked; wins over every rule. */
+  categoryId?: string;
+  /** Free text from the user. */
+  note?: string;
 }

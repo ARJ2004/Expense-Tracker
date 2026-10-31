@@ -21,9 +21,9 @@ export async function boot(options: BootOptions = {}): Promise<INestApplication>
   return app;
 }
 
-/** Empties every user-owned table (they all cascade from users). */
+/** Removes every user and, by cascade, their rows. System categories (user_id null) stay. */
 export async function resetDb(app: INestApplication): Promise<void> {
-  await app.get(PrismaService).$executeRawUnsafe('TRUNCATE TABLE users CASCADE');
+  await app.get(PrismaService).$executeRawUnsafe('DELETE FROM users');
 }
 
 export interface Session {

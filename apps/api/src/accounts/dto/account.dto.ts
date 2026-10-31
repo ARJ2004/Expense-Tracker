@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsIn, IsOptional, IsString, Length, Matches } from 'class-validator';
 import { AccountKind } from '@et/domain';
@@ -29,6 +29,9 @@ export class CreateAccountDto {
   @Length(1, 40)
   nickname?: string;
 }
+
+/** Any subset of the create fields. */
+export class UpdateAccountDto extends PartialType(CreateAccountDto) {}
 
 export class AccountDto {
   @ApiProperty({ format: 'uuid' })

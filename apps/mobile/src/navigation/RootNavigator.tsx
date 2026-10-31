@@ -5,7 +5,7 @@ import { SignInScreen, useSession } from '../features/auth';
 import { OnboardingNavigator } from '../features/onboarding';
 import { useTheme } from '../theme';
 import { EmptyState, Logo, Screen } from '../ui';
-import { RootTabs } from './RootTabs';
+import { MainNavigator } from './MainNavigator';
 
 export type RootStackParamList = {
   SignIn: undefined;
@@ -51,7 +51,7 @@ export function RootNavigator() {
       {status === 'signedOut' ? (
         <Stack.Screen name="SignIn" component={SignInScreen} />
       ) : onboarded ? (
-        <Stack.Screen name="Main" component={RootTabs} />
+        <Stack.Screen name="Main" component={MainNavigator} />
       ) : (
         <Stack.Screen name="Onboarding" component={OnboardingNavigator} />
       )}

@@ -124,6 +124,130 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/accounts/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete an account that has no transactions */
+        delete: operations["deleteAccount"];
+        options?: never;
+        head?: never;
+        /** Edit an account */
+        patch: operations["updateAccount"];
+        trace?: never;
+    };
+    "/v1/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** System categories plus the caller’s own */
+        get: operations["listCategories"];
+        put?: never;
+        /** Add a custom category */
+        post: operations["createCategory"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/categories/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete a custom category; its transactions move to Other */
+        delete: operations["deleteCategory"];
+        options?: never;
+        head?: never;
+        /** Rename or restyle a custom category */
+        patch: operations["updateCategory"];
+        trace?: never;
+    };
+    "/v1/transactions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Manual entry (idempotent by clientRequestId) */
+        post: operations["createTransaction"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/transactions/recent": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Newest transactions (until the full ledger list in Sprint 4) */
+        get: operations["listRecentTransactions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/transactions/recent-categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Categories the user picked most recently */
+        get: operations["listRecentCategoryIds"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/transactions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One transaction with its sources */
+        get: operations["getTransaction"];
+        put?: never;
+        post?: never;
+        /** Soft delete */
+        delete: operations["deleteTransaction"];
+        options?: never;
+        head?: never;
+        /** Edit; amount, date or merchant changes set userEdited */
+        patch: operations["updateTransaction"];
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -233,6 +357,169 @@ export interface components {
             maskedNumber?: string;
             /** @example Salary account */
             nickname?: string;
+        };
+        UpdateAccountDto: {
+            /** @example HDFC Bank */
+            bankName?: string;
+            kind?: components["schemas"]["AccountKind"];
+            /** @example 4821 */
+            maskedNumber?: string;
+            /** @example Salary account */
+            nickname?: string;
+        };
+        /** @enum {string} */
+        CategoryIcon: "food" | "groceries" | "transport" | "shopping" | "bills" | "rent" | "entertainment" | "health" | "education" | "travel" | "transfer" | "income" | "other";
+        /**
+         * @description Theme palette key, not hex
+         * @enum {string}
+         */
+        CategoryColor: "chart1" | "chart2" | "chart3" | "chart4" | "chart5" | "accent" | "warning" | "muted";
+        CategoryDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example Food & Dining */
+            name: string;
+            icon: components["schemas"]["CategoryIcon"];
+            /** @description Theme palette key, not hex */
+            color: components["schemas"]["CategoryColor"];
+            isExpense: boolean;
+            /** @description System categories cannot be renamed or deleted */
+            system: boolean;
+        };
+        CategoryListDto: {
+            items: components["schemas"]["CategoryDto"][];
+        };
+        CreateCategoryDto: {
+            /** @example Pets */
+            name: string;
+            icon: components["schemas"]["CategoryIcon"];
+            color: components["schemas"]["CategoryColor"];
+            /** @default true */
+            isExpense: boolean;
+        };
+        UpdateCategoryDto: {
+            name?: string;
+            icon?: components["schemas"]["CategoryIcon"];
+            color?: components["schemas"]["CategoryColor"];
+        };
+        /** @enum {string} */
+        Direction: "debit" | "credit";
+        CreateTransactionDto: {
+            /**
+             * Format: uuid
+             * @description Made by the app when the Add sheet opens; a retry with the same id returns the same transaction
+             */
+            clientRequestId: string;
+            /** @example 48600 */
+            amountPaise: number;
+            direction: components["schemas"]["Direction"];
+            /**
+             * Format: date-time
+             * @description No more than one day in the future
+             */
+            occurredAt: string;
+            /** Format: uuid */
+            accountId?: string;
+            /**
+             * Format: uuid
+             * @description Omit to let the rules decide (Income for credits, Other for debits)
+             */
+            categoryId?: string;
+            /** @example Swiggy */
+            merchantName?: string;
+            /** @example Team lunch */
+            note?: string;
+        };
+        /** @enum {string} */
+        TxnType: "expense" | "income" | "refund" | "transfer" | "atm_withdrawal" | "cash_deposit";
+        TransactionCategoryDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example Food & Dining */
+            name: string;
+            icon: components["schemas"]["CategoryIcon"];
+            color: components["schemas"]["CategoryColor"];
+        };
+        TransactionAccountDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example HDFC Bank */
+            bankName: string;
+            /** @example 1234 */
+            maskedNumber: string | null;
+        };
+        /** @enum {string} */
+        CategorySource: "rule" | "user" | "default";
+        /** @enum {string} */
+        SourceKind: "manual" | "sms" | "notification" | "statement";
+        TransactionSourceDto: {
+            source: components["schemas"]["SourceKind"];
+            /** Format: date-time */
+            receivedAt: string;
+        };
+        TransactionDetailDto: {
+            /** Format: uuid */
+            id: string;
+            /**
+             * @description Always positive; direction gives the sign
+             * @example 48600
+             */
+            amountPaise: number;
+            direction: components["schemas"]["Direction"];
+            type: components["schemas"]["TxnType"];
+            /** Format: date-time */
+            occurredAt: string;
+            /** @example Swiggy */
+            merchantName: string | null;
+            category: components["schemas"]["TransactionCategoryDto"];
+            account: components["schemas"]["TransactionAccountDto"] | null;
+            /** @example Team lunch */
+            note: string | null;
+            categorySource: components["schemas"]["CategorySource"];
+            /** @description The user changed amount, date or merchant; later sources never overwrite it */
+            userEdited: boolean;
+            sources: components["schemas"]["TransactionSourceDto"][];
+        };
+        TransactionSummaryDto: {
+            /** Format: uuid */
+            id: string;
+            /**
+             * @description Always positive; direction gives the sign
+             * @example 48600
+             */
+            amountPaise: number;
+            direction: components["schemas"]["Direction"];
+            type: components["schemas"]["TxnType"];
+            /** Format: date-time */
+            occurredAt: string;
+            /** @example Swiggy */
+            merchantName: string | null;
+            category: components["schemas"]["TransactionCategoryDto"];
+            account: components["schemas"]["TransactionAccountDto"] | null;
+        };
+        TransactionSummaryListDto: {
+            items: components["schemas"]["TransactionSummaryDto"][];
+        };
+        RecentCategoriesDto: {
+            /** @description Category ids the user picked most recently, newest first */
+            ids: string[];
+        };
+        UpdateTransactionDto: {
+            amountPaise?: number;
+            direction?: components["schemas"]["Direction"];
+            /** Format: date-time */
+            occurredAt?: string;
+            /**
+             * Format: uuid
+             * @description null removes the account
+             */
+            accountId?: string | null;
+            /** Format: uuid */
+            categoryId?: string;
+            /** @description null or "" clears it */
+            merchantName?: string | null;
+            /** @description null or "" clears it */
+            note?: string | null;
         };
     };
     responses: never;
@@ -559,6 +846,521 @@ export interface operations {
             };
             /** @description ACCOUNT_EXISTS */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    deleteAccount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description ACCOUNT_IN_USE */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    updateAccount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateAccountDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountDto"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description ACCOUNT_EXISTS */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    listCategories: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryListDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    createCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateCategoryDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryDto"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description CATEGORY_EXISTS */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    deleteCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description CATEGORY_SYSTEM */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    updateCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateCategoryDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description CATEGORY_SYSTEM */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description CATEGORY_EXISTS */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    createTransaction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateTransactionDto"];
+            };
+        };
+        responses: {
+            /** @description Same clientRequestId seen before; the original is returned */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransactionDetailDto"];
+                };
+            };
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransactionDetailDto"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Account or category not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    listRecentTransactions: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransactionSummaryListDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    listRecentCategoryIds: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecentCategoriesDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getTransaction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransactionDetailDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    deleteTransaction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    updateTransaction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateTransactionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransactionDetailDto"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
