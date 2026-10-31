@@ -22,7 +22,7 @@ export function UploadDropZone({ onChoose, loading = false, error, notice }: Upl
       </View>
       <Text variant="heading">Upload a bank statement</Text>
       <Text variant="secondary" tone="muted" style={styles.center}>
-        CSV or XLSX from any bank. PDF support is coming next.
+        CSV, Excel or PDF from any bank.
       </Text>
       <Button block label="Choose file" loading={loading} onPress={onChoose} />
       {error ? (

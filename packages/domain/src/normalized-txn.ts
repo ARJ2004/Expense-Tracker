@@ -1,4 +1,4 @@
-import type { Direction, SourceKind } from './enums';
+import type { AccountKind, Direction, SourceKind } from './enums';
 import type { Paise } from './money';
 
 /**
@@ -12,7 +12,11 @@ export interface NormalizedTxn {
   occurredAt: Date;
   /** Statement rows often carry only a date; dedup then compares by IST day. */
   timePrecision: 'minute' | 'day';
-  accountHint?: { bank?: string; last4?: string };
+  /**
+   * What the source says about the account. last4 may be only the last 3 digits (some SBI SMS
+   * say "A/c X123"); kind is set when the source tells (a card SMS says "Credit Card").
+   */
+  accountHint?: { bank?: string; last4?: string; kind?: AccountKind };
   counterparty?: string;
   narration?: string;
   referenceNo?: string;

@@ -11,6 +11,8 @@ export class ImportParserJob implements OnApplicationBootstrap {
   ) {}
 
   async onApplicationBootstrap(): Promise<void> {
-    await this.queue.work((job) => this.imports.parse(job.importId));
+    await this.queue.work(async (job) => {
+      await this.imports.parse(job.importId);
+    });
   }
 }

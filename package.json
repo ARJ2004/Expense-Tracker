@@ -2,7 +2,7 @@
   "name": "expense-tracker",
   "private": true,
   "packageManager": "pnpm@9.15.0",
-  "engines": { "node": ">=22" },
+  "engines": { "node": ">=22.13" },
   "scripts": {
     "lint": "pnpm -r --parallel run lint",
     "typecheck": "pnpm -r --parallel run typecheck",

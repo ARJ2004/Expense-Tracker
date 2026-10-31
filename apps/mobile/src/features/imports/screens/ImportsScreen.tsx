@@ -5,18 +5,21 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ImportStatusRow, UploadDropZone } from '../../../components';
 import { errorMessage, type MainStackParamList } from '../../../lib';
 import { useTheme } from '../../../theme';
-import { EmptyState, Screen, Text } from '../../../ui';
+import { Card, EmptyState, Screen, Text } from '../../../ui';
+import { lastSyncLabel, smsCaptureAvailable, useSmsCapture } from '../../sms';
 import { useImports, useUploadImport } from '../hooks';
-import { importSubtitle, importTag } from '../labels';
+import { importSubtitle, importTag, needsPassword } from '../labels';
 import { pickStatement } from '../pick-file';
 
-/** Locked mockup "Imports": upload card, then recent imports. The Bank SMS card waits for SMS capture (S8). */
+/** Locked mockup "Imports": upload card, the Bank SMS source (Android), then recent imports. */
 export function ImportsScreen() {
   const { colors } = useTheme();
   const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
   const imports = useImports();
   const upload = useUploadImport();
   const [pickError, setPickError] = useState<string | null>(null);
+  const smsEnabled = useSmsCapture((s) => s.enabled);
+  const smsLastSync = useSmsCapture((s) => s.lastSyncMs);
 
   const choose = async () => {
     setPickError(null);
@@ -42,6 +45,17 @@ export function ImportsScreen() {
   return (
     <Screen title="Imports" withTabBar>
       <UploadDropZone onChoose={choose} loading={upload.isPending} error={pickError ?? (upload.error ? errorMessage(upload.error) : null)} />
+      {smsCaptureAvailable() && (
+        <Card padding="rows">
+          <ImportStatusRow
+            icon="sms"
+            fileName="Bank SMS"
+            subtitle={smsEnabled ? lastSyncLabel(smsLastSync) : 'Add spends from bank alerts automatically'}
+            tag={smsEnabled ? { label: 'On', tone: 'success' } : { label: 'Off', tone: 'neutral' }}
+            onPress={() => navigation.navigate('SmsCapture')}
+          />
+        </Card>
+      )}
       {items.length > 0 && (
         <Text variant="heading" accessibilityRole="header">
           Recent imports
@@ -58,7 +72,7 @@ export function ImportsScreen() {
             fileName={imp.fileName}
             subtitle={importSubtitle(imp)}
             tag={importTag(imp)}
-            onPress={imp.status === 'failed' ? undefined : () => navigation.navigate('ImportReview', { id: imp.id })}
+            onPress={imp.status === 'failed' && !needsPassword(imp) ? undefined : () => navigation.navigate('ImportReview', { id: imp.id })}
           />
         ))}
       </View>

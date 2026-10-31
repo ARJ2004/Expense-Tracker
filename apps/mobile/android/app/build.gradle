@@ -104,6 +104,14 @@ android {
             }
         }
     }
+    // READ_SMS lives in src/sms: debug builds always, release only with -PaltusSms (sideloaded).
+    // Play builds stay without it until the SMS permissions declaration is approved (sprint plan, S10).
+    sourceSets {
+        debug.manifest.srcFile 'src/sms/AndroidManifest.xml'
+        if (project.hasProperty('altusSms')) {
+            release.manifest.srcFile 'src/sms/AndroidManifest.xml'
+        }
+    }
     buildTypes {
         debug {
             signingConfig signingConfigs.debug

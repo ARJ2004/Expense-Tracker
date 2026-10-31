@@ -28,7 +28,9 @@ import {
   ApiOperation,
   ApiPayloadTooLargeResponse,
   ApiTags,
+  ApiTooManyRequestsResponse,
   ApiUnauthorizedResponse,
+  ApiUnprocessableEntityResponse,
   ApiUnsupportedMediaTypeResponse,
 } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
@@ -40,6 +42,7 @@ import {
   ImportRowListDto,
   RowsQueryDto,
   UpdateImportDto,
+  UnlockImportDto,
   UpdateImportRowDto,
   UploadImportDto,
   UploadResultDto,
@@ -59,7 +62,7 @@ export class ImportsController {
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @UseFilters(FileTooLargeFilter)
   @UseInterceptors(FileInterceptor('file', { limits: { fileSize: MAX_UPLOAD_BYTES, files: 1 } }))
-  @ApiOperation({ operationId: 'uploadImport', summary: 'Upload a CSV or XLSX statement; it is parsed in the background' })
+  @ApiOperation({ operationId: 'uploadImport', summary: 'Upload a CSV, XLSX or text PDF statement; it is parsed in the background' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
@@ -70,7 +73,7 @@ export class ImportsController {
   })
   @ApiAcceptedResponse({ type: UploadResultDto })
   @ApiPayloadTooLargeResponse({ type: ErrorResponse, description: 'FILE_TOO_LARGE (over 10 MB)' })
-  @ApiUnsupportedMediaTypeResponse({ type: ErrorResponse, description: 'IMPORT_PDF_NOT_YET or IMPORT_UNSUPPORTED_FORMAT' })
+  @ApiUnsupportedMediaTypeResponse({ type: ErrorResponse, description: 'IMPORT_UNSUPPORTED_FORMAT' })
   upload(@CurrentUser() user: AuthUser, @UploadedFile() file: Upload | undefined, @Body() dto: UploadImportDto): Promise<UploadResultDto> {
     if (!file) throw new AppError('VALIDATION_FAILED', 'Attach the statement as "file"', HttpStatus.BAD_REQUEST);
     return this.imports.upload(user.id, file, dto.accountId);
@@ -120,6 +123,19 @@ export class ImportsController {
   @ApiConflictResponse({ type: ErrorResponse, description: 'IMPORT_NOT_IN_REVIEW' })
   setAccount(@CurrentUser() user: AuthUser, @Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateImportDto): Promise<ImportDto> {
     return this.imports.setAccount(user.id, id, dto.accountId);
+  }
+
+  @Post(':id/unlock')
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  @ApiOperation({ operationId: 'unlockImport', summary: 'Open a password-protected PDF statement and parse it; the password is never stored' })
+  @ApiOkResponse({ type: ImportDto })
+  @ApiNotFoundResponse({ type: ErrorResponse })
+  @ApiConflictResponse({ type: ErrorResponse, description: 'IMPORT_NOT_LOCKED' })
+  @ApiUnprocessableEntityResponse({ type: ErrorResponse, description: 'IMPORT_WRONG_PASSWORD' })
+  @ApiTooManyRequestsResponse({ type: ErrorResponse })
+  unlock(@CurrentUser() user: AuthUser, @Param('id', ParseUUIDPipe) id: string, @Body() dto: UnlockImportDto): Promise<ImportDto> {
+    return this.imports.unlock(user.id, id, dto.password);
   }
 
   @Post(':id/confirm')

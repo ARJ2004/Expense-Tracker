@@ -1,0 +1,15 @@
+{
+  "adapter": "icici",
+  "bank": "ICICI Bank",
+  "accountLast4": "4567",
+  "skipped": 0,
+  "rows": [
+    {"rowNo": 1, "date": "2026-10-01", "amountPaise": 9200000, "direction": "credit", "balancePaise": 10720000, "counterparty": "Acme Software Pvt Ltd"},
+    {"rowNo": 2, "date": "2026-10-03", "amountPaise": 61200, "direction": "debit", "balancePaise": 10658800, "counterparty": "Zomato Ltd", "referenceNo": "427712345602"},
+    {"rowNo": 3, "date": "2026-10-05", "amountPaise": 300000, "direction": "debit", "balancePaise": 10358800, "counterparty": "ATM withdrawal"},
+    {"rowNo": 4, "date": "2026-10-08", "amountPaise": 31240, "direction": "debit", "balancePaise": 10327560, "counterparty": "Uber India Syste", "referenceNo": "428112345603"},
+    {"rowNo": 5, "date": "2026-10-12", "amountPaise": 119900, "direction": "credit", "balancePaise": 10447460, "counterparty": "Amazon Seller Serv", "referenceNo": "428512345681"},
+    {"rowNo": 6, "date": "2026-10-20", "amountPaise": 59900, "direction": "debit", "balancePaise": 10387560},
+    {"rowNo": 7, "date": "2026-10-31", "amountPaise": 28800, "direction": "credit", "balancePaise": 10416360}
+  ]
+}

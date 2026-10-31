@@ -1,0 +1,15 @@
+{
+  "adapter": "sbi",
+  "bank": "SBI",
+  "accountLast4": "7812",
+  "skipped": 0,
+  "rows": [
+    {"rowNo": 1, "date": "2026-10-01", "amountPaise": 8500000, "direction": "credit", "balancePaise": 12735000, "counterparty": "Acme Software Pvt"},
+    {"rowNo": 2, "date": "2026-10-02", "amountPaise": 48600, "direction": "debit", "balancePaise": 12686400, "counterparty": "Swiggy L", "referenceNo": "427512345601"},
+    {"rowNo": 3, "date": "2026-10-04", "amountPaise": 500000, "direction": "debit", "balancePaise": 12186400, "counterparty": "ATM withdrawal"},
+    {"rowNo": 4, "date": "2026-10-09", "amountPaise": 2500000, "direction": "debit", "balancePaise": 9686400, "counterparty": "Ravi KUM", "referenceNo": "428212345680"},
+    {"rowNo": 5, "date": "2026-10-12", "amountPaise": 119900, "direction": "credit", "balancePaise": 9806300, "counterparty": "Amazon S", "referenceNo": "428512345681"},
+    {"rowNo": 6, "date": "2026-10-18", "amountPaise": 184200, "direction": "debit", "balancePaise": 9622100, "counterparty": "Bescom", "referenceNo": "429112345683"},
+    {"rowNo": 7, "date": "2026-10-30", "amountPaise": 31200, "direction": "credit", "balancePaise": 9653300, "counterparty": "Credit Interest"}
+  ]
+}

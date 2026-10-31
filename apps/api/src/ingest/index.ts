@@ -22,5 +22,7 @@ export {
   type TrendPoint,
 } from './ledger-stats.service';
 export { statementRowKey, type SourceInput } from './domain/source-input';
+export { CaptureService } from './capture.service';
+export * from './dto/ingest-batch.dto';
 export * from './dto/transaction.dto';
 export * from './ingest.events';

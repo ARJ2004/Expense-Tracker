@@ -9,10 +9,17 @@ const FAILURES: Record<string, string> = {
   IMPORT_UNREADABLE: "Couldn't find transactions in this file",
   IMPORT_NO_ROWS: 'No transactions in this file',
   IMPORT_TOO_MANY_ROWS: 'Too many rows (20,000 max)',
+  IMPORT_PDF_SCANNED: 'This PDF is a scan. Download the statement from net banking instead',
+  IMPORT_PASSWORD_PROTECTED: 'This PDF has a password',
 };
 
 export function failureLabel(code: string | null): string {
   return (code && FAILURES[code]) || "Couldn't read this file";
+}
+
+/** A PDF waiting for its password: it can still be opened, so it isn't shown as a failure. */
+export function needsPassword(imp: Pick<Import, 'status' | 'error'>): boolean {
+  return imp.status === 'failed' && imp.error === 'IMPORT_PASSWORD_PROTECTED';
 }
 
 /** "3 Nov · 142 added, 18 duplicates" (locked Imports mockup). */
@@ -22,7 +29,7 @@ export function importSubtitle(imp: Import): string {
     case 'parsing':
       return `${day} · Reading the file…`;
     case 'failed':
-      return `${day} · ${failureLabel(imp.error)}`;
+      return needsPassword(imp) ? `${day} · Enter its password to open it` : `${day} · ${failureLabel(imp.error)}`;
     case 'review':
       return `${day} · ${imp.newCount} new${imp.duplicateCount ? `, ${imp.duplicateCount} duplicates` : ''}`;
     default: // imported
@@ -35,7 +42,7 @@ export function importTag(imp: Import): { label: string; tone: TagTone } {
     case 'parsing':
       return { label: 'Reading', tone: 'neutral' };
     case 'failed':
-      return { label: 'Failed', tone: 'error' };
+      return needsPassword(imp) ? { label: 'Needs password', tone: 'warning' } : { label: 'Failed', tone: 'error' };
     case 'review':
       return { label: `${imp.selectedCount} to review`, tone: 'warning' };
     default: // imported

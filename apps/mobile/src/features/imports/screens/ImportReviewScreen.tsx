@@ -11,8 +11,9 @@ import { accountName, useAccounts } from '../../accounts';
 import { useCategories } from '../../categories';
 import { useRecentCategoryIds } from '../../transactions';
 import { AllRowsSheet } from '../components/AllRowsSheet';
+import { UnlockForm } from '../components/UnlockForm';
 import { useConfirmImport, useDiscardImport, useImport, useImportRows, useSetImportAccount, useUpdateImportRow } from '../hooks';
-import { alreadyImportedNotice, failureLabel, reviewSubtitle, rowDay } from '../labels';
+import { alreadyImportedNotice, failureLabel, needsPassword, reviewSubtitle, rowDay } from '../labels';
 
 type Props = NativeStackScreenProps<MainStackParamList, 'ImportReview'>;
 
@@ -98,6 +99,14 @@ export function ImportReviewScreen({ route, navigation }: Props) {
   }
 
   const data = imp.data;
+  if (needsPassword(data)) {
+    return (
+      <Screen>
+        {top()}
+        <UnlockForm importId={id} fileName={data.fileName} onDiscard={askDiscard} />
+      </Screen>
+    );
+  }
   if (data.status === 'failed') {
     return (
       <Screen>

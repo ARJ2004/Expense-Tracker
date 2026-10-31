@@ -1,0 +1,15 @@
+{
+  "adapter": "axis",
+  "bank": "Axis Bank",
+  "accountLast4": "5678",
+  "skipped": 0,
+  "rows": [
+    {"rowNo": 1, "date": "2026-10-01", "amountPaise": 7800000, "direction": "credit", "balancePaise": 9610000, "counterparty": "Acme Software Pvt Ltd"},
+    {"rowNo": 2, "date": "2026-10-02", "amountPaise": 48600, "direction": "debit", "balancePaise": 9561400, "counterparty": "Swiggy Limited", "referenceNo": "427512345611"},
+    {"rowNo": 3, "date": "2026-10-06", "amountPaise": 234950, "direction": "debit", "balancePaise": 9326450, "counterparty": "Amazon Pay India"},
+    {"rowNo": 4, "date": "2026-10-07", "amountPaise": 200000, "direction": "debit", "balancePaise": 9126450, "counterparty": "ATM withdrawal"},
+    {"rowNo": 5, "date": "2026-10-15", "amountPaise": 2500000, "direction": "debit", "balancePaise": 6626450, "counterparty": "Ravi Kumar", "referenceNo": "428812345612"},
+    {"rowNo": 6, "date": "2026-10-21", "amountPaise": 61200, "direction": "debit", "balancePaise": 6565250, "counterparty": "Zomato Ltd", "referenceNo": "429412345613"},
+    {"rowNo": 7, "date": "2026-10-25", "amountPaise": 150000, "direction": "credit", "balancePaise": 6715250, "counterparty": "Priya Sharma", "referenceNo": "429812345614"}
+  ]
+}

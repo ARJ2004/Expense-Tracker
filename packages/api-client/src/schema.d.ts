@@ -74,6 +74,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/ingest/batch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Up to 100 transactions parsed on the phone (bank SMS); idempotent by messageKey */
+        post: operations["ingestBatch"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/accounts": {
         parameters: {
             query?: never;
@@ -295,7 +312,7 @@ export interface paths {
         /** The latest 20 imports, newest first */
         get: operations["listImports"];
         put?: never;
-        /** Upload a CSV or XLSX statement; it is parsed in the background */
+        /** Upload a CSV, XLSX or text PDF statement; it is parsed in the background */
         post: operations["uploadImport"];
         delete?: never;
         options?: never;
@@ -352,6 +369,23 @@ export interface paths {
         head?: never;
         /** Tick or untick a row, pick its category, or correct it */
         patch: operations["updateImportRow"];
+        trace?: never;
+    };
+    "/v1/imports/{id}/unlock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Open a password-protected PDF statement and parse it; the password is never stored */
+        post: operations["unlockImport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/v1/imports/{id}/confirm": {
@@ -475,7 +509,71 @@ export interface components {
             incomeFrequency?: components["schemas"]["IncomeFrequency"];
         };
         /** @enum {string} */
+        DeviceSource: "sms";
+        /** @enum {string} */
+        Direction: "debit" | "credit";
+        /** @enum {string} */
         AccountKind: "savings" | "credit_card" | "wallet" | "cash";
+        CapturedTxnDto: {
+            source: components["schemas"]["DeviceSource"];
+            /** @description smsMessageKey(): SHA-256 hex of sender, receive time and body; makes resends no-ops */
+            messageKey: string;
+            /** @example 48600 */
+            amountPaise: number;
+            direction: components["schemas"]["Direction"];
+            /**
+             * Format: date-time
+             * @description A row more than a day in the future is counted as rejected
+             */
+            occurredAt: string;
+            /**
+             * @description "day" when the SMS named an earlier day than it arrived on
+             * @enum {string}
+             */
+            timePrecision: "minute" | "day";
+            /** @example HDFC Bank */
+            bank: string;
+            /**
+             * @description Last 4 (or 3) digits of the account or card
+             * @example 1234
+             */
+            last4?: string;
+            accountKind?: components["schemas"]["AccountKind"];
+            /** @example Swiggy */
+            counterparty?: string;
+            /** @example 427512345601 */
+            referenceNo?: string;
+            /**
+             * @description A short keyword for the type rules (UPI, CARD, ATM WITHDRAWAL, REFUND); never message text
+             * @example UPI
+             */
+            narration?: string;
+        };
+        IngestBatchDto: {
+            items: components["schemas"]["CapturedTxnDto"][];
+        };
+        IngestBatchResultDto: {
+            /**
+             * @description New ledger rows
+             * @example 3
+             */
+            created: number;
+            /**
+             * @description Matched a transaction already in the ledger (a statement row, an entry) and added this source to it
+             * @example 1
+             */
+            merged: number;
+            /**
+             * @description Sent before; nothing changed
+             * @example 0
+             */
+            skipped: number;
+            /**
+             * @description Refused one by one (dated more than a day ahead); the rest of the batch still went in
+             * @example 0
+             */
+            rejected: number;
+        };
         AccountDto: {
             /** Format: uuid */
             id: string;
@@ -569,8 +667,6 @@ export interface components {
         LogoutDto: {
             refreshToken: string;
         };
-        /** @enum {string} */
-        Direction: "debit" | "credit";
         CreateTransactionDto: {
             /**
              * Format: uuid
@@ -783,7 +879,7 @@ export interface components {
             /** @example 0 */
             mergedCount: number;
             /**
-             * @description Why parsing failed
+             * @description Why parsing failed: IMPORT_UNREADABLE, IMPORT_NO_ROWS, IMPORT_TOO_MANY_ROWS, IMPORT_PDF_SCANNED, IMPORT_PASSWORD_PROTECTED (unlock it with the password) or IMPORT_FAILED
              * @example IMPORT_NO_ROWS
              */
             error: string | null;
@@ -858,6 +954,10 @@ export interface components {
         UpdateImportDto: {
             /** Format: uuid */
             accountId: string;
+        };
+        UnlockImportDto: {
+            /** @description The statement PDF's password. Used once to open the file; never stored or logged. */
+            password: string;
         };
         CategorySpendDto: {
             category: components["schemas"]["TransactionCategoryDto"];
@@ -1137,6 +1237,55 @@ export interface operations {
                 };
             };
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    ingestBatch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IngestBatchDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IngestBatchResultDto"];
+                };
+            };
+            /** @description VALIDATION_FAILED */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description RATE_LIMITED */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -2059,7 +2208,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description IMPORT_PDF_NOT_YET or IMPORT_UNSUPPORTED_FORMAT */
+            /** @description IMPORT_UNSUPPORTED_FORMAT */
             415: {
                 headers: {
                     [name: string]: unknown;
@@ -2282,6 +2431,73 @@ export interface operations {
             };
             /** @description IMPORT_NOT_IN_REVIEW */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    unlockImport: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UnlockImportDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description IMPORT_NOT_LOCKED */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description IMPORT_WRONG_PASSWORD */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };

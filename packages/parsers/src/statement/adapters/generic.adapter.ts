@@ -1,5 +1,4 @@
-import { cell } from '../cells';
-import { findAccountLast4, findHeaderRow, readRows } from '../table';
+import { findHeaderRow, firstCell, readStatement } from '../table';
 import type { ParsedStatement, Sheet, StatementAdapter } from '../types';
 
 /**
@@ -14,15 +13,10 @@ export class GenericColumnsAdapter implements StatementAdapter {
   }
 
   parse(sheet: Sheet): ParsedStatement {
-    const found = findHeaderRow(sheet);
-    if (!found) return { adapter: this.id, rows: [], skipped: 0 };
-    const { rows, skipped } = readRows(sheet, found.index, found.columns, isFooter);
-    const accountLast4 = findAccountLast4(sheet, found.index);
-    return { adapter: this.id, ...(accountLast4 ? { accountLast4 } : {}), rows, skipped };
+    return readStatement(sheet, { adapter: this.id, isFooter });
   }
 }
 
 function isFooter(row: readonly string[]): boolean {
-  const first = row.map(cell).find(Boolean)?.toUpperCase() ?? '';
-  return /^(STATEMENT SUMMARY|OPENING BALANCE|CLOSING BALANCE|TOTAL|GRAND TOTAL|\*\*END)/.test(first);
+  return /^(STATEMENT SUMMARY|OPENING BALANCE|CLOSING BALANCE|TOTAL|GRAND TOTAL|\*\*END)/.test(firstCell(row));
 }

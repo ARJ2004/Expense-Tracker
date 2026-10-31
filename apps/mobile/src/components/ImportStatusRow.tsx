@@ -1,7 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { fonts, radius, space, useTheme } from '../theme';
-import { Icon, Tag, Text, type TagTone } from '../ui';
+import { Icon, Tag, Text, type IconName, type TagTone } from '../ui';
 
 export interface ImportStatusRowProps {
   fileName: string;
@@ -9,10 +9,12 @@ export interface ImportStatusRowProps {
   subtitle: string;
   tag: { label: string; tone: TagTone };
   onPress?: () => void;
+  /** "statement" (default) for files, "sms" for the Bank SMS source. */
+  icon?: IconName;
 }
 
-/** One line of "Recent imports": file icon, name, what happened, and a status tag. */
-export function ImportStatusRow({ fileName, subtitle, tag, onPress }: ImportStatusRowProps) {
+/** One source line on Imports: icon, name, what happened, and a status tag. */
+export function ImportStatusRow({ fileName, subtitle, tag, onPress, icon = 'statement' }: ImportStatusRowProps) {
   const { colors } = useTheme();
   return (
     <Pressable
@@ -23,7 +25,7 @@ export function ImportStatusRow({ fileName, subtitle, tag, onPress }: ImportStat
       style={({ pressed }) => [styles.row, pressed && styles.pressed]}
     >
       <View style={[styles.icon, { backgroundColor: colors.background }]}>
-        <Icon name="statement" color={colors.textMuted} />
+        <Icon name={icon} color={colors.textMuted} />
       </View>
       <View style={styles.text}>
         <Text variant="body" numberOfLines={1} style={styles.name}>

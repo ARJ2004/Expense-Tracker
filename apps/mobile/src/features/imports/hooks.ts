@@ -105,6 +105,22 @@ export function useSetImportAccount(id: string) {
   });
 }
 
+/** Opens a password-protected PDF; the API parses it in the request and answers with the import. */
+export function useUnlockImport(id: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (password: string): Promise<Import> => {
+      const { data, error } = await api.POST('/v1/imports/{id}/unlock', { params: { path: { id } }, body: { password } });
+      if (!data) throw toApiError(error);
+      return data;
+    },
+    onSuccess: async (imp) => {
+      queryClient.setQueryData(importKeys.detail(id), imp);
+      await queryClient.invalidateQueries({ queryKey: importKeys.all });
+    },
+  });
+}
+
 /** Adds the ticked rows; the ledger, Home and Recent all change. */
 export function useConfirmImport(id: string) {
   const queryClient = useQueryClient();

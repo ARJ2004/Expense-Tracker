@@ -71,6 +71,7 @@ enum ImportStatus {
 enum ImportFormat {
   csv
   xlsx
+  pdf
 }
 
 enum ImportRowAction {

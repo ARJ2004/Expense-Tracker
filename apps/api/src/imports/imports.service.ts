@@ -44,8 +44,7 @@ export class ImportsService {
 
   async upload(userId: string, file: UploadedFile, accountId?: string): Promise<{ import: ImportDto; alreadyImportedAt?: string }> {
     const format = sniffFormat(file.buffer);
-    if (format === 'pdf') throw new AppError('IMPORT_PDF_NOT_YET', 'PDF support is coming next. Export CSV or Excel from your bank for now.', HttpStatus.UNSUPPORTED_MEDIA_TYPE);
-    if (format === 'unsupported') throw new AppError('IMPORT_UNSUPPORTED_FORMAT', 'Upload a CSV or Excel (.xlsx) statement', HttpStatus.UNSUPPORTED_MEDIA_TYPE);
+    if (format === 'unsupported') throw new AppError('IMPORT_UNSUPPORTED_FORMAT', 'Upload a CSV, Excel (.xlsx) or PDF statement', HttpStatus.UNSUPPORTED_MEDIA_TYPE);
     if (accountId) await this.accounts.assertOwned(userId, accountId);
 
     const fileSha256 = createHash('sha256').update(file.buffer).digest('hex');
@@ -178,14 +177,34 @@ export class ImportsService {
   }
 
   /**
-   * The background job: read the file, stage its rows, drop the bytes, run the dry run.
-   * Failures are stored as a code; neither file content nor narrations are logged.
+   * Opens a password-protected PDF that failed as IMPORT_PASSWORD_PROTECTED and parses it now,
+   * in this request. The password is used once and never stored or logged; a wrong one leaves
+   * the import as it was, ready for another try.
    */
-  async parse(importId: string): Promise<void> {
+  async unlock(userId: string, id: string, password: string): Promise<ImportDto> {
+    await this.find(userId, id);
+    // Claims the import, so two unlocks at once don't both parse it.
+    const { count } = await this.prisma.statementImport.updateMany({
+      where: { id, userId, status: 'failed', error: 'IMPORT_PASSWORD_PROTECTED', fileBytes: { not: null } },
+      data: { status: 'parsing', error: null },
+    });
+    if (count === 0) throw new AppError('IMPORT_NOT_LOCKED', 'This import is not waiting for a password', HttpStatus.CONFLICT);
+    if ((await this.parse(id, password)) === 'IMPORT_WRONG_PASSWORD') {
+      throw new AppError('IMPORT_WRONG_PASSWORD', "That password didn't open the statement", HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+    return this.get(userId, id);
+  }
+
+  /**
+   * The background job (and unlock): read the file, stage its rows, drop the bytes, run the dry
+   * run. Failures are stored as a code and returned; neither file content nor narrations are
+   * logged. A PDF that needs a password keeps its (still encrypted) bytes so it can be unlocked.
+   */
+  async parse(importId: string, password?: string): Promise<string | null> {
     const imp = await this.prisma.statementImport.findUnique({ where: { id: importId }, include: { account: { select: accountSelect } } });
-    if (!imp || imp.status !== 'parsing' || !imp.fileBytes) return;
+    if (!imp || imp.status !== 'parsing' || !imp.fileBytes) return null;
     try {
-      const sheet = await readSheet(Buffer.from(imp.fileBytes), imp.format);
+      const sheet = await readSheet(Buffer.from(imp.fileBytes), imp.format, password);
       const adapter = pickStatementAdapter(sheet, imp.fileName);
       if (!adapter) throw new SheetError('IMPORT_UNREADABLE');
       const parsed = adapter.parse(sheet);
@@ -195,11 +214,17 @@ export class ImportsService {
       const staged = await this.prisma.statementImport.findUniqueOrThrow({ where: { id: imp.id }, include: { account: { select: accountSelect } } });
       await this.runDryRun(imp.userId, staged);
       await this.prisma.statementImport.update({ where: { id: imp.id }, data: { status: 'review' } });
+      return null;
     } catch (e) {
       const code = e instanceof SheetError || e instanceof ImportFailure ? e.code : 'IMPORT_FAILED';
       if (code === 'IMPORT_FAILED') this.logger.error(`Import ${imp.id} failed: ${e instanceof Error ? e.name : 'unknown'}`);
+      const locked = code === 'IMPORT_PASSWORD_PROTECTED' || code === 'IMPORT_WRONG_PASSWORD';
       await this.prisma.importRow.deleteMany({ where: { importId: imp.id } });
-      await this.prisma.statementImport.update({ where: { id: imp.id }, data: { status: 'failed', error: code, fileBytes: null } });
+      await this.prisma.statementImport.update({
+        where: { id: imp.id },
+        data: { status: 'failed', error: locked ? 'IMPORT_PASSWORD_PROTECTED' : code, ...(locked ? {} : { fileBytes: null }) },
+      });
+      return code;
     }
   }
 

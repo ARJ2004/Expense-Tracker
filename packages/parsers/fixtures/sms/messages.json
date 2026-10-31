@@ -1,0 +1,174 @@
+{
+  "_note": "Synthetic messages in each bank's format; every account, name and reference is invented. receivedAt is UTC. expected null = must not be ingested.",
+  "cases": [
+    {
+      "name": "hdfc upi sent",
+      "sender": "VM-HDFCBK",
+      "receivedAt": "2026-10-18T07:42:10Z",
+      "body": "Sent Rs.486.00 From HDFC Bank A/C *1234 To SWIGGY On 18/10/26 Ref 427512345601 Not You? Call 18002586161/SMS BLOCK UPI to 7308080808",
+      "expected": { "template": "hdfc", "amountPaise": 48600, "direction": "debit", "occurredAt": "2026-10-18T07:42:10.000Z", "timePrecision": "minute", "accountHint": { "bank": "HDFC Bank", "last4": "1234" }, "counterparty": "Swiggy", "referenceNo": "427512345601" }
+    },
+    {
+      "name": "hdfc upi debited to vpa",
+      "sender": "AD-HDFCBK-S",
+      "receivedAt": "2026-10-18T12:05:00Z",
+      "body": "Rs.1842.00 debited from a/c **1234 on 18-10-26 to VPA bescom@hdfcbank(UPI Ref No 429112345683). Not you? Call on 18002586161 to report",
+      "expected": { "template": "hdfc", "amountPaise": 184200, "direction": "debit", "accountHint": { "bank": "HDFC Bank", "last4": "1234" }, "counterparty": "Bescom", "referenceNo": "429112345683" }
+    },
+    {
+      "name": "hdfc credit alert",
+      "sender": "VM-HDFCBK",
+      "receivedAt": "2026-10-01T04:30:00Z",
+      "body": "Credit Alert! Rs.75,000.00 credited to HDFC Bank A/c XX1234 on 01-10-26 from VPA acmecorp@icici (UPI 412345678901)",
+      "expected": { "template": "hdfc", "amountPaise": 7500000, "direction": "credit", "accountHint": { "bank": "HDFC Bank", "last4": "1234" }, "counterparty": "Acmecorp", "referenceNo": "412345678901", "narration": "CREDIT" }
+    },
+    {
+      "name": "hdfc atm",
+      "sender": "VM-HDFCBK",
+      "receivedAt": "2026-10-03T09:15:00Z",
+      "body": "Rs.2000.00 withdrawn at ATM S1ANBG12 from A/c XX1234 on 03-10-26. Avl bal: INR 82,514.00. Not you? Call 18002586161",
+      "expected": { "template": "hdfc", "amountPaise": 200000, "direction": "debit", "counterparty": "ATM withdrawal", "narration": "ATM WITHDRAWAL" }
+    },
+    {
+      "name": "hdfc credit card spend",
+      "sender": "VM-HDFCBK",
+      "receivedAt": "2026-10-12T08:35:11Z",
+      "body": "Spent Rs.1,299.00 On HDFC Bank Card 5678 At AMAZON PAY INDIA On 2026-10-12:14:05:11 Bal Rs.48,701.00 Not You? Call 18002586161",
+      "expected": { "template": "hdfc", "amountPaise": 129900, "direction": "debit", "accountHint": { "bank": "HDFC Bank", "last4": "5678", "kind": "credit_card" }, "counterparty": "Amazon Pay India" }
+    },
+    {
+      "name": "hdfc delayed sms uses the day in the body",
+      "sender": "VM-HDFCBK",
+      "receivedAt": "2026-10-20T03:00:00Z",
+      "body": "Sent Rs.250.00 From HDFC Bank A/C *1234 To RAVI KUMAR On 18/10/26 Ref 427912345609 Not You? Call 18002586161",
+      "expected": { "template": "hdfc", "amountPaise": 25000, "occurredAt": "2026-10-18T06:30:00.000Z", "timePrecision": "day", "counterparty": "Ravi Kumar" }
+    },
+    {
+      "name": "sbi upi debit",
+      "sender": "VM-SBIUPI",
+      "receivedAt": "2026-10-18T07:42:30Z",
+      "body": "Dear UPI user A/C X1234 debited by 486.0 on date 18Oct26 trf to SWIGGY Refno 427512345601. If not u? call 1800111109. -SBI",
+      "expected": { "template": "sbi", "amountPaise": 48600, "direction": "debit", "accountHint": { "bank": "SBI", "last4": "1234" }, "counterparty": "Swiggy", "referenceNo": "427512345601", "timePrecision": "minute" }
+    },
+    {
+      "name": "sbi credit",
+      "sender": "AD-SBIINB",
+      "receivedAt": "2026-10-01T05:00:00Z",
+      "body": "Dear SBI User, your A/c X1234-credited by Rs.75000 on 01Oct26 transfer from ACME CORP Ref No 412345678901 -SBI",
+      "expected": { "template": "sbi", "amountPaise": 7500000, "direction": "credit", "accountHint": { "bank": "SBI", "last4": "1234" }, "counterparty": "Acme Corp", "referenceNo": "412345678901" }
+    },
+    {
+      "name": "sbi transfer debit",
+      "sender": "VK-SBIINB",
+      "receivedAt": "2026-10-03T06:00:00Z",
+      "body": "Your A/C XXXXX1234 Debited INR 2,000.00 on 03/10/26 -Transferred to RAVI KUMAR. Avl Balance INR 82,514.00-SBI",
+      "expected": { "template": "sbi", "amountPaise": 200000, "direction": "debit", "accountHint": { "bank": "SBI", "last4": "1234" }, "counterparty": "Ravi Kumar" }
+    },
+    {
+      "name": "sbi debit card at atm",
+      "sender": "JD-ATMSBI",
+      "receivedAt": "2026-10-03T09:15:00Z",
+      "body": "Dear Customer, transaction number 1234 for Rs.2000.00 by SBI Debit Card X5678 done at S1ANBG12 on 03Oct26 at 14:45. Avl Bal Rs.82514.00",
+      "expected": { "template": "sbi", "amountPaise": 200000, "direction": "debit", "counterparty": "ATM withdrawal", "narration": "ATM WITHDRAWAL", "accountHint": { "bank": "SBI" } }
+    },
+    {
+      "name": "sbi credit card",
+      "sender": "VK-SBICRD",
+      "receivedAt": "2026-10-12T08:35:00Z",
+      "body": "Rs.1,299.00 spent on your SBI Credit Card ending 5678 at AMAZON on 12/10/26. Trxn. not done by you? Report at https://sbicard.com/Dispute",
+      "expected": { "template": "sbi", "amountPaise": 129900, "direction": "debit", "accountHint": { "bank": "SBI", "last4": "5678", "kind": "credit_card" }, "counterparty": "Amazon" }
+    },
+    {
+      "name": "icici upi debit",
+      "sender": "VM-ICICIB",
+      "receivedAt": "2026-10-18T07:43:00Z",
+      "body": "ICICI Bank Acct XX234 debited for Rs 486.00 on 18-Oct-26; SWIGGY credited. UPI:427512345601. Call 18002662 for dispute. SMS BLOCK 234 to 9215676766.",
+      "expected": { "template": "icici", "amountPaise": 48600, "direction": "debit", "accountHint": { "bank": "ICICI Bank", "last4": "234" }, "counterparty": "Swiggy", "referenceNo": "427512345601" }
+    },
+    {
+      "name": "icici credit",
+      "sender": "AX-ICICIT",
+      "receivedAt": "2026-10-01T05:00:00Z",
+      "body": "Dear Customer, Acct XX234 is credited with Rs 75,000.00 on 01-Oct-26 from ACME CORP. UPI:412345678901-ICICI Bank.",
+      "expected": { "template": "icici", "amountPaise": 7500000, "direction": "credit", "counterparty": "Acme Corp", "referenceNo": "412345678901" }
+    },
+    {
+      "name": "icici refund credit",
+      "sender": "VM-ICICIB",
+      "receivedAt": "2026-10-22T05:00:00Z",
+      "body": "Dear Customer, Acct XX234 is credited with Rs 486.00 on 22-Oct-26 from SWIGGY REFUND. UPI:430212345611-ICICI Bank.",
+      "expected": { "template": "icici", "amountPaise": 48600, "direction": "credit", "narration": "REFUND" }
+    },
+    {
+      "name": "icici card spend",
+      "sender": "VM-ICICIB",
+      "receivedAt": "2026-10-12T08:35:00Z",
+      "body": "INR 1,299.00 spent using ICICI Bank Card XX5678 on 12-Oct-26 on AMAZON PAY. Avl Limit: INR 98,701.00. If not you, call 1800 2662/SMS BLOCK 5678 to 9215676766",
+      "expected": { "template": "icici", "amountPaise": 129900, "direction": "debit", "accountHint": { "bank": "ICICI Bank", "last4": "5678", "kind": "credit_card" }, "counterparty": "Amazon Pay" }
+    },
+    {
+      "name": "icici atm",
+      "sender": "VM-ICICIB",
+      "receivedAt": "2026-10-03T09:15:00Z",
+      "body": "ICICI Bank Acct XX234 debited with INR 2,000.00 on 03-Oct-26 at ATM S1ANBG12. Avl Bal: INR 82,514.00.",
+      "expected": { "template": "icici", "amountPaise": 200000, "direction": "debit", "counterparty": "ATM withdrawal" }
+    },
+    { "name": "otp", "sender": "VM-HDFCBK", "receivedAt": "2026-10-18T07:40:00Z", "body": "OTP is 482913 for txn of Rs.486.00 at SWIGGY on HDFC Bank card ending 5678. Valid till 13:20. Do not share OTP for security reasons.", "expected": null },
+    { "name": "promo", "sender": "VM-HDFCBK", "receivedAt": "2026-10-18T07:40:00Z", "body": "Get a pre-approved Personal Loan of Rs.5,00,000 credited to your HDFC Bank A/c XX1234 in 10 seconds. Apply now: hdfcbk.io/x", "expected": null },
+    { "name": "balance only", "sender": "VM-SBIINB", "receivedAt": "2026-10-18T07:40:00Z", "body": "Your A/C XXXXX1234 has an available balance of INR 82,514.00 as on 18/10/26. -SBI", "expected": null },
+    { "name": "collect request", "sender": "VM-ICICIB", "receivedAt": "2026-10-18T07:40:00Z", "body": "RAVI KUMAR has requested money from you on ICICI Bank. Rs 500.00 will be debited from Acct XX234 on approving. Do not approve if not known.", "expected": null },
+    { "name": "declined", "sender": "VM-HDFCBK", "receivedAt": "2026-10-18T07:40:00Z", "body": "Txn of Rs.1,299.00 on HDFC Bank Card 5678 at AMAZON PAY INDIA has been declined due to insufficient limit.", "expected": null },
+    { "name": "card bill due", "sender": "VK-SBICRD", "receivedAt": "2026-10-18T07:40:00Z", "body": "Rs.12,450.00 is due on your SBI Credit Card ending 5678 on 05/11/26. Min amount due Rs.623.00. Pay now.", "expected": null },
+    { "name": "personal sender", "sender": "+919876543210", "receivedAt": "2026-10-18T07:40:00Z", "body": "Sent Rs.486.00 From HDFC Bank A/C *1234 To SWIGGY On 18/10/26 Ref 427512345601", "expected": null },
+    { "name": "unknown bank", "sender": "VM-KOTAKB", "receivedAt": "2026-10-18T07:40:00Z", "body": "Rs.486.00 debited from your Kotak Bank A/c XX1234 to SWIGGY on 18-10-26.", "expected": null },
+    {
+      "name": "hdfc debit card spend leaves the account unknown",
+      "sender": "AD-HDFCBK-S",
+      "receivedAt": "2026-10-14T06:20:00Z",
+      "body": "Spent Rs.2,340.00 On HDFC Bank Debit Card 4321 At DMART AVENUE On 2026-10-14:11:49:52 Bal Rs.80,174.00 Not You? Call 18002586161",
+      "expected": { "template": "hdfc", "amountPaise": 234000, "direction": "debit", "accountHint": { "bank": "HDFC Bank", "kind": "savings" }, "counterparty": "Dmart Avenue", "narration": "CARD" }
+    },
+    {
+      "name": "icici debit card spend leaves the account unknown",
+      "sender": "VM-ICICIT",
+      "receivedAt": "2026-10-15T13:02:00Z",
+      "body": "INR 799.00 spent using ICICI Bank Debit Card XX8765 on 15-Oct-26 on CROMA RETAIL. Avl Bal: INR 41,201.00. If not you, call 1800 2662",
+      "expected": { "template": "icici", "amountPaise": 79900, "direction": "debit", "accountHint": { "bank": "ICICI Bank", "kind": "savings" }, "counterparty": "Croma Retail" }
+    },
+    {
+      "name": "hdfc upi sent with a cashback offer at the end",
+      "sender": "VM-HDFCBK",
+      "receivedAt": "2026-10-20T05:10:00Z",
+      "body": "Sent Rs.310.00 From HDFC Bank A/C *1234 To ZEPTO On 20/10/26 Ref 427598765432 Not You? Call 18002586161. Get cashback up to Rs.100 on your next UPI payment, offer T&C apply",
+      "expected": { "template": "hdfc", "amountPaise": 31000, "direction": "debit", "accountHint": { "bank": "HDFC Bank", "last4": "1234" }, "counterparty": "Zepto", "referenceNo": "427598765432" }
+    },
+    {
+      "name": "sbi credit with a pre-approved loan line",
+      "sender": "AD-SBIINB",
+      "receivedAt": "2026-10-21T04:00:00Z",
+      "body": "Dear SBI UPI User, ur A/c X5432 credited by Rs.1200 on 21Oct26 transfer from Meera Iyer Ref No 429876543210 -SBI. You are eligible for a pre-approved personal loan, apply now on YONO.",
+      "expected": { "template": "sbi", "amountPaise": 120000, "direction": "credit", "accountHint": { "bank": "SBI", "last4": "5432" }, "referenceNo": "429876543210" }
+    },
+    {
+      "name": "pre-approved loan offer is not a payment",
+      "sender": "VM-HDFCBK",
+      "receivedAt": "2026-10-21T04:00:00Z",
+      "body": "You are eligible for a pre-approved Personal Loan of Rs.5,00,000 at special rates. Apply now: hdfcbk.io/x",
+      "expected": null
+    },
+    {
+      "name": "won cashback promo is not a payment",
+      "sender": "VM-ICICIB",
+      "receivedAt": "2026-10-21T04:00:00Z",
+      "body": "Congratulations! You have won a cashback of Rs.250 on ICICI Bank Card XX5678 shopping this festive season. T&C apply.",
+      "expected": null
+    },
+    {
+      "name": "scheduled sip is not a payment yet",
+      "sender": "VM-HDFCBK",
+      "receivedAt": "2026-10-21T04:00:00Z",
+      "body": "Your SIP of Rs.5,000.00 from A/c XX1234 is scheduled for 05-11-26. Keep sufficient balance.",
+      "expected": null
+    }
+  ]
+}

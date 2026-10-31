@@ -1,5 +1,5 @@
-import { cell, headerKey } from '../cells';
-import { findAccountLast4, findHeaderRow, readRows } from '../table';
+import { headerKey } from '../cells';
+import { firstCell, readStatement } from '../table';
 import type { ParsedStatement, Sheet, StatementAdapter } from '../types';
 
 /**
@@ -11,26 +11,17 @@ export class HdfcAdapter implements StatementAdapter {
   readonly id = 'hdfc';
 
   detect(sheet: Sheet): boolean {
-    return this.headerIndex(sheet) >= 0;
-  }
-
-  parse(sheet: Sheet): ParsedStatement {
-    const found = findHeaderRow(sheet);
-    if (!found) return { adapter: this.id, bank: 'HDFC Bank', rows: [], skipped: 0 };
-    const { rows, skipped } = readRows(sheet, found.index, found.columns, isFooter);
-    const accountLast4 = findAccountLast4(sheet, found.index);
-    return { adapter: this.id, bank: 'HDFC Bank', ...(accountLast4 ? { accountLast4 } : {}), rows, skipped };
-  }
-
-  private headerIndex(sheet: Sheet): number {
-    return sheet.slice(0, 40).findIndex((row) => {
+    return sheet.slice(0, 40).some((row) => {
       const keys = row.map(headerKey);
       return keys.some((k) => k.includes('narration')) && keys.some((k) => /^value (dat|dt)/.test(k)) && keys.some((k) => k.includes('closing balance'));
     });
   }
+
+  parse(sheet: Sheet): ParsedStatement {
+    return readStatement(sheet, { adapter: this.id, bank: 'HDFC Bank', isFooter });
+  }
 }
 
 function isFooter(row: readonly string[]): boolean {
-  const first = row.map(cell).find(Boolean)?.toUpperCase() ?? '';
-  return first.startsWith('STATEMENT SUMMARY') || first.startsWith('OPENING BALANCE') || first.startsWith('GENERATED ON');
+  return /^(STATEMENT SUMMARY|OPENING BALANCE|GENERATED ON)/.test(firstCell(row));
 }

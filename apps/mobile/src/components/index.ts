@@ -11,6 +11,7 @@ export { applyKey, isPositiveAmount, type KeypadKey } from './keypad';
 export { HeroCard, type HeroCardProps, type HeroStat } from './HeroCard';
 export { ImportStatusRow, type ImportStatusRowProps } from './ImportStatusRow';
 export { MerchantAvatar, type MerchantAvatarProps } from './MerchantAvatar';
+export { PermissionExplainer, type PermissionExplainerProps } from './PermissionExplainer';
 export { SourceList, type SourceListProps } from './SourceList';
 export { TransactionRow, type TransactionRowProps } from './TransactionRow';
 export { UploadDropZone, type UploadDropZoneProps } from './UploadDropZone';

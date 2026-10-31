@@ -1,7 +1,7 @@
 import type { Direction } from '@et/domain';
 import { cell, headerKey, parseAmount, parseDate } from './cells';
 import { parseNarration } from './narration';
-import type { Sheet, StatementRow } from './types';
+import type { ParsedStatement, Sheet, StatementRow } from './types';
 
 /** Where each field sits in the header row (column index). */
 export interface ColumnMap {
@@ -22,13 +22,13 @@ export type ColumnSynonyms = Record<keyof ColumnMap, readonly RegExp[]>;
 
 export const COMMON_SYNONYMS: ColumnSynonyms = {
   date: [/^(txn |transaction |tran |posting )?date$/, /^date$/, /^txn dt$/],
-  narration: [/narration/, /description/, /particulars/, /^remarks$/, /^details$/, /transaction details/],
+  narration: [/narration/, /description/, /particulars/, /remarks/, /^details$/, /transaction details/],
   reference: [/ref/, /chq/, /cheque/],
-  debit: [/withdrawal/, /^debit/, /^dr amount/, /paid out/],
-  credit: [/deposit/, /^credit/, /^cr amount/, /paid in/],
+  debit: [/withdrawal/, /^debit/, /^dr amount/, /paid out/, /^dr$/],
+  credit: [/deposit/, /^credit/, /^cr amount/, /paid in/, /^cr$/],
   amount: [/^amount/, /^txn amount/, /^transaction amount/],
   drCr: [/^dr ?\/? ?cr$/, /^cr ?\/? ?dr$/, /^dr cr$/, /^cr dr$/, /^type$/],
-  balance: [/balance/],
+  balance: [/balance/, /^bal$/],
 };
 
 /** Maps a header row to columns. Returns null unless date, narration and some amount column are present. */
@@ -157,4 +157,42 @@ export function findAccountLast4(sheet: Sheet, headerIndex: number): string | un
     if (digits && /\d{4}$/.test(digits)) return digits.slice(-4);
   }
   return undefined;
+}
+
+/** What a bank adapter adds to the shared column reading. */
+export interface StatementShape {
+  adapter: string;
+  bank?: string;
+  /** The first row of the closing block (summary, totals, legends): reading stops there. */
+  isFooter?: (row: readonly string[]) => boolean;
+  /** Rows that are neither transactions nor footer, such as an opening balance line. */
+  ignore?: (row: readonly string[]) => boolean;
+  /** Last 4 of the account number from the lines above the header; findAccountLast4 by default. */
+  accountLast4?: (sheet: Sheet, headerIndex: number) => string | undefined;
+}
+
+/** Header row → rows → account digits, for any adapter whose statement is a plain table. */
+export function readStatement(sheet: Sheet, shape: StatementShape): ParsedStatement {
+  const meta = { adapter: shape.adapter, ...(shape.bank ? { bank: shape.bank } : {}) };
+  const table = shape.ignore ? sheet.filter((row) => !shape.ignore!(row)) : sheet;
+  const found = findHeaderRow(table);
+  if (!found) return { ...meta, rows: [], skipped: 0 };
+  const { rows, skipped } = readRows(table, found.index, found.columns, shape.isFooter);
+  const accountLast4 = (shape.accountLast4 ?? findAccountLast4)(table, found.index);
+  return { ...meta, ...(accountLast4 ? { accountLast4 } : {}), rows, skipped };
+}
+
+/** The first non-empty cell of a row, upper-cased: where banks put "OPENING BALANCE" or "TOTAL". */
+export function firstCell(row: readonly string[]): string {
+  return row.map(cell).find(Boolean)?.toUpperCase() ?? '';
+}
+
+/** All of the sheet's lines above the header as one upper-cased text, for bank detection. */
+export function preambleText(sheet: Sheet, scan = 40): string {
+  const header = findHeaderRow(sheet, scan);
+  return sheet
+    .slice(0, header?.index ?? scan)
+    .map((row) => row.map(cell).join(' '))
+    .join('\n')
+    .toUpperCase();
 }

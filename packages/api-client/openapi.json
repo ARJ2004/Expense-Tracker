@@ -258,6 +258,73 @@
         ]
       }
     },
+    "/v1/ingest/batch": {
+      "post": {
+        "operationId": "ingestBatch",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IngestBatchDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IngestBatchResultDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "RATE_LIMITED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Up to 100 transactions parsed on the phone (bank SMS); idempotent by messageKey",
+        "tags": [
+          "ingest"
+        ]
+      }
+    },
     "/v1/accounts": {
       "get": {
         "operationId": "listAccounts",
@@ -1582,7 +1649,7 @@
             }
           },
           "415": {
-            "description": "IMPORT_PDF_NOT_YET or IMPORT_UNSUPPORTED_FORMAT",
+            "description": "IMPORT_UNSUPPORTED_FORMAT",
             "content": {
               "application/json": {
                 "schema": {
@@ -1597,7 +1664,7 @@
             "bearer": []
           }
         ],
-        "summary": "Upload a CSV or XLSX statement; it is parsed in the background",
+        "summary": "Upload a CSV, XLSX or text PDF statement; it is parsed in the background",
         "tags": [
           "imports"
         ]
@@ -1976,6 +2043,102 @@
           }
         ],
         "summary": "Tick or untick a row, pick its category, or correct it",
+        "tags": [
+          "imports"
+        ]
+      }
+    },
+    "/v1/imports/{id}/unlock": {
+      "post": {
+        "operationId": "unlockImport",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnlockImportDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "IMPORT_NOT_LOCKED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "IMPORT_WRONG_PASSWORD",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Open a password-protected PDF statement and parse it; the password is never stored",
         "tags": [
           "imports"
         ]
@@ -2367,6 +2530,19 @@
           }
         }
       },
+      "DeviceSource": {
+        "type": "string",
+        "enum": [
+          "sms"
+        ]
+      },
+      "Direction": {
+        "type": "string",
+        "enum": [
+          "debit",
+          "credit"
+        ]
+      },
       "AccountKind": {
         "type": "string",
         "enum": [
@@ -2374,6 +2550,135 @@
           "credit_card",
           "wallet",
           "cash"
+        ]
+      },
+      "CapturedTxnDto": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DeviceSource"
+              }
+            ]
+          },
+          "messageKey": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "description": "smsMessageKey(): SHA-256 hex of sender, receive time and body; makes resends no-ops"
+          },
+          "amountPaise": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 99999999999,
+            "example": 48600
+          },
+          "direction": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Direction"
+              }
+            ]
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "A row more than a day in the future is counted as rejected"
+          },
+          "timePrecision": {
+            "type": "string",
+            "enum": [
+              "minute",
+              "day"
+            ],
+            "description": "\"day\" when the SMS named an earlier day than it arrived on"
+          },
+          "bank": {
+            "type": "string",
+            "example": "HDFC Bank"
+          },
+          "last4": {
+            "type": "string",
+            "pattern": "^\\d{3,4}$",
+            "example": "1234",
+            "description": "Last 4 (or 3) digits of the account or card"
+          },
+          "accountKind": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AccountKind"
+              }
+            ]
+          },
+          "counterparty": {
+            "type": "string",
+            "example": "Swiggy"
+          },
+          "referenceNo": {
+            "type": "string",
+            "example": "427512345601"
+          },
+          "narration": {
+            "type": "string",
+            "example": "UPI",
+            "description": "A short keyword for the type rules (UPI, CARD, ATM WITHDRAWAL, REFUND); never message text"
+          }
+        },
+        "required": [
+          "source",
+          "messageKey",
+          "amountPaise",
+          "direction",
+          "occurredAt",
+          "timePrecision",
+          "bank"
+        ]
+      },
+      "IngestBatchDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "minItems": 1,
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CapturedTxnDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "IngestBatchResultDto": {
+        "type": "object",
+        "properties": {
+          "created": {
+            "type": "number",
+            "example": 3,
+            "description": "New ledger rows"
+          },
+          "merged": {
+            "type": "number",
+            "example": 1,
+            "description": "Matched a transaction already in the ledger (a statement row, an entry) and added this source to it"
+          },
+          "skipped": {
+            "type": "number",
+            "example": 0,
+            "description": "Sent before; nothing changed"
+          },
+          "rejected": {
+            "type": "number",
+            "example": 0,
+            "description": "Refused one by one (dated more than a day ahead); the rest of the batch still went in"
+          }
+        },
+        "required": [
+          "created",
+          "merged",
+          "skipped",
+          "rejected"
         ]
       },
       "AccountDto": {
@@ -2697,13 +3002,6 @@
         },
         "required": [
           "refreshToken"
-        ]
-      },
-      "Direction": {
-        "type": "string",
-        "enum": [
-          "debit",
-          "credit"
         ]
       },
       "CreateTransactionDto": {
@@ -3264,7 +3562,7 @@
             "type": "string",
             "nullable": true,
             "example": "IMPORT_NO_ROWS",
-            "description": "Why parsing failed"
+            "description": "Why parsing failed: IMPORT_UNREADABLE, IMPORT_NO_ROWS, IMPORT_TOO_MANY_ROWS, IMPORT_PDF_SCANNED, IMPORT_PASSWORD_PROTECTED (unlock it with the password) or IMPORT_FAILED"
           },
           "createdAt": {
             "type": "string",
@@ -3498,6 +3796,20 @@
         },
         "required": [
           "accountId"
+        ]
+      },
+      "UnlockImportDto": {
+        "type": "object",
+        "properties": {
+          "password": {
+            "type": "string",
+            "description": "The statement PDF's password. Used once to open the file; never stored or logged.",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "password"
         ]
       },
       "CategorySpendDto": {

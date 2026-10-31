@@ -34,7 +34,7 @@ export function SourceStep({ navigation }: Props) {
     >
       <SourceOption
         title="Import a statement"
-        description="Upload a CSV or Excel statement from your bank. We'll open Imports when you finish."
+        description="Upload a CSV, Excel or PDF statement from your bank. We'll open Imports when you finish."
         selected={source === 'statement'}
         onPress={() => setSource('statement')}
       />

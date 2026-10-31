@@ -4,8 +4,10 @@
  *   ICICI "UPI/412345678901/SWIGGY/swiggy@icici/Payment"
  *   NEFT  "NEFT CR-HDFC0000001-ACME CORP PVT LTD-SALARY OCT-N123456789"
  *   IMPS  "IMPS-412345678901-RAVI KUMAR-SBIN-XXXXXX1234-RENT"
- *   POS   "POS 416021XXXXXX1234 AMAZON PAY INDIA"
- *   ATM   "ATW-416021XXXXXX1234-S1ANBG12-BANGALORE", "NWD-…"
+ *   Axis  "UPI/P2M/412345678901/SWIGGY LIMITED/UPI/YES BANK", "NEFT/AXISN26274123456/ACME CORP/…"
+ *   SBI   "TO TRANSFER-UPI/DR/412345678901/SWIGGY L/YESB/…", "BY TRANSFER-NEFT*HDFC0000001*N2752612*ACME*"
+ *   POS   "POS 416021XXXXXX1234 AMAZON PAY INDIA", "POS/AMAZON PAY INDIA/BANGALORE/271026"
+ *   ATM   "ATW-416021XXXXXX1234-S1ANBG12-BANGALORE", "NWD-…", "ATM WDL-…", "NFS/CASH WDL/…"
  * Anything else keeps its text as the counterparty.
  */
 export interface NarrationParts {
@@ -21,24 +23,32 @@ const CARD = /^\d{4,6}X+\d{2,4}$/;
 const NOISE = new Set(['UPI', 'NEFT', 'IMPS', 'RTGS', 'CR', 'DR', 'POS', 'PAYMENT', 'TRANSFER', 'P2A', 'P2M', 'NA', 'NULL', 'SENT USING PAYTM UPI']);
 
 export function parseNarration(narration: string): NarrationParts {
-  const text = narration.replace(/\s+/g, ' ').trim();
+  // SBI prefixes the channel with which side of the transfer this is; ICICI with "MMT/".
+  const text = narration
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/^(TO|BY) (TRANSFER|CLEARING)\s*-\s*/i, '')
+    .replace(/^MMT\//i, '');
   const upper = text.toUpperCase();
   if (upper === '') return {};
 
-  if (/^(ATW|NWD|ATM)\b/.test(upper)) return { counterparty: 'ATM withdrawal' };
+  if (/^(ATW|NWD|ATM|NFS)\b|\bCASH WDL\b/.test(upper)) return { counterparty: 'ATM withdrawal' };
 
-  const pos = /^POS\s+\S+\s+(.+)$/.exec(upper);
-  if (pos) return { counterparty: titleCase(pos[1]!) };
+  const pos = /^POS\/([^/]+)/.exec(upper) ?? /^POS\s+\S+\s+(.+)$/.exec(upper);
+  if (pos) return { counterparty: titleCase(pos[1]!.trim()) };
 
   if (/^(UPI|NEFT|IMPS|RTGS)\b/.test(upper)) {
     const parts = upper
-      .split(/[-/]/)
+      .split(/[-/*]/)
       .map((p) => p.trim())
       .filter(Boolean);
     const referenceNo = parts.find((p) => RRN.test(p));
+    // A name has letters; references, IFSCs, VPAs, card numbers and 4-letter bank codes don't count.
     const name = parts
       .slice(1)
-      .find((p) => !NOISE.has(p) && !RRN.test(p) && !IFSC.test(p) && !VPA.test(p) && !CARD.test(p) && /[A-Z]{2}/.test(p) && !/^[A-Z]{4}$/.test(p));
+      .find(
+        (p) => !NOISE.has(p) && !RRN.test(p) && !IFSC.test(p) && !VPA.test(p) && !CARD.test(p) && /[A-Z]{2}/.test(p) && !/^[A-Z]{4}$/.test(p) && !/\d{6,}/.test(p),
+      );
     return { counterparty: name ? titleCase(stripCr(name)) : undefined, referenceNo };
   }
 

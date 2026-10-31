@@ -54,7 +54,7 @@ const calls: Array<{ method: string; path: string; body?: unknown }> = [];
 (globalThis as { fetch: unknown }).fetch = jest.fn(async (req: Request) => {
   const json = (status: number, body: unknown) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
   const path = new URL(req.url).pathname;
-  const body = req.method === 'PATCH' ? await req.json() : undefined;
+  const body = req.method === 'PATCH' || path.endsWith('/unlock') ? await req.json() : undefined;
   calls.push({ method: req.method, path, body });
   if (path === '/v1/categories') return json(200, { items: [SHOPPING, BILLS, OTHER] });
   if (path === '/v1/accounts') return json(200, { items: [HDFC] });
@@ -74,6 +74,11 @@ const calls: Array<{ method: string; path: string; body?: unknown }> = [];
       r.rowNo === n ? { ...r, ...(b.categoryId ? { category: [SHOPPING, BILLS, OTHER].find((c) => c.id === b.categoryId)!, categorySource: 'user' } : {}), ...(b.action ? { action: b.action } : {}) } : r,
     );
     return json(200, rows.find((r) => r.rowNo === n));
+  }
+  if (path === '/v1/imports/i1/unlock') {
+    if ((body as { password: string }).password !== 'demo1234') return json(422, { error: { code: 'IMPORT_WRONG_PASSWORD', message: 'wrong' } });
+    detail = base;
+    return json(200, detail);
   }
   if (path === '/v1/imports/i1/confirm') return json(200, { ...detail, status: 'imported', importedCount: 142, mergedCount: 18 });
   return json(404, { error: { code: 'NOT_FOUND', message: path } });
@@ -132,16 +137,16 @@ it('lists recent imports and opens Review after a file is uploaded', async () =>
 });
 
 it('shows the API reason when the upload is refused', async () => {
-  (pick as jest.Mock).mockResolvedValueOnce([{ uri: 'content://x/2', name: 'statement.pdf', type: 'application/pdf' }]);
+  (pick as jest.Mock).mockResolvedValueOnce([{ uri: 'content://x/2', name: 'notes.docx', type: 'application/octet-stream' }]);
   const fetchMock = globalThis.fetch as jest.Mock;
   await render(providers(<ImportsScreen />));
   await screen.findByText('ICICI_Sep2026.xlsx');
   // The next request is the upload.
   fetchMock.mockImplementationOnce(async () =>
-    new Response(JSON.stringify({ error: { code: 'IMPORT_PDF_NOT_YET', message: 'x' } }), { status: 415, headers: { 'Content-Type': 'application/json' } }),
+    new Response(JSON.stringify({ error: { code: 'IMPORT_UNSUPPORTED_FORMAT', message: 'x' } }), { status: 415, headers: { 'Content-Type': 'application/json' } }),
   );
   await fireEvent.press(screen.getByRole('button', { name: 'Choose file' }));
-  expect(await screen.findByText(/PDF support is coming next\. Export/)).toBeTruthy();
+  expect(await screen.findByText('Upload a CSV, Excel (.xlsx) or PDF statement.')).toBeTruthy();
 });
 
 it('shows the summary, lets the user pick categories, and adds the rows', async () => {
@@ -181,4 +186,24 @@ it('lists every row in "Review all rows" with duplicates switched off', async ()
   expect(screen.getByText('Already in ledger')).toBeTruthy();
   await fireEvent.press(swiggy);
   await waitFor(() => expect(calls.find((c) => c.path === '/v1/imports/i1/rows/3')?.body).toEqual({ action: 'import' }));
+});
+
+it('opens a password-protected PDF with its password', async () => {
+  const locked = { ...base, fileName: 'Statement_Oct2026.pdf', status: 'failed', error: 'IMPORT_PASSWORD_PROTECTED', rowCount: 0 };
+  expect(labels.importTag(locked as never)).toEqual({ label: 'Needs password', tone: 'warning' });
+  expect(labels.importSubtitle(locked as never)).toBe('3 Nov · Enter its password to open it');
+  detail = locked;
+  await render(review());
+  expect(await screen.findByText('This PDF has a password')).toBeTruthy();
+  const open = screen.getByRole('button', { name: 'Open statement' });
+  expect(open).toBeDisabled();
+
+  await fireEvent.changeText(screen.getByLabelText('Statement password'), 'wrong');
+  await fireEvent.press(open);
+  expect(await screen.findByText("That password didn't open the statement. Check it and try again.")).toBeTruthy();
+
+  await fireEvent.changeText(screen.getByLabelText('Statement password'), 'demo1234');
+  await fireEvent.press(screen.getByRole('button', { name: 'Open statement' }));
+  await waitFor(() => expect(calls.filter((c) => c.path === '/v1/imports/i1/unlock').map((c) => c.body)).toEqual([{ password: 'wrong' }, { password: 'demo1234' }]));
+  expect(await screen.findByRole('button', { name: 'Add 142 transactions' })).toBeTruthy();
 });

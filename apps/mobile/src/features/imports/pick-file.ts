@@ -7,8 +7,8 @@ export interface PickedFile {
 }
 
 /**
- * Opens the system file picker for a statement. Resolves null when the user backs out.
- * PDFs can be picked so the API can say "PDF support is coming next" instead of hiding them.
+ * Opens the system file picker for a statement (CSV, Excel or PDF). Resolves null when the user
+ * backs out.
  */
 export async function pickStatement(): Promise<PickedFile | null> {
   try {

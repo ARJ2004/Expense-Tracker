@@ -48,6 +48,21 @@ describe('parseNarration', () => {
   });
   it('reads ATM', () => expect(parseNarration('NWD-416021XXXXXX1234-S1ANBG12-BLR').counterparty).toBe('ATM withdrawal'));
   it('keeps other text', () => expect(parseNarration('CREDIT INTEREST').counterparty).toBe('Credit Interest'));
+  it('reads SBI transfers', () => {
+    expect(parseNarration('TO TRANSFER-UPI/DR/427512345601/SWIGGY L/YESB/swiggyupi@/Payment')).toEqual({ counterparty: 'Swiggy L', referenceNo: '427512345601' });
+    expect(parseNarration('BY TRANSFER-NEFT*HDFC0000001*N274261234567*ACME SOFTWARE PVT*').counterparty).toBe('Acme Software Pvt');
+  });
+  it('skips bank references that look like words', () => {
+    expect(parseNarration('NEFT/AXISN26274123456/ACME SOFTWARE PVT LTD/HDFC BANK/SALARY').counterparty).toBe('Acme Software Pvt Ltd');
+  });
+  it('reads ICICI IMPS and slash POS', () => {
+    expect(parseNarration('MMT/IMPS/428512345681/AMAZON SELLER SERV/REFUND/UTIB0000123')).toEqual({ counterparty: 'Amazon Seller Serv', referenceNo: '428512345681' });
+    expect(parseNarration('POS/AMAZON PAY INDIA/BANGALORE/061026').counterparty).toBe('Amazon Pay India');
+  });
+  it('reads other ATM forms', () => {
+    expect(parseNarration('NFS/CASH WDL/05-10-2026/BANGALORE').counterparty).toBe('ATM withdrawal');
+    expect(parseNarration('ATM WDL-ATM CASH 15523 MG ROAD').counterparty).toBe('ATM withdrawal');
+  });
 });
 
 describe('mapColumns', () => {

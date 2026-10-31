@@ -1,21 +1,33 @@
 import ExcelJS from 'exceljs';
 import Papa from 'papaparse';
 import type { Sheet } from '@et/parsers';
+import { PdfError, readPdf, type PdfFailure } from './pdf-reader';
 
 /** More rows than any monthly or yearly personal statement; guards against oversized sheets. */
 export const MAX_SHEET_ROWS = 20_000;
 
 export class SheetError extends Error {
-  constructor(readonly code: 'IMPORT_UNREADABLE' | 'IMPORT_TOO_MANY_ROWS') {
+  constructor(readonly code: 'IMPORT_UNREADABLE' | 'IMPORT_TOO_MANY_ROWS' | PdfFailure) {
     super(code);
   }
 }
 
-/** Every cell as text. CSV via papaparse (any delimiter); XLSX via exceljs, cell values only. */
-export async function readSheet(bytes: Buffer, format: 'csv' | 'xlsx'): Promise<Sheet> {
-  const sheet = format === 'csv' ? readCsv(bytes) : await readXlsx(bytes);
+/**
+ * Every cell as text. CSV via papaparse (any delimiter); XLSX via exceljs, cell values only; PDF
+ * via its text layer, laid back out into columns (the password opens an encrypted PDF).
+ */
+export async function readSheet(bytes: Buffer, format: 'csv' | 'xlsx' | 'pdf', password?: string): Promise<Sheet> {
+  const sheet = format === 'csv' ? readCsv(bytes) : format === 'xlsx' ? await readXlsx(bytes) : await readPdfSheet(bytes, password);
   if (sheet.length > MAX_SHEET_ROWS) throw new SheetError('IMPORT_TOO_MANY_ROWS');
   return sheet;
+}
+
+async function readPdfSheet(bytes: Buffer, password?: string): Promise<Sheet> {
+  try {
+    return await readPdf(bytes, password);
+  } catch (e) {
+    throw e instanceof PdfError ? new SheetError(e.code) : e;
+  }
 }
 
 function readCsv(bytes: Buffer): Sheet {

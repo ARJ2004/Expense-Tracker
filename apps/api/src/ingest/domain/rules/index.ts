@@ -27,7 +27,7 @@ export const TYPE_RULES: readonly TypeRule[] = [
 
 /**
  * Dedup rules 1–4 from the design doc, in order; the first match wins. They run for automatic
- * sources (statement rows now, SMS later). A manual entry is the user's own word and is never
+ * sources (statement rows and bank SMS). A manual entry is the user's own word and is never
  * merged on the way in; a later statement row merges into it instead.
  */
 export const DEDUP_RULES: readonly DedupRule[] = [

@@ -37,6 +37,7 @@
     "google-auth-library": "^11.3.2",
     "nestjs-pino": "^4.2.0",
     "papaparse": "5.7.0",
+    "pdfjs-dist": "5.7.284",
     "pg-boss": "10.4.2",
     "pino": "^9.5.0",
     "pino-http": "^10.3.0",

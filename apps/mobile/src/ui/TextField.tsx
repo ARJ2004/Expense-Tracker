@@ -4,7 +4,10 @@ import { radius, space, typeScale, useTheme } from '../theme';
 import { Text } from './Text';
 
 export interface TextFieldProps
-  extends Pick<TextInputProps, 'value' | 'onChangeText' | 'placeholder' | 'keyboardType' | 'maxLength' | 'autoCapitalize' | 'autoFocus' | 'onSubmitEditing' | 'returnKeyType'> {
+  extends Pick<
+    TextInputProps,
+    'value' | 'onChangeText' | 'placeholder' | 'keyboardType' | 'maxLength' | 'autoCapitalize' | 'autoFocus' | 'onSubmitEditing' | 'returnKeyType' | 'secureTextEntry' | 'autoComplete' | 'autoCorrect'
+  > {
   label: string;
   /** Shown under the field in the spend colour; also marks the field invalid for screen readers. */
   error?: string;

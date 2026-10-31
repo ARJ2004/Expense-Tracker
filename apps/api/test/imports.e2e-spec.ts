@@ -6,6 +6,7 @@ import request from 'supertest';
 import { SYSTEM_CATEGORIES } from '@et/domain';
 import { PrismaService } from '../src/common';
 import { bearer, boot, resetDb, signIn, type Session } from './helpers';
+import { ENCRYPTED_PASSWORD, encryptedPdf, hdfcStatementPdf, makePdf } from './make-pdf';
 
 const FIXTURES = join(__dirname, '../../../packages/parsers/fixtures');
 const HDFC = readFileSync(join(FIXTURES, 'hdfc/savings-oct-2026.csv'));
@@ -209,9 +210,60 @@ describe('/v1/imports', () => {
     expect(detail.body).toMatchObject({ merchantName: 'Neighbour', category: { id: SHOPPING }, categorySource: 'user' });
   });
 
-  it('refuses PDFs, unknown files, oversized files and a missing file', async () => {
-    const pdf = await upload(asha, Buffer.from('%PDF-1.7\n...'), 'statement.pdf').expect(415);
-    expect(pdf.body.error.code).toBe('IMPORT_PDF_NOT_YET');
+  it('reads a text PDF statement through the same review and confirm', async () => {
+    const account = await hdfcAccount(asha);
+    const pdf = hdfcStatementPdf([
+      ['01/10/26', 'NEFT CR-ICIC0000001-ACME CORP-SALARY OCT', '0000412345678901', '', '75,000.00', '85,000.00'],
+      ['02/10/26', 'UPI-SWIGGY LIMITED-SWIGGYUPI@AXISBANK-427512345601-PAYMENT', '0000427512345601', '486.00', '', '84,514.00'],
+    ]);
+    const { import: imp } = await uploaded(asha, pdf, 'Acct_Statement_Oct2026.pdf');
+    expect(imp).toMatchObject({ status: 'review', bankDetected: 'HDFC Bank', account: { id: account.body.id }, rowCount: 2, newCount: 2, flaggedCount: 0 });
+    const all = await rows(asha, imp.id);
+    expect(all[1]).toMatchObject({ occurredOn: '2026-10-02', amountPaise: 48600, direction: 'debit', merchantName: 'Swiggy Limited', referenceNo: '427512345601' });
+    await http().post(`/v1/imports/${imp.id}/confirm`).set(bearer(asha)).expect(200);
+    expect((await http().get('/v1/transactions?limit=50').set(bearer(asha))).body.items).toHaveLength(2);
+
+    // The same PDF again adds nothing.
+    const again = await uploaded(asha, pdf, 'Acct_Statement_Oct2026.pdf');
+    expect(again.alreadyImportedAt).toEqual(expect.any(String));
+    expect(again.import).toMatchObject({ newCount: 0, duplicateCount: 2 });
+  });
+
+  it('fails a scanned PDF with a reason and keeps nothing', async () => {
+    const scan = await uploaded(asha, makePdf([[]]), 'scan.pdf');
+    expect(scan.import).toMatchObject({ status: 'failed', error: 'IMPORT_PDF_SCANNED', rowCount: 0 });
+    const stored = await app.get(PrismaService).statementImport.findMany({ where: { userId: asha.user.id }, select: { fileBytes: true, format: true } });
+    expect(stored).toEqual([{ fileBytes: null, format: 'pdf' }]);
+  });
+
+  it('unlocks a password-protected PDF with its password and never stores it', async () => {
+    await hdfcAccount(asha);
+    const { import: locked } = await uploaded(asha, encryptedPdf('aes256'), 'Statement_Oct2026.pdf');
+    expect(locked).toMatchObject({ status: 'failed', error: 'IMPORT_PASSWORD_PROTECTED', rowCount: 0 });
+    const prisma = app.get(PrismaService);
+    // The encrypted file waits for the password.
+    expect((await prisma.statementImport.findUniqueOrThrow({ where: { id: locked.id } })).fileBytes).not.toBeNull();
+
+    const unlock = (s: Session, password: string, id = locked.id) => http().post(`/v1/imports/${id}/unlock`).set(bearer(s)).send({ password });
+    expect((await unlock(asha, 'wrong-password').expect(422)).body.error.code).toBe('IMPORT_WRONG_PASSWORD');
+    expect((await http().get(`/v1/imports/${locked.id}`).set(bearer(asha)).expect(200)).body).toMatchObject({ status: 'failed', error: 'IMPORT_PASSWORD_PROTECTED' });
+    await unlock(ravi, ENCRYPTED_PASSWORD).expect(404);
+    await unlock(asha, '').expect(400);
+
+    const opened = await unlock(asha, ENCRYPTED_PASSWORD).expect(200);
+    expect(opened.body).toMatchObject({ status: 'review', error: null, bankDetected: 'HDFC Bank', rowCount: 2, newCount: 2 });
+    const row = await prisma.statementImport.findUniqueOrThrow({ where: { id: locked.id } });
+    expect(row.fileBytes).toBeNull();
+    expect(JSON.stringify(row)).not.toContain(ENCRYPTED_PASSWORD);
+    expect((await unlock(asha, ENCRYPTED_PASSWORD).expect(409)).body.error.code).toBe('IMPORT_NOT_LOCKED');
+  });
+
+  it('reads a PDF with only an owner password without asking', async () => {
+    const { import: imp } = await uploaded(asha, encryptedPdf('owner-only'), 'restricted.pdf');
+    expect(imp).toMatchObject({ status: 'review', rowCount: 2 });
+  });
+
+  it('refuses unknown files, oversized files and a missing file', async () => {
     const bin = await upload(asha, Buffer.from([0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1, 0, 0]), 'old.xls').expect(415);
     expect(bin.body.error.code).toBe('IMPORT_UNSUPPORTED_FORMAT');
     const big = await upload(asha, Buffer.alloc(10 * 1024 * 1024 + 1, 'a'), 'big.csv').expect(413);

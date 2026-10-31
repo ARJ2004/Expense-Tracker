@@ -1,0 +1,8 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--
+      F9: read bank alerts already in the inbox, only after the in-app disclosure. Never sends SMS.
+      Merged into debug builds, and into release builds only with -PaltusSms (a sideloaded personal
+      build): Play builds leave READ_SMS out until Google approves the SMS permissions declaration.
+    -->
+    <uses-permission android:name="android.permission.READ_SMS" />
+</manifest>

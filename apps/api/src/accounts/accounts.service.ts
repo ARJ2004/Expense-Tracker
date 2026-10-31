@@ -58,13 +58,26 @@ export class AccountsService {
   }
 
   /**
-   * Finds the account a statement or SMS refers to by bank and last 4, or creates it
-   * ("HDFC Bank ••1234") so an import never fails on an unknown account. With create: false it
+   * Finds the account a statement or SMS refers to by bank and last 4 (or a 3-digit suffix), or
+   * creates it ("HDFC Bank ••1234") so an import never fails on an unknown account. With create: false it
    * only looks (statement import asks the user instead of adding accounts silently).
+   *
+   * Without 4 digits nothing is created and null means "account unknown": an unnumbered account
+   * can't be told apart from the next one (and the unique index doesn't cover a null number), and
+   * an unknown account is what lets dedup rule 3 merge the row with the statement that names it.
    */
   async resolve(userId: string, hint: AccountHint, options: { create?: boolean } = {}): Promise<AccountDto | null> {
     const key = normalizeAccountHint(hint);
     if (!key) return null;
+    if (key.suffix3) {
+      // "XX234": the one account of this bank whose last 4 end in 234; two candidates or none → unknown.
+      const bySuffix = await this.prisma.account.findMany({
+        where: { userId, bankName: { equals: key.bankName, mode: 'insensitive' }, maskedNumber: { endsWith: key.suffix3 } },
+        take: 2,
+      });
+      return bySuffix.length === 1 ? toDto(bySuffix[0]!) : null;
+    }
+    if (!key.last4) return null;
     const existing = await this.prisma.account.findFirst({
       where: { userId, bankName: { equals: key.bankName, mode: 'insensitive' }, maskedNumber: key.last4 },
     });

@@ -8,12 +8,13 @@ import { Card, ListRow, Screen, SectionLabel, Text } from '../../../ui';
 import { useAccounts } from '../../accounts';
 import { useSession, useSignOut } from '../../auth';
 import { useCategories } from '../../categories';
+import { smsCaptureAvailable, useSmsCapture } from '../../sms';
 import { APPEARANCE_LABELS, AppearanceSheet } from '../components/AppearanceSheet';
 import { useExportLedger, useHealth } from '../hooks';
 import { incomeLabel, initials } from '../labels';
 import appInfo from '../../../../app.json';
 
-/** Settings (mockup 10): profile, Money (accounts, categories, income), App (look, export), sign out and delete. */
+/** Settings (mockup 10): profile, Money (accounts, categories, income), App (sources, look, export), sign out and delete. */
 export function SettingsScreen() {
   const { colors } = useTheme();
   const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
@@ -23,6 +24,7 @@ export function SettingsScreen() {
   const categories = useCategories();
   const health = useHealth();
   const appearance = usePreferences((s) => s.appearance);
+  const smsEnabled = useSmsCapture((s) => s.enabled);
   const exportLedger = useExportLedger();
   const [appearanceOpen, setAppearanceOpen] = useState(false);
 
@@ -61,6 +63,14 @@ export function SettingsScreen() {
 
       <SectionLabel label="App" />
       <Card padding="rows">
+        {smsCaptureAvailable() && (
+          <ListRow
+            label="Data sources"
+            value={smsEnabled ? 'SMS on' : 'SMS off'}
+            valueTone={smsEnabled ? 'accent' : 'muted'}
+            onPress={() => navigation.navigate('SmsCapture')}
+          />
+        )}
         <ListRow label="Appearance" value={APPEARANCE_LABELS[appearance]} onPress={() => setAppearanceOpen(true)} />
         <ListRow label="Export data" value={exportLedger.isPending ? 'Exporting…' : 'CSV'} onPress={exportLedger.isPending ? undefined : runExport} last />
       </Card>

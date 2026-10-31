@@ -4,7 +4,7 @@
   "private": true,
   "description": "Typed API client generated from apps/api's OpenAPI spec. Do not edit schema.d.ts by hand.",
   "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "types": "src/index.ts",
   "react-native": "src/index.ts",
   "scripts": {
     "generate": "openapi-typescript openapi.json -o src/schema.d.ts",

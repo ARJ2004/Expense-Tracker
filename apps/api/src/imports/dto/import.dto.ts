@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsIn, IsInt, IsOptional, IsString, IsUUID, Matches, Max, MaxLength, Min, ValidateIf } from 'class-validator';
+import { IsIn, IsInt, IsOptional, IsString, IsUUID, Matches, Max, MaxLength, Min, MinLength, ValidateIf } from 'class-validator';
 import { CategorySource, Direction, MAX_AMOUNT_PAISE } from '@et/domain';
 import { TransactionAccountDto, TransactionCategoryDto } from '../../ingest';
 
@@ -55,7 +55,13 @@ export class ImportDto {
   @ApiProperty({ example: 0 })
   mergedCount: number;
 
-  @ApiProperty({ type: String, nullable: true, example: 'IMPORT_NO_ROWS', description: 'Why parsing failed' })
+  @ApiProperty({
+    type: String,
+    nullable: true,
+    example: 'IMPORT_NO_ROWS',
+    description:
+      'Why parsing failed: IMPORT_UNREADABLE, IMPORT_NO_ROWS, IMPORT_TOO_MANY_ROWS, IMPORT_PDF_SCANNED, IMPORT_PASSWORD_PROTECTED (unlock it with the password) or IMPORT_FAILED',
+  })
   error: string | null;
 
   @ApiProperty({ format: 'date-time' })
@@ -135,6 +141,14 @@ export class UploadImportDto {
   @IsOptional()
   @IsUUID()
   accountId?: string;
+}
+
+export class UnlockImportDto {
+  @ApiProperty({ description: "The statement PDF's password. Used once to open the file; never stored or logged.", minLength: 1, maxLength: 128 })
+  @IsString()
+  @MinLength(1)
+  @MaxLength(128)
+  password: string;
 }
 
 export class RowsQueryDto {
