@@ -17,10 +17,13 @@ import { AppError, CurrentUser, ErrorResponse, type AuthUser } from '../common';
 import {
   IngestService,
   LedgerQueryService,
+  RecategorizeResultDto,
   RecentCategoriesDto,
   TransactionDetailDto,
+  TransactionPageDto,
   TransactionSummaryListDto,
 } from '../ingest';
+import { LedgerQueryDto, RecategorizeDto } from './dto/ledger-query.dto';
 import { CreateTransactionDto, UpdateTransactionDto } from './dto/write-transaction.dto';
 
 const MAX_FUTURE_MS = 86_400_000;
@@ -64,6 +67,21 @@ export class TransactionsController {
     );
     res.status(created ? HttpStatus.CREATED : HttpStatus.OK);
     return this.ledger.get(user.id, transactionId);
+  }
+
+  @Get()
+  @ApiOperation({ operationId: 'listTransactions', summary: 'The ledger, newest first, with filters, search and day totals' })
+  @ApiOkResponse({ type: TransactionPageDto })
+  @ApiBadRequestResponse({ type: ErrorResponse, description: 'VALIDATION_FAILED or INVALID_CURSOR' })
+  list(@CurrentUser() user: AuthUser, @Query() query: LedgerQueryDto): Promise<TransactionPageDto> {
+    if (query.from && query.to && query.from > query.to) {
+      throw new AppError('VALIDATION_FAILED', 'from must be on or before to', HttpStatus.BAD_REQUEST);
+    }
+    if (query.minAmountPaise !== undefined && query.maxAmountPaise !== undefined && query.minAmountPaise > query.maxAmountPaise) {
+      throw new AppError('VALIDATION_FAILED', 'minAmountPaise must not be more than maxAmountPaise', HttpStatus.BAD_REQUEST);
+    }
+    const { cursor, limit, categoryId, ...filters } = query;
+    return this.ledger.list(user.id, { ...filters, categoryIds: categoryId }, cursor, limit ?? 50);
   }
 
   @Get('recent')
@@ -112,6 +130,20 @@ export class TransactionsController {
       note: dto.note,
     });
     return this.ledger.get(user.id, id);
+  }
+
+  @Patch(':id/category')
+  @ApiOperation({ operationId: 'recategorizeTransaction', summary: 'Change category; applyToMerchant saves a merchant rule and moves the other rows' })
+  @ApiOkResponse({ type: RecategorizeResultDto })
+  @ApiBadRequestResponse({ type: ErrorResponse, description: 'MERCHANT_REQUIRED when applyToMerchant is set on a row with no merchant' })
+  @ApiNotFoundResponse({ type: ErrorResponse, description: 'Transaction or category not found' })
+  async recategorize(
+    @CurrentUser() user: AuthUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: RecategorizeDto,
+  ): Promise<RecategorizeResultDto> {
+    const { updatedCount } = await this.ingest.recategorize(user.id, id, dto.categoryId, dto.applyToMerchant ?? false);
+    return { transaction: await this.ledger.get(user.id, id), updatedCount };
   }
 
   @Delete(':id')

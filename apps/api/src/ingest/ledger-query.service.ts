@@ -1,8 +1,16 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import type { Account, Category, Prisma, Transaction, TransactionSource } from '@prisma/client';
-import { OTHER_CATEGORY_ID, SYSTEM_CATEGORIES } from '@et/domain';
+import { istDayRange, istDateKey, OTHER_CATEGORY_ID, SYSTEM_CATEGORIES, type LedgerFilters } from '@et/domain';
 import { AppError, PrismaService } from '../common';
-import type { TransactionAccountDto, TransactionCategoryDto, TransactionDetailDto, TransactionSummaryDto } from './dto/transaction.dto';
+import { sumByIstDay } from './domain/day-totals';
+import { afterCursor, decodeCursor, encodeCursor, ledgerWhere } from './domain/ledger-filter';
+import type {
+  TransactionAccountDto,
+  TransactionCategoryDto,
+  TransactionDetailDto,
+  TransactionPageDto,
+  TransactionSummaryDto,
+} from './dto/transaction.dto';
 
 const OTHER = SYSTEM_CATEGORIES.find((c) => c.id === OTHER_CATEGORY_ID)!;
 const summaryInclude = { account: true, category: true } satisfies Prisma.TransactionInclude;
@@ -21,6 +29,39 @@ export class LedgerQueryService {
     });
     if (!row) throw new AppError('NOT_FOUND', 'Transaction not found', HttpStatus.NOT_FOUND);
     return toDetail(row);
+  }
+
+  /**
+   * One page of the ledger, newest first, keyset-paged on (occurred_at, id) so rows arriving
+   * while the user scrolls never shift the pages. dayTotals cover each IST day on the page in
+   * full (same filters), including the part of a day that falls on the next page.
+   */
+  async list(userId: string, filters: LedgerFilters, cursor: string | undefined, limit: number): Promise<TransactionPageDto> {
+    const after = cursor ? decodeCursor(cursor) : null;
+    if (cursor && !after) throw new AppError('INVALID_CURSOR', 'Cursor is not valid; start again without it', HttpStatus.BAD_REQUEST);
+    const where = ledgerWhere(userId, filters);
+
+    const rows = await this.prisma.transaction.findMany({
+      where: after ? { AND: [where, afterCursor(after)] } : where,
+      include: summaryInclude,
+      orderBy: [{ occurredAt: 'desc' }, { id: 'desc' }],
+      take: limit + 1,
+    });
+    const page = rows.slice(0, limit);
+    const last = page.at(-1);
+    const nextCursor = rows.length > limit && last ? encodeCursor({ occurredAt: last.occurredAt, id: last.id }) : null;
+
+    let dayTotals: TransactionPageDto['dayTotals'] = [];
+    if (last) {
+      const newestDay = istDateKey(page[0]!.occurredAt);
+      const oldestDay = istDateKey(last.occurredAt);
+      const amounts = await this.prisma.transaction.findMany({
+        where: { AND: [where, { occurredAt: { gte: istDayRange(oldestDay).start, lt: istDayRange(newestDay).end } }] },
+        select: { occurredAt: true, direction: true, amountPaise: true },
+      });
+      dayTotals = sumByIstDay(amounts);
+    }
+    return { items: page.map(toSummary), nextCursor, dayTotals };
   }
 
   async recent(userId: string, limit: number): Promise<TransactionSummaryDto[]> {

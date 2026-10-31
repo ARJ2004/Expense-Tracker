@@ -7,3 +7,11 @@ export interface TransactionEvent {
   userId: string;
   transactionId: string;
 }
+
+/** Several rows changed category at once ("apply to all from this merchant"). */
+export const TRANSACTIONS_RECATEGORIZED = 'transactions.recategorized';
+
+export interface TransactionsRecategorizedEvent {
+  userId: string;
+  transactionIds: string[];
+}

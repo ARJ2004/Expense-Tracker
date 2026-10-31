@@ -20,6 +20,12 @@ export type TransactionSummary = components['schemas']['TransactionSummaryDto'];
 export type TransactionDetail = components['schemas']['TransactionDetailDto'];
 export type CreateTransaction = components['schemas']['CreateTransactionDto'];
 export type UpdateTransaction = components['schemas']['UpdateTransactionDto'];
+export type TxnType = components['schemas']['TxnType'];
+export type TransactionPage = components['schemas']['TransactionPageDto'];
+export type DayTotal = components['schemas']['DayTotalDto'];
+export type Recategorize = components['schemas']['RecategorizeDto'];
+export type RecategorizeResult = components['schemas']['RecategorizeResultDto'];
+export type ListTransactionsQuery = NonNullable<paths['/v1/transactions']['get']['parameters']['query']>;
 
 /** Creates a typed client for the Expense Tracker API; every path, body and response is checked. */
 export function createApiClient(options: ClientOptions & { baseUrl: string }) {

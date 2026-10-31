@@ -5,6 +5,7 @@ export { AmountKeypad, type AmountKeypadProps } from './AmountKeypad';
 export { AmountText, type AmountTextProps } from './AmountText';
 export { CategoryIcon, type CategoryIconProps } from './CategoryIcon';
 export { CategoryPicker, type CategoryPickerProps } from './CategoryPicker';
+export { DayHeader, type DayHeaderProps } from './DayHeader';
 export { applyKey, isPositiveAmount, type KeypadKey } from './keypad';
 export { MerchantAvatar, type MerchantAvatarProps } from './MerchantAvatar';
 export { SourceList, type SourceListProps } from './SourceList';

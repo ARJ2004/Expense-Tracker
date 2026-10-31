@@ -9,7 +9,7 @@ import { Button, Card, EmptyState, IconButton, ListRow, Screen, Tag, Text, TopBa
 import { accountName } from '../../accounts';
 import { useCategories } from '../../categories';
 import { useAddSheet } from '../add-sheet';
-import { useDeleteTransaction, useTransaction, useUpdateTransaction } from '../hooks';
+import { useDeleteTransaction, useRecategorize, useTransaction } from '../hooks';
 
 type Props = NativeStackScreenProps<MainStackParamList, 'TransactionDetail'>;
 
@@ -28,10 +28,11 @@ export function TransactionDetailScreen({ route, navigation }: Props) {
   const { id } = route.params;
   const txn = useTransaction(id);
   const categories = useCategories();
-  const update = useUpdateTransaction();
+  const recategorize = useRecategorize();
   const remove = useDeleteTransaction();
   const openEdit = useAddSheet((s) => s.openEdit);
   const [picking, setPicking] = useState(false);
+  const [applyToAll, setApplyToAll] = useState(true);
 
   if (txn.isPending) {
     return (
@@ -89,14 +90,19 @@ export function TransactionDetailScreen({ route, navigation }: Props) {
         <ListRow variant="detail" label="Note" value={t.note ?? '—'} last />
       </Card>
       <SourceList sources={t.sources} />
-      {update.error && (
+      {recategorize.error && (
         <Text variant="secondary" tone="spend">
-          {errorMessage(update.error)}
+          {errorMessage(recategorize.error)}
+        </Text>
+      )}
+      {recategorize.data && recategorize.data.updatedCount > 0 && (
+        <Text variant="secondary" tone="muted" accessibilityLiveRegion="polite">
+          {`Also moved ${recategorize.data.updatedCount} other ${title} ${recategorize.data.updatedCount === 1 ? 'transaction' : 'transactions'}.`}
         </Text>
       )}
       <View style={styles.actions}>
         <View style={styles.action}>
-          <Button block variant="secondary" label="Change category" loading={update.isPending} onPress={() => setPicking(true)} />
+          <Button block variant="secondary" label="Change category" loading={recategorize.isPending} onPress={() => setPicking(true)} />
         </View>
         <View style={styles.action}>
           <Button block variant="danger" label="Delete" loading={remove.isPending} onPress={confirmDelete} />
@@ -107,9 +113,12 @@ export function TransactionDetailScreen({ route, navigation }: Props) {
         categories={categories.data ?? []}
         value={t.category.id}
         onClose={() => setPicking(false)}
+        applyToAll={t.merchantName ? { merchant: t.merchantName, value: applyToAll, onChange: setApplyToAll } : undefined}
         onSelect={(categoryId) => {
           setPicking(false);
-          if (categoryId !== t.category.id) update.mutate({ id, body: { categoryId } });
+          const applyToMerchant = Boolean(t.merchantName) && applyToAll;
+          // Same category still counts with "apply to all": it fixes the merchant's other rows.
+          if (categoryId !== t.category.id || applyToMerchant) recategorize.mutate({ id, categoryId, applyToMerchant });
         }}
       />
     </Screen>

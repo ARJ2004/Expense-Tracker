@@ -20,7 +20,7 @@ export function RecentTransactions({ onOpen }: RecentTransactionsProps) {
         Recent
       </Text>
       {items.map((t) => (
-        <TransactionRow key={t.id} txn={t} onPress={() => onOpen(t.id)} />
+        <TransactionRow key={t.id} txn={t} onPress={onOpen} />
       ))}
     </View>
   );

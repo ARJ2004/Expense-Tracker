@@ -896,6 +896,171 @@
         "tags": [
           "transactions"
         ]
+      },
+      "get": {
+        "operationId": "listTransactions",
+        "parameters": [
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "First IST day included",
+            "schema": {
+              "format": "date",
+              "example": "2026-10-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "Last IST day included",
+            "schema": {
+              "format": "date",
+              "example": "2026-10-31",
+              "type": "string"
+            }
+          },
+          {
+            "name": "direction",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/Direction"
+            }
+          },
+          {
+            "name": "categoryId",
+            "required": false,
+            "in": "query",
+            "description": "Repeat for several categories",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/TxnType"
+            }
+          },
+          {
+            "name": "source",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/SourceKind"
+            }
+          },
+          {
+            "name": "accountId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "minAmountPaise",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 99999999999,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "maxAmountPaise",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 99999999999,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Merchant or note contains this, any case",
+            "schema": {
+              "minLength": 1,
+              "maxLength": 60,
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "description": "nextCursor from the previous page",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionPageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED or INVALID_CURSOR",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "The ledger, newest first, with filters, search and day totals",
+        "tags": [
+          "transactions"
+        ]
       }
     },
     "/v1/transactions/recent": {
@@ -1156,6 +1321,82 @@
           }
         ],
         "summary": "Soft delete",
+        "tags": [
+          "transactions"
+        ]
+      }
+    },
+    "/v1/transactions/{id}/category": {
+      "patch": {
+        "operationId": "recategorizeTransaction",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecategorizeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecategorizeResultDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "MERCHANT_REQUIRED when applyToMerchant is set on a row with no merchant",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Transaction or category not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Change category; applyToMerchant saves a merchant rule and moves the other rows",
         "tags": [
           "transactions"
         ]
@@ -1960,6 +2201,64 @@
           "account"
         ]
       },
+      "DayTotalDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-10-31",
+            "description": "IST calendar day"
+          },
+          "debitPaise": {
+            "type": "integer",
+            "example": 72400
+          },
+          "creditPaise": {
+            "type": "integer",
+            "example": 0
+          },
+          "netPaise": {
+            "type": "integer",
+            "example": -72400,
+            "description": "creditPaise − debitPaise"
+          }
+        },
+        "required": [
+          "date",
+          "debitPaise",
+          "creditPaise",
+          "netPaise"
+        ]
+      },
+      "TransactionPageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransactionSummaryDto"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true,
+            "description": "Pass as cursor for the next page; null on the last page"
+          },
+          "dayTotals": {
+            "description": "Totals for every IST day on this page, over all rows matching the filters",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DayTotalDto"
+            }
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor",
+          "dayTotals"
+        ]
+      },
       "TransactionSummaryListDto": {
         "type": "object",
         "properties": {
@@ -2029,6 +2328,39 @@
             "description": "null or \"\" clears it"
           }
         }
+      },
+      "RecategorizeDto": {
+        "type": "object",
+        "properties": {
+          "categoryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "applyToMerchant": {
+            "type": "boolean",
+            "default": false,
+            "description": "Also move other rows from this merchant and remember it for new ones"
+          }
+        },
+        "required": [
+          "categoryId"
+        ]
+      },
+      "RecategorizeResultDto": {
+        "type": "object",
+        "properties": {
+          "transaction": {
+            "$ref": "#/components/schemas/TransactionDetailDto"
+          },
+          "updatedCount": {
+            "type": "integer",
+            "description": "Other transactions from the same merchant that moved too"
+          }
+        },
+        "required": [
+          "transaction",
+          "updatedCount"
+        ]
       }
     }
   }

@@ -9,17 +9,19 @@ export interface ChipProps {
   onPress?: () => void;
   /** Leading glyph, e.g. a category icon; receives the label colour. */
   renderIcon?: (color: string) => React.ReactNode;
+  /** Part of a several-choice set: announced as a checkbox instead of a radio. */
+  multiple?: boolean;
 }
 
 const HEIGHT = 36;
 const SLOP = (touchTarget - HEIGHT) / 2;
 
 /** Pill toggle. Selected: navy with white text (light), emerald with navy text (dark). 44 px touch area. */
-export function Chip({ label, selected = false, onPress, renderIcon }: ChipProps) {
+export function Chip({ label, selected = false, onPress, renderIcon, multiple = false }: ChipProps) {
   const { colors } = useTheme();
   return (
     <Pressable
-      accessibilityRole="radio"
+      accessibilityRole={multiple ? 'checkbox' : 'radio'}
       accessibilityState={{ selected, checked: selected }}
       hitSlop={{ top: SLOP, bottom: SLOP }}
       onPress={onPress}
@@ -63,6 +65,25 @@ export function ChipGroup<T extends string>({ options, value, onChange, accessib
         <Chip key={o.value} label={o.label} renderIcon={o.renderIcon} selected={o.value === value} onPress={() => onChange(o.value)} />
       ))}
     </Container>
+  );
+}
+
+export interface ChipMultiGroupProps<T extends string> {
+  options: ReadonlyArray<ChipOption<T>>;
+  values: readonly T[];
+  onChange: (values: T[]) => void;
+  accessibilityLabel: string;
+}
+
+/** Several-choice chips that wrap; each chip toggles on and off. */
+export function ChipMultiGroup<T extends string>({ options, values, onChange, accessibilityLabel }: ChipMultiGroupProps<T>) {
+  const toggle = (v: T) => onChange(values.includes(v) ? values.filter((x) => x !== v) : [...values, v]);
+  return (
+    <View accessibilityLabel={accessibilityLabel} style={styles.group}>
+      {options.map((o) => (
+        <Chip key={o.value} multiple label={o.label} renderIcon={o.renderIcon} selected={values.includes(o.value)} onPress={() => toggle(o.value)} />
+      ))}
+    </View>
   );
 }
 

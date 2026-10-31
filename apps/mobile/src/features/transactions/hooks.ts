@@ -1,11 +1,24 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { CreateTransaction, TransactionDetail, TransactionSummary, UpdateTransaction } from '@et/api-client';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type {
+  CreateTransaction,
+  RecategorizeResult,
+  TransactionDetail,
+  TransactionPage,
+  TransactionSummary,
+  UpdateTransaction,
+} from '@et/api-client';
+import type { LedgerFilters } from '@et/domain';
 import { api, toApiError } from '../../lib';
+import { filtersToQuery } from './ledger';
+
+const PAGE_SIZE = 50;
 
 export const transactionKeys = {
   all: ['transactions'] as const,
   recent: ['transactions', 'recent'] as const,
   recentCategories: ['transactions', 'recent-categories'] as const,
+  /** The filter object is part of the key, so changing a filter fetches again. */
+  list: (filters: LedgerFilters) => ['transactions', 'list', filters] as const,
   detail: (id: string) => ['transaction', id] as const,
 };
 
@@ -17,6 +30,21 @@ export function useTransaction(id: string) {
       if (!data) throw toApiError(error);
       return data;
     },
+  });
+}
+
+/** The ledger, 50 rows a page, newest first; follow-up pages load as the list nears its end. */
+export function useLedger(filters: LedgerFilters) {
+  return useInfiniteQuery({
+    queryKey: transactionKeys.list(filters),
+    initialPageParam: undefined as string | undefined,
+    queryFn: async ({ pageParam }): Promise<TransactionPage> => {
+      const query = { ...filtersToQuery(filters), limit: PAGE_SIZE, ...(pageParam && { cursor: pageParam }) };
+      const { data, error } = await api.GET('/v1/transactions', { params: { query } });
+      if (!data) throw toApiError(error);
+      return data;
+    },
+    getNextPageParam: (last) => last.nextCursor ?? undefined,
   });
 }
 
@@ -75,6 +103,19 @@ export function useUpdateTransaction() {
       return data;
     },
     onSuccess: written,
+  });
+}
+
+/** Change category from Detail; applyToMerchant also moves the merchant's other rows and remembers it. */
+export function useRecategorize() {
+  const written = useLedgerWritten();
+  return useMutation({
+    mutationFn: async ({ id, categoryId, applyToMerchant }: { id: string; categoryId: string; applyToMerchant: boolean }): Promise<RecategorizeResult> => {
+      const { data, error } = await api.PATCH('/v1/transactions/{id}/category', { params: { path: { id } }, body: { categoryId, applyToMerchant } });
+      if (!data) throw toApiError(error);
+      return data;
+    },
+    onSuccess: (result) => written(result.transaction),
   });
 }
 

@@ -1,6 +1,6 @@
 import { INCOME_CATEGORY_ID, OTHER_CATEGORY_ID, paise, type NormalizedTxn } from '@et/domain';
 import { firstMatch } from './pipeline';
-import { CATEGORY_RULES, TYPE_RULES } from './rules';
+import { CATEGORY_RULES, FALLBACK_CATEGORY, TYPE_RULES } from './rules';
 import { sourceHash } from './source-input';
 
 const txn = (over: Partial<NormalizedTxn> = {}): NormalizedTxn => ({
@@ -12,7 +12,7 @@ const txn = (over: Partial<NormalizedTxn> = {}): NormalizedTxn => ({
   ...over,
 });
 
-const categorize = (t: NormalizedTxn) => firstMatch(CATEGORY_RULES, (r) => r.apply(t));
+const categorize = (t: NormalizedTxn) => firstMatch(CATEGORY_RULES, (r) => r.apply(t)) ?? FALLBACK_CATEGORY.apply(t);
 const classify = (t: NormalizedTxn) => firstMatch(TYPE_RULES, (r) => r.classify(t));
 
 describe('category rules', () => {

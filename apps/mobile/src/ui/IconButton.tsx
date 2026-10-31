@@ -2,6 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 import { radius, touchTarget, useTheme } from '../theme';
 import { Icon, type IconName } from './Icon';
+import { Text } from './Text';
 
 export interface IconButtonProps {
   icon: IconName;
@@ -10,9 +11,11 @@ export interface IconButtonProps {
   onPress?: () => void;
   /** "filled" is the round close button on sheets (background-coloured disc). */
   variant?: 'plain' | 'outlined' | 'filled';
+  /** A count in the corner, e.g. active filters; hidden at 0. Include it in accessibilityLabel too. */
+  badge?: number;
 }
 
-export function IconButton({ icon, accessibilityLabel, onPress, variant = 'outlined' }: IconButtonProps) {
+export function IconButton({ icon, accessibilityLabel, onPress, variant = 'outlined', badge = 0 }: IconButtonProps) {
   const { colors } = useTheme();
   return (
     <Pressable
@@ -28,6 +31,11 @@ export function IconButton({ icon, accessibilityLabel, onPress, variant = 'outli
       ]}
     >
       <Icon name={icon} color={colors.text} size={20} />
+      {badge > 0 && (
+        <Text variant="label" style={[styles.badge, { backgroundColor: colors.chipOnBg, color: colors.chipOnFg }]}>
+          {badge}
+        </Text>
+      )}
     </Pressable>
   );
 }
@@ -35,4 +43,5 @@ export function IconButton({ icon, accessibilityLabel, onPress, variant = 'outli
 const styles = StyleSheet.create({
   base: { width: touchTarget, height: touchTarget, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center' },
   pressed: { opacity: 0.7 },
+  badge: { position: 'absolute', top: -4, right: -4, minWidth: 18, height: 18, borderRadius: 9, textAlign: 'center', fontSize: 11, lineHeight: 18, overflow: 'hidden' },
 });

@@ -5,4 +5,5 @@ export { queryClient } from './queryClient';
 export { secureStore } from './secure-store';
 export { sessionTokens } from './session-tokens';
 export { newUuid } from './ids';
+export { useDebouncedValue } from './useDebouncedValue';
 export type { MainStackParamList, MainTabParamList } from './routes';

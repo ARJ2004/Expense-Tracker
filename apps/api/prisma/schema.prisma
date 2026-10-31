@@ -7,6 +7,7 @@
 // Table ownership (only the owning module reads or writes a table):
 //   users → users · accounts → accounts · categories → categories
 //   transactions, transaction_sources → ingest (writes via IngestService, reads via LedgerQueryService)
+//   merchant_rules, category_corrections → categories
 //   refresh_tokens → auth
 
 generator client {
@@ -77,6 +78,8 @@ model User {
   transactions       Transaction[]
   transactionSources TransactionSource[]
   refreshTokens      RefreshToken[]
+  merchantRules      MerchantRule[]
+  corrections        CategoryCorrection[]
 
   @@map("users")
 }
@@ -114,8 +117,9 @@ model Category {
   sortOrder Int      @default(100) @map("sort_order")
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
 
-  user         User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  transactions Transaction[]
+  user          User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions  Transaction[]
+  merchantRules MerchantRule[]
 
   @@unique([userId, name])
   @@map("categories")
@@ -130,6 +134,8 @@ model Transaction {
   type           TxnType
   occurredAt     DateTime       @map("occurred_at") @db.Timestamptz
   merchantName   String?        @map("merchant_name")
+  /// merchantKey(merchant_name) from @et/domain; what merchant rules and "apply to all" match on.
+  merchantKey    String?        @map("merchant_key")
   categoryId     String?        @map("category_id") @db.Uuid
   categorySource CategorySource @default(default) @map("category_source")
   referenceNo    String?        @map("reference_no")
@@ -149,6 +155,7 @@ model Transaction {
 
   @@index([userId, occurredAt(sort: Desc), id(sort: Desc)])
   @@index([userId, referenceNo])
+  @@index([userId, merchantKey])
   @@map("transactions")
 }
 
@@ -171,6 +178,44 @@ model TransactionSource {
   @@unique([userId, sourceHash])
   @@index([transactionId])
   @@map("transaction_sources")
+}
+
+/// A user's own merchant → category rule, saved by "Apply to all from this merchant".
+/// Global rules live in code (categories/domain/merchant-rules.ts), not in this table.
+model MerchantRule {
+  id           String   @id @default(uuid(7)) @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  /// merchantKey() of the merchant name; matched exactly.
+  patternKey   String   @map("pattern_key")
+  merchantName String   @map("merchant_name")
+  categoryId   String   @map("category_id") @db.Uuid
+  priority     Int      @default(100)
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, patternKey])
+  @@map("merchant_rules")
+}
+
+/// Every recategorization (merchant, from, to). The most-corrected merchants feed the global rule list.
+model CategoryCorrection {
+  id             String   @id @default(uuid(7)) @db.Uuid
+  userId         String   @map("user_id") @db.Uuid
+  merchantKey    String?  @map("merchant_key")
+  /// Plain ids, no foreign keys: the log outlives a deleted custom category.
+  fromCategoryId String?  @map("from_category_id") @db.Uuid
+  toCategoryId   String   @map("to_category_id") @db.Uuid
+  appliedToAll   Boolean  @default(false) @map("applied_to_all")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([merchantKey, createdAt])
+  @@index([userId])
+  @@map("category_corrections")
 }
 
 model RefreshToken {

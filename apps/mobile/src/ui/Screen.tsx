@@ -14,15 +14,16 @@ export interface ScreenProps {
   withTabBar?: boolean;
   /** Pinned under the scrolling content, e.g. Continue and Skip on onboarding steps. */
   footer?: ReactNode;
+  /** false when the screen brings its own list (FlashList); children then fill the space under the header. */
+  scroll?: boolean;
 }
 
 /** Safe area, 20 px side padding, the background token and an optional title header. */
-export function Screen({ title, eyebrow, headerAction, withTabBar = false, footer, children }: PropsWithChildren<ScreenProps>) {
+export function Screen({ title, eyebrow, headerAction, withTabBar = false, footer, scroll = true, children }: PropsWithChildren<ScreenProps>) {
   const { colors } = useTheme();
-  return (
-    <SafeAreaView edges={footer ? ['top', 'bottom'] : ['top']} style={[styles.fill, { backgroundColor: colors.background }]}>
-      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={[styles.content, withTabBar && styles.tabBarSpace]}>
-        {(title || headerAction) && (
+  const body = (
+    <>
+      {(title || headerAction) && (
           <View style={styles.header}>
             <View>
               {eyebrow && (
@@ -40,7 +41,17 @@ export function Screen({ title, eyebrow, headerAction, withTabBar = false, foote
           </View>
         )}
         {children}
-      </ScrollView>
+    </>
+  );
+  return (
+    <SafeAreaView edges={footer ? ['top', 'bottom'] : ['top']} style={[styles.fill, { backgroundColor: colors.background }]}>
+      {scroll ? (
+        <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={[styles.content, withTabBar && styles.tabBarSpace]}>
+          {body}
+        </ScrollView>
+      ) : (
+        <View style={[styles.fill, styles.content]}>{body}</View>
+      )}
       {footer && <View style={styles.footer}>{footer}</View>}
     </SafeAreaView>
   );

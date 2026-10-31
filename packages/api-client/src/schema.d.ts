@@ -185,7 +185,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** The ledger, newest first, with filters, search and day totals */
+        get: operations["listTransactions"];
         put?: never;
         /** Manual entry (idempotent by clientRequestId) */
         post: operations["createTransaction"];
@@ -246,6 +247,23 @@ export interface paths {
         head?: never;
         /** Edit; amount, date or merchant changes set userEdited */
         patch: operations["updateTransaction"];
+        trace?: never;
+    };
+    "/v1/transactions/{id}/category": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Change category; applyToMerchant saves a merchant rule and moves the other rows */
+        patch: operations["recategorizeTransaction"];
         trace?: never;
     };
 }
@@ -497,6 +515,30 @@ export interface components {
             category: components["schemas"]["TransactionCategoryDto"];
             account: components["schemas"]["TransactionAccountDto"] | null;
         };
+        DayTotalDto: {
+            /**
+             * Format: date
+             * @description IST calendar day
+             * @example 2026-10-31
+             */
+            date: string;
+            /** @example 72400 */
+            debitPaise: number;
+            /** @example 0 */
+            creditPaise: number;
+            /**
+             * @description creditPaise − debitPaise
+             * @example -72400
+             */
+            netPaise: number;
+        };
+        TransactionPageDto: {
+            items: components["schemas"]["TransactionSummaryDto"][];
+            /** @description Pass as cursor for the next page; null on the last page */
+            nextCursor: string | null;
+            /** @description Totals for every IST day on this page, over all rows matching the filters */
+            dayTotals: components["schemas"]["DayTotalDto"][];
+        };
         TransactionSummaryListDto: {
             items: components["schemas"]["TransactionSummaryDto"][];
         };
@@ -520,6 +562,20 @@ export interface components {
             merchantName?: string | null;
             /** @description null or "" clears it */
             note?: string | null;
+        };
+        RecategorizeDto: {
+            /** Format: uuid */
+            categoryId: string;
+            /**
+             * @description Also move other rows from this merchant and remember it for new ones
+             * @default false
+             */
+            applyToMerchant: boolean;
+        };
+        RecategorizeResultDto: {
+            transaction: components["schemas"]["TransactionDetailDto"];
+            /** @description Other transactions from the same merchant that moved too */
+            updatedCount: number;
         };
     };
     responses: never;
@@ -1135,6 +1191,60 @@ export interface operations {
             };
         };
     };
+    listTransactions: {
+        parameters: {
+            query?: {
+                /** @description First IST day included */
+                from?: string;
+                /** @description Last IST day included */
+                to?: string;
+                direction?: components["schemas"]["Direction"];
+                /** @description Repeat for several categories */
+                categoryId?: string[];
+                type?: components["schemas"]["TxnType"];
+                source?: components["schemas"]["SourceKind"];
+                accountId?: string;
+                minAmountPaise?: number;
+                maxAmountPaise?: number;
+                /** @description Merchant or note contains this, any case */
+                q?: string;
+                /** @description nextCursor from the previous page */
+                cursor?: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TransactionPageDto"];
+                };
+            };
+            /** @description VALIDATION_FAILED or INVALID_CURSOR */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     createTransaction: {
         parameters: {
             query?: never;
@@ -1360,6 +1470,57 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    recategorizeTransaction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecategorizeDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecategorizeResultDto"];
+                };
+            };
+            /** @description MERCHANT_REQUIRED when applyToMerchant is set on a row with no merchant */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Transaction or category not found */
             404: {
                 headers: {
                     [name: string]: unknown;

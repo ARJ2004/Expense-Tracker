@@ -3,8 +3,13 @@ import { DefaultCategoryRule } from './default-category.rule';
 import { DirectionTypeRule } from './direction-type.rule';
 import { UserChoiceRule } from './user-choice.rule';
 
-/** Order matters: first match wins. Merchant and keyword rules (Sprint 4) slot in before the default. */
-export const CATEGORY_RULES: readonly CategoryRule[] = [new UserChoiceRule(), new DefaultCategoryRule()];
+/**
+ * Category steps inside ingest, in order: the user's pick (CATEGORY_RULES), then the categories
+ * module's CategorizerService (user merchant rules → global merchants → keywords), then
+ * FALLBACK_CATEGORY (Income for credits, Other for debits).
+ */
+export const CATEGORY_RULES: readonly CategoryRule[] = [new UserChoiceRule()];
+export const FALLBACK_CATEGORY = new DefaultCategoryRule();
 
 /** Transfer, ATM and refund rules (Sprint 5) slot in before the direction fallback. */
 export const TYPE_RULES: readonly TypeRule[] = [new DirectionTypeRule()];
