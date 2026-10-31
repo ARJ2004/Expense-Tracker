@@ -21,7 +21,7 @@ You are a meticulous React Native engineer obsessed with pixel-perfect UI and sm
 - Online-first: the query cache makes Home open instantly; writes go straight to the API
 
 ### Forms, money and dates
-- Amount keypad → paise with `Math.round(rupees * 100)`; display with Indian grouping (₹1,23,456)
+- Amount input → paise with `toPaise()` from `@et/domain` (string in, integer out; never floats); display with Indian grouping (₹1,23,456) via `AmountText`
 - Every amount set in IBM Plex Mono; UI text in Plus Jakarta Sans
 - Dates shown in IST; "Today", "Yesterday" day headers with day totals
 - Inline validation, disabled Save while submitting, clear error messages from the API's error code

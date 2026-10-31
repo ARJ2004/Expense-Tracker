@@ -7,6 +7,7 @@
 // Table ownership (only the owning module reads or writes a table):
 //   users → users · accounts → accounts · categories → categories
 //   transactions, transaction_sources → ingest (writes via IngestService, reads via LedgerQueryService)
+//   refresh_tokens → auth
 
 generator client {
   provider = "prisma-client-js"
@@ -75,6 +76,7 @@ model User {
   categories         Category[]
   transactions       Transaction[]
   transactionSources TransactionSource[]
+  refreshTokens      RefreshToken[]
 
   @@map("users")
 }
@@ -162,4 +164,22 @@ model TransactionSource {
   @@unique([userId, sourceHash])
   @@index([transactionId])
   @@map("transaction_sources")
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid(7)) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  deviceId  String    @map("device_id")
+  /// One family per sign-in; rotation keeps it, so a reused token can be traced to its session.
+  familyId  String    @map("family_id") @db.Uuid
+  /// SHA-256 hex of the 32 random bytes handed to the client; the token itself is never stored.
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz
+  revokedAt DateTime? @map("revoked_at") @db.Timestamptz
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
 }

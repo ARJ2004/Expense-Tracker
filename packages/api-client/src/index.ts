@@ -1,9 +1,15 @@
-import createClient, { type ClientOptions } from 'openapi-fetch';
+import createClient, { type ClientOptions, type Middleware } from 'openapi-fetch';
 import type { components, paths } from './schema';
 
-export type { components, paths };
+export type { components, paths, Middleware };
 export type HealthResponse = components['schemas']['HealthResponse'];
 export type ErrorResponse = components['schemas']['ErrorResponse'];
+export type AuthResponse = components['schemas']['AuthResponse'];
+export type Me = components['schemas']['MeDto'];
+export type Account = components['schemas']['AccountDto'];
+export type CreateAccount = components['schemas']['CreateAccountDto'];
+export type IncomeFrequency = components['schemas']['IncomeFrequency'];
+export type AccountKind = components['schemas']['AccountKind'];
 
 /** Creates a typed client for the Expense Tracker API; every path, body and response is checked. */
 export function createApiClient(options: ClientOptions & { baseUrl: string }) {

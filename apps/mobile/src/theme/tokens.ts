@@ -37,6 +37,10 @@ export interface ColorTokens {
   errorSoft: string;
   errorOn: string;
   scrim: string;
+  /** Brand mark: teal back peak (the front peak is highlight). */
+  brandTeal: string;
+  /** The "G" on the Continue with Google button. */
+  googleBlue: string;
   chart: readonly [string, string, string, string, string];
 }
 
@@ -74,6 +78,8 @@ export const altusLight: ColorTokens = {
   errorSoft: '#FBEAEA',
   errorOn: '#A3261C',
   scrim: 'rgba(1,42,74,0.45)',
+  brandTeal: '#17A2B8',
+  googleBlue: '#4285F4',
   chart: ['#012A4A', '#2ECC71', '#17A2B8', '#9FB2BF', '#E8A33D'],
 };
 
@@ -111,5 +117,7 @@ export const altusDark: ColorTokens = {
   errorSoft: '#3A1A1D',
   errorOn: '#FF8A80',
   scrim: 'rgba(0,0,0,0.6)',
+  brandTeal: '#17A2B8',
+  googleBlue: '#4285F4',
   chart: ['#2ECC71', '#17A2B8', '#5C8FC0', '#5E7385', '#E8A33D'],
 };

@@ -2,12 +2,13 @@ import { Controller, Get, HttpStatus } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ApiOkResponse, ApiOperation, ApiServiceUnavailableResponse, ApiTags } from '@nestjs/swagger';
 import { SkipThrottle } from '@nestjs/throttler';
-import { AppError, ErrorResponse, PrismaService } from '../common';
+import { AppError, ErrorResponse, PrismaService, Public } from '../common';
 import { HealthResponse } from './health.dto';
 
 const DB_TIMEOUT_MS = 1000;
 
 @ApiTags('health')
+@Public()
 @SkipThrottle()
 @Controller('health')
 export class HealthController {

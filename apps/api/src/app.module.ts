@@ -4,9 +4,12 @@ import { APP_GUARD } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { LoggerModule } from 'nestjs-pino';
+import { AccountsModule } from './accounts';
+import { AuthModule } from './auth';
 import { CommonModule } from './common';
 import { validateConfig } from './config/app-config';
 import { HealthModule } from './health/health.module';
+import { UsersModule } from './users';
 
 @Module({
   imports: [
@@ -26,6 +29,9 @@ import { HealthModule } from './health/health.module';
     EventEmitterModule.forRoot(),
     CommonModule,
     HealthModule,
+    UsersModule,
+    AuthModule,
+    AccountsModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

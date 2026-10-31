@@ -21,6 +21,10 @@ jobs:
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/expense_tracker_test
       NODE_ENV: test
+      # Throwaway values for CI only; real secrets live in each environment's .env.
+      JWT_ACCESS_SECRET: ci-only-secret-0123456789abcdef0123456789abcdef
+      GOOGLE_WEB_CLIENT_ID: test-web-client.apps.googleusercontent.com
+      DEV_AUTH_ENABLED: 'true'
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4

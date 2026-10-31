@@ -13,10 +13,14 @@ export const fonts = {
   bold: 'PlusJakartaSans-Bold',
   monoMedium: 'IBMPlexMono-Medium',
   monoSemibold: 'IBMPlexMono-SemiBold',
+  /** Wordmark only. */
+  display: 'Montserrat-ExtraBold',
 } as const;
 
-/** Type scale: 40 hero amount · 24 screen title · 17 section heading · 15 body · 13 secondary · 12 labels. */
+/** Type scale: 40 wordmark and hero amount · 28 step headline · 24 screen title · 17 section heading · 15 body · 13 secondary · 12 labels. */
 export const typeScale = {
+  wordmark: { fontFamily: fonts.display, fontSize: 40, lineHeight: 48, letterSpacing: -0.8 },
+  headline: { fontFamily: fonts.bold, fontSize: 28, lineHeight: 34, letterSpacing: -0.56 },
   hero: { fontFamily: fonts.monoSemibold, fontSize: 40, lineHeight: 44, letterSpacing: -1.6 },
   title: { fontFamily: fonts.bold, fontSize: 24, lineHeight: 30, letterSpacing: -0.5 },
   heading: { fontFamily: fonts.bold, fontSize: 17, lineHeight: 22 },

@@ -4,4 +4,5 @@ export { AppError } from './errors/app-error';
 export { ErrorFilter } from './errors/error.filter';
 export { ErrorResponse } from './errors/error-response.dto';
 export { BigIntInterceptor } from './serialization/bigint.interceptor';
-export { CurrentUser } from './auth/current-user.decorator';
+export { CurrentUser, type AuthUser } from './auth/current-user.decorator';
+export { IS_PUBLIC_KEY, Public } from './auth/public.decorator';
