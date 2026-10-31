@@ -11,7 +11,7 @@ export interface CategoryIconProps {
   size?: number;
 }
 
-const KNOWN = new Set<string>(['food', 'groceries', 'transport', 'shopping', 'bills', 'rent', 'entertainment', 'health', 'education', 'travel', 'transfer', 'income', 'other']);
+const KNOWN = new Set<string>(['food', 'groceries', 'transport', 'shopping', 'bills', 'rent', 'entertainment', 'health', 'education', 'travel', 'cash', 'transfer', 'income', 'other']);
 
 /** A category's line icon in its palette colour (or a given tint, e.g. inside a selected chip). */
 export function CategoryIcon({ icon, color, tint, size = 16 }: CategoryIconProps) {

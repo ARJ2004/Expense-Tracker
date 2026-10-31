@@ -6,3 +6,4 @@ export * from './banks';
 export * from './categories';
 export * from './merchant';
 export * from './ledger-filters';
+export * from './months';

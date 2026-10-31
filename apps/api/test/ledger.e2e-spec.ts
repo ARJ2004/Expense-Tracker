@@ -31,9 +31,9 @@ describe('ledger: categories, accounts, transactions', () => {
   });
 
   describe('/v1/categories', () => {
-    it('lists the 13 system categories in order', async () => {
+    it('lists the 14 system categories in order', async () => {
       const res = await http().get('/v1/categories').set(bearer(asha)).expect(200);
-      expect(res.body.items).toHaveLength(13);
+      expect(res.body.items).toHaveLength(14);
       expect(res.body.items[0]).toEqual({ id: FOOD, name: 'Food & Dining', icon: 'food', color: 'chart2', isExpense: true, system: true });
       expect(res.body.items.at(-1).name).toBe('Other');
     });
@@ -43,7 +43,7 @@ describe('ledger: categories, accounts, transactions', () => {
       expect(created.body).toMatchObject({ name: 'Pets', system: false, isExpense: true });
       const id = created.body.id;
 
-      expect((await http().get('/v1/categories').set(bearer(ravi))).body.items).toHaveLength(13);
+      expect((await http().get('/v1/categories').set(bearer(ravi))).body.items).toHaveLength(14);
       await http().patch(`/v1/categories/${id}`).set(bearer(ravi)).send({ name: 'Mine' }).expect(404);
       await http().patch(`/v1/categories/${id}`).set(bearer(asha)).send({ name: 'Pet care' }).expect(200);
       await http().delete(`/v1/categories/${id}`).set(bearer(ravi)).expect(404);

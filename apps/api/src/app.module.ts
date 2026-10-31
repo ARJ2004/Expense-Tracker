@@ -8,6 +8,7 @@ import { AccountsModule } from './accounts';
 import { AuthModule } from './auth';
 import { CategoriesModule } from './categories';
 import { CommonModule } from './common';
+import { DashboardModule } from './dashboard';
 import { validateConfig } from './config/app-config';
 import { HealthModule } from './health/health.module';
 import { ImportsModule } from './imports';
@@ -38,6 +39,7 @@ import { UsersModule } from './users';
     CategoriesModule,
     TransactionsModule,
     ImportsModule,
+    DashboardModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

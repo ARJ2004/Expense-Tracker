@@ -68,6 +68,89 @@
         "tags": [
           "me"
         ]
+      },
+      "patch": {
+        "operationId": "updateMe",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Edit profile: name, monthly income (paise), income frequency",
+        "tags": [
+          "me"
+        ]
+      },
+      "delete": {
+        "operationId": "deleteMe",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": "Account and all owned data removed"
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Permanently delete the account and all its data",
+        "tags": [
+          "me"
+        ]
       }
     },
     "/v1/me/onboarding": {
@@ -137,179 +220,23 @@
         ]
       }
     },
-    "/v1/auth/google": {
-      "post": {
-        "operationId": "signInWithGoogle",
+    "/v1/me/export": {
+      "get": {
+        "operationId": "exportLedger",
         "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GoogleSignInDto"
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
-            "description": "",
+            "description": "CSV of the full ledger",
             "content": {
-              "application/json": {
+              "text/csv": {
                 "schema": {
-                  "$ref": "#/components/schemas/AuthResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "type": "string",
+                  "format": "binary"
                 }
               }
             }
           },
           "401": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "AUTH_GOOGLE_NOT_CONFIGURED",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "summary": "Exchange a Google ID token for API tokens",
-        "tags": [
-          "auth"
-        ]
-      }
-    },
-    "/v1/auth/refresh": {
-      "post": {
-        "operationId": "refreshTokens",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RefreshDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AuthResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "summary": "Rotate the refresh token and get a new access token",
-        "tags": [
-          "auth"
-        ]
-      }
-    },
-    "/v1/auth/logout": {
-      "post": {
-        "operationId": "logout",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LogoutDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "204": {
-            "description": ""
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "429": {
             "description": "",
             "content": {
               "application/json": {
@@ -325,9 +252,9 @@
             "bearer": []
           }
         ],
-        "summary": "Revoke this device's refresh token",
+        "summary": "Download every transaction as a CSV (oldest first)",
         "tags": [
-          "auth"
+          "me"
         ]
       }
     },
@@ -818,6 +745,200 @@
         "summary": "Delete a custom category; its transactions move to Other",
         "tags": [
           "categories"
+        ]
+      }
+    },
+    "/v1/auth/google": {
+      "post": {
+        "operationId": "signInWithGoogle",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GoogleSignInDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "AUTH_GOOGLE_NOT_CONFIGURED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Exchange a Google ID token for API tokens",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/v1/auth/refresh": {
+      "post": {
+        "operationId": "refreshTokens",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Rotate the refresh token and get a new access token",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/v1/auth/logout": {
+      "post": {
+        "operationId": "logout",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LogoutDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Revoke this device's refresh token",
+        "tags": [
+          "auth"
         ]
       }
     },
@@ -1925,6 +2046,142 @@
           "imports"
         ]
       }
+    },
+    "/v1/dashboard/summary": {
+      "get": {
+        "operationId": "getDashboardSummary",
+        "parameters": [
+          {
+            "name": "month",
+            "required": false,
+            "in": "query",
+            "description": "IST calendar month; defaults to the current one",
+            "schema": {
+              "example": "2026-10",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardSummaryDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "A month's spend, income, categories and merchants (IST)",
+        "tags": [
+          "dashboard"
+        ]
+      }
+    },
+    "/v1/dashboard/trend": {
+      "get": {
+        "operationId": "getDashboardTrend",
+        "parameters": [
+          {
+            "name": "from",
+            "required": true,
+            "in": "query",
+            "description": "First IST day included",
+            "schema": {
+              "format": "date",
+              "example": "2026-10-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": true,
+            "in": "query",
+            "description": "Last IST day included",
+            "schema": {
+              "format": "date",
+              "example": "2026-10-31",
+              "type": "string"
+            }
+          },
+          {
+            "name": "bucket",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/TrendBucket"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardTrendDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Spend and income per day, week or month; empty buckets are zero",
+        "tags": [
+          "dashboard"
+        ]
+      }
     }
   },
   "info": {
@@ -2068,6 +2325,30 @@
           "timezone"
         ]
       },
+      "UpdateMeDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Asha",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "monthlyIncomePaise": {
+            "type": "integer",
+            "minimum": 0,
+            "example": 8500000,
+            "description": "Monthly income in paise"
+          },
+          "incomeFrequency": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/IncomeFrequency"
+              }
+            ]
+          }
+        }
+      },
       "CompleteOnboardingDto": {
         "type": "object",
         "properties": {
@@ -2085,76 +2366,6 @@
             ]
           }
         }
-      },
-      "GoogleSignInDto": {
-        "type": "object",
-        "properties": {
-          "idToken": {
-            "type": "string",
-            "description": "Google ID token from the app"
-          },
-          "deviceId": {
-            "type": "string",
-            "description": "Stable per-install id, created on first launch"
-          }
-        },
-        "required": [
-          "idToken",
-          "deviceId"
-        ]
-      },
-      "AuthResponse": {
-        "type": "object",
-        "properties": {
-          "accessToken": {
-            "type": "string",
-            "description": "Bearer token for API calls"
-          },
-          "refreshToken": {
-            "type": "string",
-            "description": "Single-use; swap it at /auth/refresh before the access token expires"
-          },
-          "expiresIn": {
-            "type": "integer",
-            "example": 900,
-            "description": "Access token lifetime in seconds"
-          },
-          "user": {
-            "$ref": "#/components/schemas/MeDto"
-          }
-        },
-        "required": [
-          "accessToken",
-          "refreshToken",
-          "expiresIn",
-          "user"
-        ]
-      },
-      "RefreshDto": {
-        "type": "object",
-        "properties": {
-          "refreshToken": {
-            "type": "string"
-          },
-          "deviceId": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "refreshToken",
-          "deviceId"
-        ]
-      },
-      "LogoutDto": {
-        "type": "object",
-        "properties": {
-          "refreshToken": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "refreshToken"
-        ]
       },
       "AccountKind": {
         "type": "string",
@@ -2287,6 +2498,7 @@
           "health",
           "education",
           "travel",
+          "cash",
           "transfer",
           "income",
           "other"
@@ -2416,6 +2628,76 @@
             ]
           }
         }
+      },
+      "GoogleSignInDto": {
+        "type": "object",
+        "properties": {
+          "idToken": {
+            "type": "string",
+            "description": "Google ID token from the app"
+          },
+          "deviceId": {
+            "type": "string",
+            "description": "Stable per-install id, created on first launch"
+          }
+        },
+        "required": [
+          "idToken",
+          "deviceId"
+        ]
+      },
+      "AuthResponse": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "description": "Bearer token for API calls"
+          },
+          "refreshToken": {
+            "type": "string",
+            "description": "Single-use; swap it at /auth/refresh before the access token expires"
+          },
+          "expiresIn": {
+            "type": "integer",
+            "example": 900,
+            "description": "Access token lifetime in seconds"
+          },
+          "user": {
+            "$ref": "#/components/schemas/MeDto"
+          }
+        },
+        "required": [
+          "accessToken",
+          "refreshToken",
+          "expiresIn",
+          "user"
+        ]
+      },
+      "RefreshDto": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string"
+          },
+          "deviceId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "refreshToken",
+          "deviceId"
+        ]
+      },
+      "LogoutDto": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "refreshToken"
+        ]
       },
       "Direction": {
         "type": "string",
@@ -3216,6 +3498,187 @@
         },
         "required": [
           "accountId"
+        ]
+      },
+      "CategorySpendDto": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "$ref": "#/components/schemas/TransactionCategoryDto"
+          },
+          "spendPaise": {
+            "type": "number",
+            "example": 984000,
+            "description": "Spend in paise, refunds already taken off"
+          },
+          "count": {
+            "type": "number",
+            "example": 23,
+            "description": "Debits counted"
+          }
+        },
+        "required": [
+          "category",
+          "spendPaise",
+          "count"
+        ]
+      },
+      "MerchantSpendDto": {
+        "type": "object",
+        "properties": {
+          "merchantName": {
+            "type": "string",
+            "example": "Swiggy"
+          },
+          "spendPaise": {
+            "type": "number",
+            "example": 486000
+          },
+          "count": {
+            "type": "number",
+            "example": 10
+          }
+        },
+        "required": [
+          "merchantName",
+          "spendPaise",
+          "count"
+        ]
+      },
+      "DashboardSummaryDto": {
+        "type": "object",
+        "properties": {
+          "month": {
+            "type": "string",
+            "example": "2026-10"
+          },
+          "spendPaise": {
+            "type": "number",
+            "example": 4218000
+          },
+          "incomePaise": {
+            "type": "number",
+            "example": 7500000
+          },
+          "refundPaise": {
+            "type": "number",
+            "example": 119900,
+            "description": "Refunds in the month (already taken off spend)"
+          },
+          "netPaise": {
+            "type": "number",
+            "example": 3282000,
+            "description": "incomePaise − spendPaise; may be negative"
+          },
+          "monthlyIncomePaise": {
+            "type": "number",
+            "nullable": true,
+            "example": 7500000,
+            "description": "Monthly income from the profile"
+          },
+          "leftToSpendPaise": {
+            "type": "number",
+            "nullable": true,
+            "example": 3282000,
+            "description": "Monthly income − spend; negative when over; null without an income"
+          },
+          "usedPercent": {
+            "type": "number",
+            "nullable": true,
+            "example": 56,
+            "description": "Spend as a whole percent of monthly income"
+          },
+          "byCategory": {
+            "description": "Every category with spend, largest first",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CategorySpendDto"
+            }
+          },
+          "topMerchants": {
+            "description": "Top 5 merchants by spend",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MerchantSpendDto"
+            }
+          },
+          "transactionCount": {
+            "type": "number",
+            "example": 212,
+            "description": "Transactions in the month"
+          },
+          "hasAnyTransactions": {
+            "type": "boolean",
+            "description": "False until the user has any transaction at all (Home empty state)"
+          }
+        },
+        "required": [
+          "month",
+          "spendPaise",
+          "incomePaise",
+          "refundPaise",
+          "netPaise",
+          "monthlyIncomePaise",
+          "leftToSpendPaise",
+          "usedPercent",
+          "byCategory",
+          "topMerchants",
+          "transactionCount",
+          "hasAnyTransactions"
+        ]
+      },
+      "TrendBucket": {
+        "type": "string",
+        "enum": [
+          "day",
+          "week",
+          "month"
+        ]
+      },
+      "TrendPointDto": {
+        "type": "object",
+        "properties": {
+          "start": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-10-01",
+            "description": "First IST day of the bucket"
+          },
+          "spendPaise": {
+            "type": "number",
+            "example": 48600
+          },
+          "incomePaise": {
+            "type": "number",
+            "example": 0
+          }
+        },
+        "required": [
+          "start",
+          "spendPaise",
+          "incomePaise"
+        ]
+      },
+      "DashboardTrendDto": {
+        "type": "object",
+        "properties": {
+          "bucket": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TrendBucket"
+              }
+            ]
+          },
+          "points": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TrendPointDto"
+            }
+          }
+        },
+        "required": [
+          "bucket",
+          "points"
         ]
       }
     }

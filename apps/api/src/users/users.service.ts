@@ -4,7 +4,14 @@ import { Prisma, type User } from '@prisma/client';
 import { AppError, PrismaService } from '../common';
 import type { CompleteOnboardingDto } from './dto/complete-onboarding.dto';
 import type { MeDto } from './dto/me.dto';
-import { USER_SIGNED_UP, type UserSignedUpEvent } from './users.events';
+import type { UpdateMeDto } from './dto/update-me.dto';
+import { PURGE_STEPS } from './domain/purge-order';
+import {
+  USER_DELETED,
+  USER_SIGNED_UP,
+  type UserDeletedEvent,
+  type UserSignedUpEvent,
+} from './users.events';
 
 /** A verified Google identity; `sub` is the stable key, email can change. */
 export interface GoogleProfile {
@@ -67,6 +74,33 @@ export class UsersService {
       throw new AppError('ALREADY_ONBOARDED', 'Onboarding is already finished', HttpStatus.CONFLICT);
     }
     return this.getMe(userId);
+  }
+
+  /** Updates whichever profile fields were sent. An empty patch returns the current profile unchanged. */
+  async updateProfile(userId: string, dto: UpdateMeDto): Promise<MeDto> {
+    const data: Prisma.UserUpdateInput = {};
+    if (dto.name !== undefined) data.name = dto.name;
+    if (dto.monthlyIncomePaise !== undefined) data.monthlyIncomePaise = BigInt(dto.monthlyIncomePaise);
+    if (dto.incomeFrequency !== undefined) data.incomeFrequency = dto.incomeFrequency;
+    if (Object.keys(data).length === 0) return this.getMe(userId);
+
+    const { count } = await this.prisma.user.updateMany({ where: { id: userId }, data });
+    if (count === 0) throw new AppError('NOT_FOUND', 'User not found', HttpStatus.NOT_FOUND);
+    return this.getMe(userId);
+  }
+
+  /**
+   * Permanently removes the user and every row they own, in one transaction, child tables first
+   * so the transactions → accounts RESTRICT foreign key never blocks the purge. Idempotent: a
+   * user already gone deletes nothing and still succeeds. Emits USER_DELETED after the commit.
+   */
+  async deleteAccount(userId: string): Promise<void> {
+    await this.prisma.$transaction(async (tx) => {
+      for (const step of PURGE_STEPS) {
+        await step(tx, userId);
+      }
+    });
+    this.events.emit(USER_DELETED, { userId } satisfies UserDeletedEvent);
   }
 }
 

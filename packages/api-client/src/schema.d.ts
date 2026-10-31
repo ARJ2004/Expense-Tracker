@@ -32,10 +32,12 @@ export interface paths {
         get: operations["getMe"];
         put?: never;
         post?: never;
-        delete?: never;
+        /** Permanently delete the account and all its data */
+        delete: operations["deleteMe"];
         options?: never;
         head?: never;
-        patch?: never;
+        /** Edit profile: name, monthly income (paise), income frequency */
+        patch: operations["updateMe"];
         trace?: never;
     };
     "/v1/me/onboarding": {
@@ -55,51 +57,17 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/auth/google": {
+    "/v1/me/export": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** Download every transaction as a CSV (oldest first) */
+        get: operations["exportLedger"];
         put?: never;
-        /** Exchange a Google ID token for API tokens */
-        post: operations["signInWithGoogle"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/auth/refresh": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Rotate the refresh token and get a new access token */
-        post: operations["refreshTokens"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/auth/logout": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Revoke this device's refresh token */
-        post: operations["logout"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -176,6 +144,57 @@ export interface paths {
         head?: never;
         /** Rename or restyle a custom category */
         patch: operations["updateCategory"];
+        trace?: never;
+    };
+    "/v1/auth/google": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Exchange a Google ID token for API tokens */
+        post: operations["signInWithGoogle"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Rotate the refresh token and get a new access token */
+        post: operations["refreshTokens"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Revoke this device's refresh token */
+        post: operations["logout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/v1/transactions": {
@@ -352,6 +371,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/dashboard/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** A month's spend, income, categories and merchants (IST) */
+        get: operations["getDashboardSummary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/dashboard/trend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Spend and income per day, week or month; empty buckets are zero */
+        get: operations["getDashboardTrend"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -403,7 +456,9 @@ export interface components {
             /** @example Asia/Kolkata */
             timezone: string;
         };
-        CompleteOnboardingDto: {
+        UpdateMeDto: {
+            /** @example Asha */
+            name?: string;
             /**
              * @description Monthly income in paise
              * @example 8500000
@@ -411,30 +466,13 @@ export interface components {
             monthlyIncomePaise?: number;
             incomeFrequency?: components["schemas"]["IncomeFrequency"];
         };
-        GoogleSignInDto: {
-            /** @description Google ID token from the app */
-            idToken: string;
-            /** @description Stable per-install id, created on first launch */
-            deviceId: string;
-        };
-        AuthResponse: {
-            /** @description Bearer token for API calls */
-            accessToken: string;
-            /** @description Single-use; swap it at /auth/refresh before the access token expires */
-            refreshToken: string;
+        CompleteOnboardingDto: {
             /**
-             * @description Access token lifetime in seconds
-             * @example 900
+             * @description Monthly income in paise
+             * @example 8500000
              */
-            expiresIn: number;
-            user: components["schemas"]["MeDto"];
-        };
-        RefreshDto: {
-            refreshToken: string;
-            deviceId: string;
-        };
-        LogoutDto: {
-            refreshToken: string;
+            monthlyIncomePaise?: number;
+            incomeFrequency?: components["schemas"]["IncomeFrequency"];
         };
         /** @enum {string} */
         AccountKind: "savings" | "credit_card" | "wallet" | "cash";
@@ -472,7 +510,7 @@ export interface components {
             nickname?: string;
         };
         /** @enum {string} */
-        CategoryIcon: "food" | "groceries" | "transport" | "shopping" | "bills" | "rent" | "entertainment" | "health" | "education" | "travel" | "transfer" | "income" | "other";
+        CategoryIcon: "food" | "groceries" | "transport" | "shopping" | "bills" | "rent" | "entertainment" | "health" | "education" | "travel" | "cash" | "transfer" | "income" | "other";
         /**
          * @description Theme palette key, not hex
          * @enum {string}
@@ -505,6 +543,31 @@ export interface components {
             name?: string;
             icon?: components["schemas"]["CategoryIcon"];
             color?: components["schemas"]["CategoryColor"];
+        };
+        GoogleSignInDto: {
+            /** @description Google ID token from the app */
+            idToken: string;
+            /** @description Stable per-install id, created on first launch */
+            deviceId: string;
+        };
+        AuthResponse: {
+            /** @description Bearer token for API calls */
+            accessToken: string;
+            /** @description Single-use; swap it at /auth/refresh before the access token expires */
+            refreshToken: string;
+            /**
+             * @description Access token lifetime in seconds
+             * @example 900
+             */
+            expiresIn: number;
+            user: components["schemas"]["MeDto"];
+        };
+        RefreshDto: {
+            refreshToken: string;
+            deviceId: string;
+        };
+        LogoutDto: {
+            refreshToken: string;
         };
         /** @enum {string} */
         Direction: "debit" | "credit";
@@ -796,6 +859,89 @@ export interface components {
             /** Format: uuid */
             accountId: string;
         };
+        CategorySpendDto: {
+            category: components["schemas"]["TransactionCategoryDto"];
+            /**
+             * @description Spend in paise, refunds already taken off
+             * @example 984000
+             */
+            spendPaise: number;
+            /**
+             * @description Debits counted
+             * @example 23
+             */
+            count: number;
+        };
+        MerchantSpendDto: {
+            /** @example Swiggy */
+            merchantName: string;
+            /** @example 486000 */
+            spendPaise: number;
+            /** @example 10 */
+            count: number;
+        };
+        DashboardSummaryDto: {
+            /** @example 2026-10 */
+            month: string;
+            /** @example 4218000 */
+            spendPaise: number;
+            /** @example 7500000 */
+            incomePaise: number;
+            /**
+             * @description Refunds in the month (already taken off spend)
+             * @example 119900
+             */
+            refundPaise: number;
+            /**
+             * @description incomePaise − spendPaise; may be negative
+             * @example 3282000
+             */
+            netPaise: number;
+            /**
+             * @description Monthly income from the profile
+             * @example 7500000
+             */
+            monthlyIncomePaise: number | null;
+            /**
+             * @description Monthly income − spend; negative when over; null without an income
+             * @example 3282000
+             */
+            leftToSpendPaise: number | null;
+            /**
+             * @description Spend as a whole percent of monthly income
+             * @example 56
+             */
+            usedPercent: number | null;
+            /** @description Every category with spend, largest first */
+            byCategory: components["schemas"]["CategorySpendDto"][];
+            /** @description Top 5 merchants by spend */
+            topMerchants: components["schemas"]["MerchantSpendDto"][];
+            /**
+             * @description Transactions in the month
+             * @example 212
+             */
+            transactionCount: number;
+            /** @description False until the user has any transaction at all (Home empty state) */
+            hasAnyTransactions: boolean;
+        };
+        /** @enum {string} */
+        TrendBucket: "day" | "week" | "month";
+        TrendPointDto: {
+            /**
+             * Format: date
+             * @description First IST day of the bucket
+             * @example 2026-10-01
+             */
+            start: string;
+            /** @example 48600 */
+            spendPaise: number;
+            /** @example 0 */
+            incomePaise: number;
+        };
+        DashboardTrendDto: {
+            bucket: components["schemas"]["TrendBucket"];
+            points: components["schemas"]["TrendPointDto"][];
+        };
     };
     responses: never;
     parameters: never;
@@ -859,6 +1005,71 @@ export interface operations {
             };
         };
     };
+    deleteMe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Account and all owned data removed */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    updateMe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateMeDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MeDto"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     completeOnboarding: {
         parameters: {
             query?: never;
@@ -907,145 +1118,25 @@ export interface operations {
             };
         };
     };
-    signInWithGoogle: {
+    exportLedger: {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["GoogleSignInDto"];
-            };
-        };
+        requestBody?: never;
         responses: {
+            /** @description CSV of the full ledger */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["AuthResponse"];
-                };
-            };
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
+                    "text/csv": string;
                 };
             };
             401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description AUTH_GOOGLE_NOT_CONFIGURED */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    refreshTokens: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RefreshDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AuthResponse"];
-                };
-            };
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    logout: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["LogoutDto"];
-            };
-        };
-        responses: {
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            429: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -1401,6 +1492,154 @@ export interface operations {
             };
             /** @description CATEGORY_EXISTS */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    signInWithGoogle: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GoogleSignInDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthResponse"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description AUTH_GOOGLE_NOT_CONFIGURED */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    refreshTokens: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RefreshDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthResponse"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    logout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LogoutDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -2089,6 +2328,85 @@ export interface operations {
             };
             /** @description IMPORT_NOT_IN_REVIEW or ACCOUNT_REQUIRED */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getDashboardSummary: {
+        parameters: {
+            query?: {
+                /** @description IST calendar month; defaults to the current one */
+                month?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DashboardSummaryDto"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getDashboardTrend: {
+        parameters: {
+            query: {
+                /** @description First IST day included */
+                from: string;
+                /** @description Last IST day included */
+                to: string;
+                bucket: components["schemas"]["TrendBucket"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DashboardTrendDto"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            401: {
                 headers: {
                     [name: string]: unknown;
                 };

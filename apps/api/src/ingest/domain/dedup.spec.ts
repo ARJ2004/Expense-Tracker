@@ -1,4 +1,4 @@
-import { paise, type NormalizedTxn } from '@et/domain';
+import { CASH_CATEGORY_ID, paise, TRANSFERS_CATEGORY_ID, type NormalizedTxn } from '@et/domain';
 import { firstMatch, type DedupCandidate } from './pipeline';
 import { DEDUP_RULES, TYPE_RULES } from './rules';
 import { sourceHash } from './source-input';
@@ -110,9 +110,9 @@ describe('statement sourceHash', () => {
 describe('categoryForType', () => {
   const { categoryForType } = jest.requireActual<typeof import('./rules/type-category')>('./rules/type-category');
   const other = { categoryId: 'other', source: 'default' as const };
-  it('puts uncategorized ATM withdrawals and transfers in Transfers, and leaves rule hits alone', () => {
-    expect(categoryForType(other, 'atm_withdrawal')).toEqual({ categoryId: "00000000-0000-7000-8000-000000000011", source: 'rule' });
-    expect(categoryForType(other, 'transfer').source).toBe('rule');
+  it('puts uncategorized ATM withdrawals in Cash and transfers in Transfers, and leaves rule hits alone', () => {
+    expect(categoryForType(other, 'atm_withdrawal')).toEqual({ categoryId: CASH_CATEGORY_ID, source: 'rule' });
+    expect(categoryForType(other, 'transfer')).toEqual({ categoryId: TRANSFERS_CATEGORY_ID, source: 'rule' });
     expect(categoryForType(other, 'expense')).toBe(other);
     const food = { categoryId: 'food', source: 'rule' as const };
     expect(categoryForType(food, 'atm_withdrawal')).toBe(food);

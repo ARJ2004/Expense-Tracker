@@ -29,12 +29,14 @@ const paths = {
   health: ['M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z'],
   education: ['M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z', 'M4 19a2 2 0 0 1 2-2h13'],
   travel: ['M2 13l20-8-6 16-3-7z'],
+  cash: ['M3 7h18v10H3z', 'M6 10v4M18 10v4'],
   transfer: ['M7 7h13l-3-3', 'M17 17H4l3 3'],
   income: ['M12 4v14', 'M6 12l6 6 6-6'],
   other: [],
 } as const;
 
 const circles: Partial<Record<IconName, Array<[number, number, number]>>> = {
+  cash: [[12, 12, 2.5]],
   settings: [
     [16, 6, 2],
     [10, 12, 2],

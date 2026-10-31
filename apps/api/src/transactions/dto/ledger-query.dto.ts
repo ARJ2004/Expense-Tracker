@@ -1,20 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
-import { ArrayMaxSize, IsBoolean, IsIn, IsInt, IsOptional, IsString, IsUUID, Length, Max, Min, Validate, ValidatorConstraint } from 'class-validator';
-import type { ValidatorConstraintInterface } from 'class-validator';
-import { Direction, isDayKey, MAX_AMOUNT_PAISE, SourceKind, TxnType } from '@et/domain';
-
-/** A real calendar day as "YYYY-MM-DD". */
-@ValidatorConstraint({ name: 'isDayKey' })
-class IsDayKey implements ValidatorConstraintInterface {
-  validate(value: unknown): boolean {
-    return typeof value === 'string' && isDayKey(value);
-  }
-
-  defaultMessage(): string {
-    return '$property must be a date as YYYY-MM-DD';
-  }
-}
+import { ArrayMaxSize, IsBoolean, IsIn, IsInt, IsOptional, IsString, IsUUID, Length, Max, Min, Validate } from 'class-validator';
+import { Direction, MAX_AMOUNT_PAISE, SourceKind, TxnType } from '@et/domain';
+import { IsDayKey } from '../../common';
 
 const trimmed = ({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() || undefined : value);
 /** ?categoryId=a&categoryId=b arrives as an array, a single one as a string. */

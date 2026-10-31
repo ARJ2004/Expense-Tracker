@@ -17,6 +17,21 @@ const summaryInclude = { account: true, category: true } satisfies Prisma.Transa
 
 type SummaryRow = Transaction & { account: Account | null; category: Category | null };
 
+/** One ledger row as the CSV export writes it. */
+export interface ExportRow {
+  occurredAt: Date;
+  amountPaise: number;
+  direction: Transaction['direction'];
+  type: Transaction['type'];
+  category: string;
+  merchantName: string | null;
+  account: string | null;
+  note: string | null;
+  sources: string[];
+}
+
+const EXPORT_PAGE = 500;
+
 /** Read side of the ledger. Every query filters by user and skips soft-deleted rows. */
 @Injectable()
 export class LedgerQueryService {
@@ -29,6 +44,39 @@ export class LedgerQueryService {
     });
     if (!row) throw new AppError('NOT_FOUND', 'Transaction not found', HttpStatus.NOT_FOUND);
     return toDetail(row);
+  }
+
+  /** Every live row, oldest first, read 500 at a time so a long ledger never sits in memory. */
+  async *exportRows(userId: string): AsyncGenerator<ExportRow> {
+    let after: { occurredAt: Date; id: string } | null = null;
+    for (;;) {
+      const rows: Array<SummaryRow & { sources: { source: TransactionSource['source'] }[] }> = await this.prisma.transaction.findMany({
+        where: {
+          userId,
+          deletedAt: null,
+          ...(after ? { OR: [{ occurredAt: { gt: after.occurredAt } }, { occurredAt: after.occurredAt, id: { gt: after.id } }] } : {}),
+        },
+        include: { ...summaryInclude, sources: { select: { source: true }, orderBy: { receivedAt: 'asc' } } },
+        orderBy: [{ occurredAt: 'asc' }, { id: 'asc' }],
+        take: EXPORT_PAGE,
+      });
+      for (const r of rows) {
+        yield {
+          occurredAt: r.occurredAt,
+          amountPaise: Number(r.amountPaise),
+          direction: r.direction,
+          type: r.type,
+          category: r.category?.name ?? OTHER.name,
+          merchantName: r.merchantName,
+          account: r.account ? (r.account.maskedNumber ? `${r.account.bankName} ••${r.account.maskedNumber}` : r.account.bankName) : null,
+          note: r.note,
+          sources: [...new Set(r.sources.map((x) => x.source))],
+        };
+      }
+      if (rows.length < EXPORT_PAGE) return;
+      const last = rows[rows.length - 1]!;
+      after = { occurredAt: last.occurredAt, id: last.id };
+    }
   }
 
   /**

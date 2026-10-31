@@ -102,7 +102,7 @@ describe('/v1/imports', () => {
     expect(ledger.body.items).toHaveLength(11);
     const types = Object.fromEntries((ledger.body.items as { merchantName: string; type: string }[]).map((t) => [t.merchantName, t.type]));
     const atm = (ledger.body.items as { merchantName: string; category: { name: string } }[]).find((t) => t.merchantName === 'ATM withdrawal')!;
-    expect(atm.category.name).toBe('Transfers');
+    expect(atm.category.name).toBe('Cash');
     expect(types).toMatchObject({ 'ATM withdrawal': 'atm_withdrawal', 'Amazon Seller Services': 'refund', 'Acme Software Pvt Ltd': 'income', 'Swiggy Limited': 'expense' });
     const swiggy = (ledger.body.items as { id: string; merchantName: string }[]).find((t) => t.merchantName === 'Swiggy Limited')!;
     const detail = await http().get(`/v1/transactions/${swiggy.id}`).set(bearer(asha)).expect(200);

@@ -13,6 +13,7 @@ export const CATEGORY_ICONS = [
   'health',
   'education',
   'travel',
+  'cash',
   'transfer',
   'income',
   'other',
@@ -34,7 +35,7 @@ export interface SystemCategory {
 
 const id = (n: number) => `00000000-0000-7000-8000-${String(n).padStart(12, '0')}`;
 
-/** The 13 system categories. Ids are fixed: the migration inserts exactly these rows. */
+/** The 14 system categories. Ids are fixed: the migration inserts exactly these rows. */
 export const SYSTEM_CATEGORIES: readonly SystemCategory[] = [
   { id: id(1), key: 'food_dining', name: 'Food & Dining', icon: 'food', color: 'chart2', isExpense: true, sortOrder: 1 },
   { id: id(2), key: 'groceries', name: 'Groceries', icon: 'groceries', color: 'chart3', isExpense: true, sortOrder: 2 },
@@ -46,10 +47,14 @@ export const SYSTEM_CATEGORIES: readonly SystemCategory[] = [
   { id: id(8), key: 'health', name: 'Health', icon: 'health', color: 'chart2', isExpense: true, sortOrder: 8 },
   { id: id(9), key: 'education', name: 'Education', icon: 'education', color: 'chart4', isExpense: true, sortOrder: 9 },
   { id: id(10), key: 'travel', name: 'Travel', icon: 'travel', color: 'chart5', isExpense: true, sortOrder: 10 },
-  { id: id(11), key: 'transfers', name: 'Transfers', icon: 'transfer', color: 'muted', isExpense: false, sortOrder: 11 },
-  { id: id(12), key: 'income', name: 'Income', icon: 'income', color: 'accent', isExpense: false, sortOrder: 12 },
-  { id: id(13), key: 'other', name: 'Other', icon: 'other', color: 'muted', isExpense: true, sortOrder: 13 },
+  // Cash taken out at an ATM: spend whose real destination the bank never sees (added in Sprint 6).
+  { id: id(14), key: 'cash', name: 'Cash', icon: 'cash', color: 'chart4', isExpense: true, sortOrder: 11 },
+  { id: id(11), key: 'transfers', name: 'Transfers', icon: 'transfer', color: 'muted', isExpense: false, sortOrder: 12 },
+  { id: id(12), key: 'income', name: 'Income', icon: 'income', color: 'accent', isExpense: false, sortOrder: 13 },
+  { id: id(13), key: 'other', name: 'Other', icon: 'other', color: 'muted', isExpense: true, sortOrder: 14 },
 ];
 
 export const OTHER_CATEGORY_ID = id(13);
 export const INCOME_CATEGORY_ID = id(12);
+export const TRANSFERS_CATEGORY_ID = id(11);
+export const CASH_CATEGORY_ID = id(14);
