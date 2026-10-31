@@ -1,0 +1,165 @@
+// Expense Tracker schema. Conventions (see the design doc, "Data model"):
+// - UUID v7 primary keys
+// - money as BIGINT paise, never floats (amount_paise > 0 is a CHECK in the migration SQL)
+// - timestamps as TIMESTAMPTZ in UTC, shown in Asia/Kolkata
+// - every user-owned row has user_id and every query filters by it
+//
+// Table ownership (only the owning module reads or writes a table):
+//   users → users · accounts → accounts · categories → categories
+//   transactions, transaction_sources → ingest (writes via IngestService, reads via LedgerQueryService)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum IncomeFrequency {
+  monthly
+  twice_monthly
+  weekly
+  irregular
+}
+
+enum AccountKind {
+  savings
+  credit_card
+  wallet
+  cash
+}
+
+enum Direction {
+  debit
+  credit
+}
+
+enum TxnType {
+  expense
+  income
+  refund
+  transfer
+  atm_withdrawal
+  cash_deposit
+}
+
+enum CategorySource {
+  rule
+  user
+  default
+}
+
+enum SourceKind {
+  manual
+  sms
+  notification
+  statement
+}
+
+model User {
+  id                 String           @id @default(uuid(7)) @db.Uuid
+  googleSub          String           @unique @map("google_sub")
+  email              String
+  name               String?
+  monthlyIncomePaise BigInt?          @map("monthly_income_paise")
+  incomeFrequency    IncomeFrequency? @map("income_frequency")
+  currency           String           @default("INR")
+  timezone           String           @default("Asia/Kolkata")
+  onboardedAt        DateTime?        @map("onboarded_at") @db.Timestamptz
+  createdAt          DateTime         @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt          DateTime         @updatedAt @map("updated_at") @db.Timestamptz
+
+  accounts           Account[]
+  categories         Category[]
+  transactions       Transaction[]
+  transactionSources TransactionSource[]
+
+  @@map("users")
+}
+
+model Account {
+  id           String      @id @default(uuid(7)) @db.Uuid
+  userId       String      @map("user_id") @db.Uuid
+  bankName     String      @map("bank_name")
+  kind         AccountKind
+  /// Last 4 digits only; full numbers are never stored.
+  maskedNumber String?     @map("masked_number") @db.VarChar(4)
+  nickname     String?
+  createdAt    DateTime    @default(now()) @map("created_at") @db.Timestamptz
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@unique([userId, bankName, maskedNumber])
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Category {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  /// Null for the 13 system categories.
+  userId    String?  @map("user_id") @db.Uuid
+  name      String
+  icon      String
+  color     String
+  isExpense Boolean  @default(true) @map("is_expense")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  user         User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@unique([userId, name])
+  @@map("categories")
+}
+
+model Transaction {
+  id             String         @id @default(uuid(7)) @db.Uuid
+  userId         String         @map("user_id") @db.Uuid
+  accountId      String?        @map("account_id") @db.Uuid
+  amountPaise    BigInt         @map("amount_paise")
+  direction      Direction
+  type           TxnType
+  occurredAt     DateTime       @map("occurred_at") @db.Timestamptz
+  merchantName   String?        @map("merchant_name")
+  categoryId     String?        @map("category_id") @db.Uuid
+  categorySource CategorySource @default(default) @map("category_source")
+  referenceNo    String?        @map("reference_no")
+  note           String?
+  /// Set when the user edits amount, date or merchant; later sources never overwrite their fix.
+  userEdited     Boolean        @default(false) @map("user_edited")
+  deletedAt      DateTime?      @map("deleted_at") @db.Timestamptz
+  createdAt      DateTime       @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime       @updatedAt @map("updated_at") @db.Timestamptz
+
+  user     User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account  Account?            @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  category Category?           @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  sources  TransactionSource[]
+
+  @@index([userId, occurredAt(sort: Desc), id(sort: Desc)])
+  @@index([userId, referenceNo])
+  @@map("transactions")
+}
+
+model TransactionSource {
+  id            String     @id @default(uuid(7)) @db.Uuid
+  userId        String     @map("user_id") @db.Uuid
+  transactionId String     @map("transaction_id") @db.Uuid
+  source        SourceKind
+  /// SHA-256 of the normalized raw input; makes re-sent SMS and re-uploaded statements no-ops.
+  sourceHash    String     @map("source_hash")
+  rawText       String?    @map("raw_text")
+  parsedJson    Json?      @map("parsed_json")
+  /// Foreign key to statement_imports is added with that table in Sprint 5.
+  importId      String?    @map("import_id") @db.Uuid
+  receivedAt    DateTime   @map("received_at") @db.Timestamptz
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transaction Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, sourceHash])
+  @@index([transactionId])
+  @@map("transaction_sources")
+}

@@ -1,0 +1,12 @@
+{
+  "name": "expense-tracker",
+  "private": true,
+  "packageManager": "pnpm@9.15.0",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "lint": "pnpm -r --parallel run lint",
+    "typecheck": "pnpm -r --parallel run typecheck",
+    "test": "pnpm -r run test",
+    "api-client:generate": "pnpm --filter @et/api run openapi:emit && pnpm --filter @et/api-client run generate"
+  }
+}
