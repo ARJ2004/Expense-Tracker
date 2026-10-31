@@ -1,0 +1,19 @@
+{
+  "adapter": "hdfc",
+  "bank": "HDFC Bank",
+  "accountLast4": "6789",
+  "skipped": 0,
+  "rows": [
+    { "rowNo": 1, "date": "2026-10-01", "amountPaise": 8500000, "direction": "credit", "counterparty": "Acme Software Pvt Ltd", "balancePaise": 11000000 },
+    { "rowNo": 2, "date": "2026-10-02", "amountPaise": 48600, "direction": "debit", "counterparty": "Swiggy Limited", "referenceNo": "427512345678", "balancePaise": 10951400 },
+    { "rowNo": 3, "date": "2026-10-03", "amountPaise": 48600, "direction": "debit", "counterparty": "Swiggy Limited", "referenceNo": "427612345679", "balancePaise": 10902800 },
+    { "rowNo": 4, "date": "2026-10-05", "amountPaise": 500000, "direction": "debit", "counterparty": "ATM withdrawal", "balancePaise": 10402800 },
+    { "rowNo": 5, "date": "2026-10-07", "amountPaise": 234950, "direction": "debit", "counterparty": "Amazon Pay India Priva", "balancePaise": 10167850 },
+    { "rowNo": 6, "date": "2026-10-09", "amountPaise": 2500000, "direction": "debit", "counterparty": "Ravi Kumar", "referenceNo": "428212345680", "balancePaise": 7667850 },
+    { "rowNo": 7, "date": "2026-10-12", "amountPaise": 119900, "direction": "credit", "counterparty": "Amazon Seller Services", "referenceNo": "428512345681", "balancePaise": 7787750 },
+    { "rowNo": 8, "date": "2026-10-15", "amountPaise": 31240, "direction": "debit", "counterparty": "Uber India Systems Pvt", "referenceNo": "428812345682", "balancePaise": 7756510 },
+    { "rowNo": 9, "date": "2026-10-18", "amountPaise": 184200, "direction": "debit", "counterparty": "Bescom Bangalore", "referenceNo": "429112345683", "balancePaise": 7572310 },
+    { "rowNo": 10, "date": "2026-10-21", "amountPaise": 61200, "direction": "debit", "counterparty": "Zomato Ltd", "referenceNo": "429412345684", "balancePaise": 7511110 },
+    { "rowNo": 11, "date": "2026-10-25", "amountPaise": 21200, "direction": "credit", "counterparty": "Credit Interest Capitalised", "balancePaise": 7532310 }
+  ]
+}

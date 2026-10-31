@@ -1,2 +1,2 @@
-export * from './statement-adapter';
+export * from './statement';
 export * from './sms-template';

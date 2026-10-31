@@ -8,6 +8,7 @@
 //   users → users · accounts → accounts · categories → categories
 //   transactions, transaction_sources → ingest (writes via IngestService, reads via LedgerQueryService)
 //   merchant_rules, category_corrections → categories
+//   statement_imports, import_rows → imports
 //   refresh_tokens → auth
 
 generator client {
@@ -60,6 +61,29 @@ enum SourceKind {
   statement
 }
 
+enum ImportStatus {
+  parsing
+  review
+  imported
+  failed
+}
+
+enum ImportFormat {
+  csv
+  xlsx
+}
+
+enum ImportRowAction {
+  import
+  skip
+}
+
+/// Why a row needs a look: its running balance doesn't add up, or it may already be in the ledger.
+enum ImportRowFlag {
+  balance_mismatch
+  possible_duplicate
+}
+
 model User {
   id                 String           @id @default(uuid(7)) @db.Uuid
   googleSub          String           @unique @map("google_sub")
@@ -80,6 +104,7 @@ model User {
   refreshTokens      RefreshToken[]
   merchantRules      MerchantRule[]
   corrections        CategoryCorrection[]
+  statementImports   StatementImport[]
 
   @@map("users")
 }
@@ -94,8 +119,9 @@ model Account {
   nickname     String?
   createdAt    DateTime    @default(now()) @map("created_at") @db.Timestamptz
 
-  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   transactions Transaction[]
+  imports      StatementImport[]
 
   @@unique([userId, bankName, maskedNumber])
   @@index([userId])
@@ -120,6 +146,7 @@ model Category {
   user          User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
   transactions  Transaction[]
   merchantRules MerchantRule[]
+  importRows    ImportRow[]
 
   @@unique([userId, name])
   @@map("categories")
@@ -168,12 +195,13 @@ model TransactionSource {
   sourceHash    String     @map("source_hash")
   rawText       String?    @map("raw_text")
   parsedJson    Json?      @map("parsed_json")
-  /// Foreign key to statement_imports is added with that table in Sprint 5.
+  /// The statement import this row came from; SET NULL if that import record is removed.
   importId      String?    @map("import_id") @db.Uuid
   receivedAt    DateTime   @map("received_at") @db.Timestamptz
 
-  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  transaction Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transaction Transaction      @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  import      StatementImport? @relation(fields: [importId], references: [id], onDelete: SetNull)
 
   @@unique([userId, sourceHash])
   @@index([transactionId])
@@ -234,4 +262,79 @@ model RefreshToken {
 
   @@index([userId])
   @@map("refresh_tokens")
+}
+
+/// One uploaded statement file and where it is in parse → review → imported.
+model StatementImport {
+  id             String       @id @default(uuid(7)) @db.Uuid
+  userId         String       @map("user_id") @db.Uuid
+  fileName       String       @map("file_name")
+  /// SHA-256 of the uploaded bytes; warns "You imported this file on 3 Nov".
+  fileSha256     String       @map("file_sha256")
+  /// The upload, held only until the parse job reads it, then set to null.
+  fileBytes      Bytes?       @map("file_bytes")
+  format         ImportFormat
+  status         ImportStatus @default(parsing)
+  /// Adapter that read the file ("hdfc", "generic") and the bank it names, if any.
+  adapter        String?
+  bankDetected   String?      @map("bank_detected")
+  last4Detected  String?      @map("last4_detected") @db.VarChar(4)
+  accountId      String?      @map("account_id") @db.Uuid
+  periodFrom     DateTime?    @map("period_from") @db.Date
+  periodTo       DateTime?    @map("period_to") @db.Date
+  rowCount       Int          @default(0) @map("row_count")
+  newCount       Int          @default(0) @map("new_count")
+  duplicateCount Int          @default(0) @map("duplicate_count")
+  flaggedCount   Int          @default(0) @map("flagged_count")
+  importedCount  Int          @default(0) @map("imported_count")
+  mergedCount    Int          @default(0) @map("merged_count")
+  /// Machine code for a failed parse (IMPORT_NO_ROWS, IMPORT_UNREADABLE, ...); never file content.
+  error          String?
+  confirmedAt    DateTime?    @map("confirmed_at") @db.Timestamptz
+  createdAt      DateTime     @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime     @updatedAt @map("updated_at") @db.Timestamptz
+
+  user    User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// SET NULL: deleting the account sends an import still in review back to "pick an account".
+  account Account?            @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  rows    ImportRow[]
+  sources TransactionSource[]
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([userId, fileSha256])
+  @@map("statement_imports")
+}
+
+/// A parsed statement row waiting for review. Becomes a transaction (or a merge) on confirm.
+model ImportRow {
+  id             String          @id @default(uuid(7)) @db.Uuid
+  importId       String          @map("import_id") @db.Uuid
+  rowNo          Int             @map("row_no")
+  occurredOn     DateTime        @map("occurred_on") @db.Date
+  amountPaise    BigInt          @map("amount_paise")
+  direction      Direction
+  narration      String
+  merchantName   String?         @map("merchant_name")
+  referenceNo    String?         @map("reference_no")
+  balancePaise   BigInt?         @map("balance_paise")
+  /// Occurrence among identical rows in this file (part of the source hash).
+  nth            Int             @default(1)
+  categoryId     String?         @map("category_id") @db.Uuid
+  categorySource CategorySource  @default(default) @map("category_source")
+  /// The ledger transaction this row matches (merge) or may duplicate (flag); null when new.
+  duplicateOf    String?         @map("duplicate_of") @db.Uuid
+  matchRule      String?         @map("match_rule")
+  flag           ImportRowFlag?
+  action         ImportRowAction @default(import)
+  /// The user's review edits ({ amountPaise, occurredOn, merchantName }). The parsed fields above
+  /// stay as read, so the source hash, and a re-import of the same file, never change.
+  editedJson     Json?           @map("edited_json")
+  /// The user touched this row in review; re-running the dry run keeps their action and category.
+  edited         Boolean         @default(false)
+
+  import   StatementImport @relation(fields: [importId], references: [id], onDelete: Cascade)
+  category Category?       @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@unique([importId, rowNo])
+  @@map("import_rows")
 }

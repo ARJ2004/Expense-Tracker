@@ -14,4 +14,6 @@ export type MainStackParamList = {
   Tabs: undefined;
   TransactionDetail: { id: string };
   Accounts: undefined;
+  /** alreadyImportedAt: this exact file was added before (shown as a notice). */
+  ImportReview: { id: string; alreadyImportedAt?: string };
 };

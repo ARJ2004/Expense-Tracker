@@ -26,6 +26,14 @@ export type DayTotal = components['schemas']['DayTotalDto'];
 export type Recategorize = components['schemas']['RecategorizeDto'];
 export type RecategorizeResult = components['schemas']['RecategorizeResultDto'];
 export type ListTransactionsQuery = NonNullable<paths['/v1/transactions']['get']['parameters']['query']>;
+export type Import = components['schemas']['ImportDto'];
+export type ImportStatus = components['schemas']['ImportStatus'];
+export type ImportRow = components['schemas']['ImportRowDto'];
+export type ImportRowStatus = components['schemas']['ImportRowStatus'];
+export type ImportRowAction = components['schemas']['ImportRowAction'];
+export type UploadImportResult = components['schemas']['UploadResultDto'];
+export type UpdateImportRow = components['schemas']['UpdateImportRowDto'];
+export type ImportRowFilter = NonNullable<NonNullable<paths['/v1/imports/{id}/rows']['get']['parameters']['query']>['filter']>;
 
 /** Creates a typed client for the Expense Tracker API; every path, body and response is checked. */
 export function createApiClient(options: ClientOptions & { baseUrl: string }) {

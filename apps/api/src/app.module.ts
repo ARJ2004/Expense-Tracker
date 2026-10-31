@@ -10,6 +10,7 @@ import { CategoriesModule } from './categories';
 import { CommonModule } from './common';
 import { validateConfig } from './config/app-config';
 import { HealthModule } from './health/health.module';
+import { ImportsModule } from './imports';
 import { TransactionsModule } from './transactions';
 import { UsersModule } from './users';
 
@@ -36,6 +37,7 @@ import { UsersModule } from './users';
     AccountsModule,
     CategoriesModule,
     TransactionsModule,
+    ImportsModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

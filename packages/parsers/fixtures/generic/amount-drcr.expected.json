@@ -1,0 +1,10 @@
+{
+  "adapter": "generic",
+  "accountLast4": "5521",
+  "skipped": 0,
+  "rows": [
+    { "rowNo": 1, "date": "2026-10-01", "amountPaise": 123400, "direction": "debit", "referenceNo": "427512349999", "balancePaise": 1876600 },
+    { "rowNo": 2, "date": "2026-10-02", "amountPaise": 500000, "direction": "credit", "referenceNo": "N2752612345", "balancePaise": 2376600 },
+    { "rowNo": 3, "date": "2026-10-03", "amountPaise": 200000, "direction": "debit", "balancePaise": 2176600 }
+  ]
+}

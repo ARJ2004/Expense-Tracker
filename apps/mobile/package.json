@@ -13,6 +13,7 @@
     "@et/api-client": "workspace:*",
     "@et/domain": "workspace:*",
     "@react-native-community/datetimepicker": "^9.2.2",
+    "@react-native-documents/picker": "12.0.2",
     "@react-native-google-signin/google-signin": "^17.0.0",
     "@react-navigation/bottom-tabs": "^7.21.0",
     "@react-navigation/native": "^7.5.1",

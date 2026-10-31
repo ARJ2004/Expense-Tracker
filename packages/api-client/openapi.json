@@ -1401,6 +1401,530 @@
           "transactions"
         ]
       }
+    },
+    "/v1/imports": {
+      "post": {
+        "operationId": "uploadImport",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "accountId": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadResultDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "FILE_TOO_LARGE (over 10 MB)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "IMPORT_PDF_NOT_YET or IMPORT_UNSUPPORTED_FORMAT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Upload a CSV or XLSX statement; it is parsed in the background",
+        "tags": [
+          "imports"
+        ]
+      },
+      "get": {
+        "operationId": "listImports",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportListDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "The latest 20 imports, newest first",
+        "tags": [
+          "imports"
+        ]
+      }
+    },
+    "/v1/imports/{id}": {
+      "get": {
+        "operationId": "getImport",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "imports"
+        ]
+      },
+      "patch": {
+        "operationId": "setImportAccount",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateImportDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "IMPORT_NOT_IN_REVIEW",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Pick the account; the duplicate check runs again",
+        "tags": [
+          "imports"
+        ]
+      },
+      "delete": {
+        "operationId": "discardImport",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "IMPORT_ALREADY_CONFIRMED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Discard an import that was not added",
+        "tags": [
+          "imports"
+        ]
+      }
+    },
+    "/v1/imports/{id}/rows": {
+      "get": {
+        "operationId": "listImportRows",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filter",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "all",
+              "type": "string",
+              "enum": [
+                "all",
+                "new",
+                "duplicates",
+                "flagged",
+                "needs_category"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportRowListDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "imports"
+        ]
+      }
+    },
+    "/v1/imports/{id}/rows/{rowNo}": {
+      "patch": {
+        "operationId": "updateImportRow",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "rowNo",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateImportRowDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportRowDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "IMPORT_NOT_IN_REVIEW",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tick or untick a row, pick its category, or correct it",
+        "tags": [
+          "imports"
+        ]
+      }
+    },
+    "/v1/imports/{id}/confirm": {
+      "post": {
+        "operationId": "confirmImport",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "IMPORT_NOT_IN_REVIEW or ACCOUNT_REQUIRED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Add the ticked rows to the ledger in one transaction",
+        "tags": [
+          "imports"
+        ]
+      }
     }
   },
   "info": {
@@ -2360,6 +2884,338 @@
         "required": [
           "transaction",
           "updatedCount"
+        ]
+      },
+      "ImportStatus": {
+        "type": "string",
+        "enum": [
+          "parsing",
+          "review",
+          "imported",
+          "failed"
+        ]
+      },
+      "ImportDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fileName": {
+            "type": "string",
+            "example": "Acct_Statement_Oct2026.xlsx"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ImportStatus"
+              }
+            ]
+          },
+          "bankDetected": {
+            "type": "string",
+            "nullable": true,
+            "example": "HDFC Bank",
+            "description": "Bank named in the file, if any"
+          },
+          "account": {
+            "nullable": true,
+            "description": "Null until detected or picked",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TransactionAccountDto"
+              }
+            ]
+          },
+          "periodFrom": {
+            "type": "string",
+            "nullable": true,
+            "format": "date",
+            "example": "2026-10-01"
+          },
+          "periodTo": {
+            "type": "string",
+            "nullable": true,
+            "format": "date",
+            "example": "2026-10-31"
+          },
+          "rowCount": {
+            "type": "number",
+            "example": 160
+          },
+          "newCount": {
+            "type": "number",
+            "example": 142,
+            "description": "Rows not in the ledger yet"
+          },
+          "duplicateCount": {
+            "type": "number",
+            "example": 18,
+            "description": "Rows already in the ledger (merged on confirm, never added twice)"
+          },
+          "flaggedCount": {
+            "type": "number",
+            "example": 2,
+            "description": "Possible duplicates and balance mismatches to look at"
+          },
+          "needsCategoryCount": {
+            "type": "number",
+            "example": 6,
+            "description": "New debit rows no rule could categorize"
+          },
+          "selectedCount": {
+            "type": "number",
+            "example": 0,
+            "description": "Rows that will be added: ticked and new"
+          },
+          "importedCount": {
+            "type": "number",
+            "example": 0
+          },
+          "mergedCount": {
+            "type": "number",
+            "example": 0
+          },
+          "error": {
+            "type": "string",
+            "nullable": true,
+            "example": "IMPORT_NO_ROWS",
+            "description": "Why parsing failed"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "confirmedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "fileName",
+          "status",
+          "bankDetected",
+          "account",
+          "periodFrom",
+          "periodTo",
+          "rowCount",
+          "newCount",
+          "duplicateCount",
+          "flaggedCount",
+          "needsCategoryCount",
+          "selectedCount",
+          "importedCount",
+          "mergedCount",
+          "error",
+          "createdAt",
+          "confirmedAt"
+        ]
+      },
+      "UploadResultDto": {
+        "type": "object",
+        "properties": {
+          "import": {
+            "$ref": "#/components/schemas/ImportDto"
+          },
+          "alreadyImportedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Set when this exact file was imported before"
+          }
+        },
+        "required": [
+          "import"
+        ]
+      },
+      "ImportListDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ImportDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "ImportRowStatus": {
+        "type": "string",
+        "enum": [
+          "new",
+          "duplicate",
+          "possible_duplicate"
+        ]
+      },
+      "ImportRowAction": {
+        "type": "string",
+        "enum": [
+          "import",
+          "skip"
+        ]
+      },
+      "ImportRowDto": {
+        "type": "object",
+        "properties": {
+          "rowNo": {
+            "type": "number",
+            "example": 12
+          },
+          "occurredOn": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-10-31"
+          },
+          "amountPaise": {
+            "type": "number",
+            "example": 48600
+          },
+          "direction": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Direction"
+              }
+            ]
+          },
+          "narration": {
+            "type": "string",
+            "example": "UPI-SWIGGY LIMITED-SWIGGYUPI@AXISBANK-..."
+          },
+          "merchantName": {
+            "type": "string",
+            "nullable": true,
+            "example": "Swiggy Limited"
+          },
+          "referenceNo": {
+            "type": "string",
+            "nullable": true
+          },
+          "balancePaise": {
+            "type": "number",
+            "nullable": true
+          },
+          "category": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TransactionCategoryDto"
+              }
+            ]
+          },
+          "categorySource": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CategorySource"
+              }
+            ]
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ImportRowStatus"
+              }
+            ]
+          },
+          "duplicateOf": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid",
+            "description": "The ledger transaction it matches"
+          },
+          "balanceMismatch": {
+            "type": "boolean",
+            "description": "The running balance doesn't add up at this row"
+          },
+          "action": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ImportRowAction"
+              }
+            ]
+          },
+          "edited": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "rowNo",
+          "occurredOn",
+          "amountPaise",
+          "direction",
+          "narration",
+          "merchantName",
+          "referenceNo",
+          "balancePaise",
+          "category",
+          "categorySource",
+          "status",
+          "duplicateOf",
+          "balanceMismatch",
+          "action",
+          "edited"
+        ]
+      },
+      "ImportRowListDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ImportRowDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "UpdateImportRowDto": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "import",
+              "skip"
+            ]
+          },
+          "categoryId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "amountPaise": {
+            "type": "number",
+            "example": 48600
+          },
+          "occurredOn": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-10-31"
+          },
+          "merchantName": {
+            "type": "string",
+            "nullable": true,
+            "example": "Swiggy"
+          }
+        }
+      },
+      "UpdateImportDto": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "accountId"
         ]
       }
     }

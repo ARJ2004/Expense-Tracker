@@ -4,4 +4,4 @@ export { RecentTransactions } from './components/RecentTransactions';
 export { TransactionDetailScreen } from './screens/TransactionDetailScreen';
 export { useAddSheet } from './add-sheet';
 export { useOpenAddSheet } from './open-add';
-export { transactionKeys, useRecentTransactions } from './hooks';
+export { transactionKeys, useRecentCategoryIds, useRecentTransactions } from './hooks';

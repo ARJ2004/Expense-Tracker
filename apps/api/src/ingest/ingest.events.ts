@@ -15,3 +15,12 @@ export interface TransactionsRecategorizedEvent {
   userId: string;
   transactionIds: string[];
 }
+
+/** Many rows written at once (a confirmed statement import). Merged rows gained a source. */
+export const TRANSACTIONS_INGESTED = 'transactions.ingested';
+
+export interface TransactionsIngestedEvent {
+  userId: string;
+  createdIds: string[];
+  mergedIds: string[];
+}

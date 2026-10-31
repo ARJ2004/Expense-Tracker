@@ -28,3 +28,12 @@ if (!global.crypto) global.crypto = {};
 if (!global.crypto.getRandomValues) {
   global.crypto.getRandomValues = (arr) => require('crypto').randomFillSync(arr);
 }
+
+jest.mock('@react-native-documents/picker', () => ({
+  pick: jest.fn(async () => {
+    throw Object.assign(new Error('cancelled'), { code: 'OPERATION_CANCELED' });
+  }),
+  isErrorWithCode: (e) => e != null && typeof e.code === 'string',
+  errorCodes: { OPERATION_CANCELED: 'OPERATION_CANCELED' },
+  types: { csv: ['text/csv'], xlsx: 'xlsx', plainText: 'text/plain', pdf: 'application/pdf' },
+}));

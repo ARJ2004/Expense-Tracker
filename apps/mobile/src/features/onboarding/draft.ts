@@ -26,3 +26,17 @@ export const useOnboardingDraft = create<OnboardingDraft>((set) => ({
   skipIncome: () => set({ incomeDigits: '', frequency: null }),
   reset: () => set(empty),
 }));
+
+/**
+ * The tab the app opens on right after onboarding: Imports when the user chose "Import a
+ * statement", so the first thing they see is the upload card. Read once by the tabs.
+ */
+export const useLandingTab = create<{ tab: 'Home' | 'Imports'; take: () => 'Home' | 'Imports'; set: (tab: 'Home' | 'Imports') => void }>((set, get) => ({
+  tab: 'Home',
+  take: () => {
+    const { tab } = get();
+    set({ tab: 'Home' });
+    return tab;
+  },
+  set: (tab) => set({ tab }),
+}));

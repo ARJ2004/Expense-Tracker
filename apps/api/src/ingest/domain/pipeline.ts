@@ -11,10 +11,16 @@ export interface CategoryRule {
   apply(txn: NormalizedTxn): CategoryHit | null;
 }
 
+/** What type rules may know beyond the row itself. */
+export interface TypeContext {
+  /** Last 4 digits of the user's other accounts, for own-account transfers. */
+  ownAccountLast4: readonly string[];
+}
+
 /** One type classification strategy (transfer, ATM, refund, ...). First non-null wins. */
 export interface TypeRule {
   readonly name: string;
-  classify(txn: NormalizedTxn): TxnType | null;
+  classify(txn: NormalizedTxn, ctx?: TypeContext): TxnType | null;
 }
 
 /** An existing ledger row a new sighting might be the same payment as. */
@@ -33,6 +39,8 @@ export interface DedupMatch {
   transactionId: string;
   /** "merge" attaches the source; "flag" keeps both and marks a possible duplicate. */
   action: 'merge' | 'flag';
+  /** Which rule matched (or "source" when this exact row was imported before). */
+  rule: string;
 }
 
 /** One dedup rule from the design doc's table; evaluated in order. */

@@ -34,7 +34,7 @@ const metrics = { frame: { x: 0, y: 0, width: 390, height: 844 }, insets: { top:
 async function renderSheet(onSaved = jest.fn()) {
   await render(
     <SafeAreaProvider initialMetrics={metrics}>
-      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })}>
+      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity }, mutations: { retry: false, gcTime: Infinity } } })}>
         <ThemeProvider>
           <AddTransactionSheet onSaved={onSaved} />
         </ThemeProvider>

@@ -1,6 +1,11 @@
+import { PossibleDuplicateRule, ReferenceRule, SameAccountDayRule, SimilarCounterpartyRule } from '../dedup';
 import type { CategoryRule, DedupRule, TypeRule } from '../pipeline';
+import { AtmRule } from './atm.rule';
+import { CashDepositRule } from './cash-deposit.rule';
 import { DefaultCategoryRule } from './default-category.rule';
 import { DirectionTypeRule } from './direction-type.rule';
+import { OwnAccountTransferRule } from './own-account-transfer.rule';
+import { RefundRule } from './refund.rule';
 import { UserChoiceRule } from './user-choice.rule';
 
 /**
@@ -11,11 +16,23 @@ import { UserChoiceRule } from './user-choice.rule';
 export const CATEGORY_RULES: readonly CategoryRule[] = [new UserChoiceRule()];
 export const FALLBACK_CATEGORY = new DefaultCategoryRule();
 
-/** Transfer, ATM and refund rules (Sprint 5) slot in before the direction fallback. */
-export const TYPE_RULES: readonly TypeRule[] = [new DirectionTypeRule()];
+/** Specific types first; the direction fallback (expense / income) always matches, so it goes last. */
+export const TYPE_RULES: readonly TypeRule[] = [
+  new AtmRule(),
+  new CashDepositRule(),
+  new OwnAccountTransferRule(),
+  new RefundRule(),
+  new DirectionTypeRule(),
+];
 
 /**
- * Dedup rules 1–4 from the design doc arrive with statement import (Sprint 5). Manual entries only
- * meet other manual entries, and two sources of the same kind never merge, so none apply yet.
+ * Dedup rules 1–4 from the design doc, in order; the first match wins. They run for automatic
+ * sources (statement rows now, SMS later). A manual entry is the user's own word and is never
+ * merged on the way in; a later statement row merges into it instead.
  */
-export const DEDUP_RULES: readonly DedupRule[] = [];
+export const DEDUP_RULES: readonly DedupRule[] = [
+  new ReferenceRule(),
+  new SameAccountDayRule(),
+  new SimilarCounterpartyRule(),
+  new PossibleDuplicateRule(),
+];

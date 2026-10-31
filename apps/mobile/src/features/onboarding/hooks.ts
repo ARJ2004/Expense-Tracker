@@ -3,7 +3,7 @@ import type { Me } from '@et/api-client';
 import { toPaise } from '@et/domain';
 import { api, toApiError } from '../../lib';
 import { useSession } from '../auth';
-import { useOnboardingDraft } from './draft';
+import { useLandingTab, useOnboardingDraft } from './draft';
 
 /** Sends the income answers; the session's user flips to onboarded and navigation moves to Home. */
 export function useCompleteOnboarding() {
@@ -21,6 +21,7 @@ export function useCompleteOnboarding() {
       return data;
     },
     onSuccess: (me) => {
+      useLandingTab.getState().set(useOnboardingDraft.getState().source === 'statement' ? 'Imports' : 'Home');
       reset();
       setUser(me);
     },

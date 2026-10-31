@@ -59,15 +59,17 @@ export class AccountsService {
 
   /**
    * Finds the account a statement or SMS refers to by bank and last 4, or creates it
-   * ("HDFC Bank ••1234") so an import never fails on an unknown account.
+   * ("HDFC Bank ••1234") so an import never fails on an unknown account. With create: false it
+   * only looks (statement import asks the user instead of adding accounts silently).
    */
-  async resolve(userId: string, hint: AccountHint): Promise<AccountDto | null> {
+  async resolve(userId: string, hint: AccountHint, options: { create?: boolean } = {}): Promise<AccountDto | null> {
     const key = normalizeAccountHint(hint);
     if (!key) return null;
     const existing = await this.prisma.account.findFirst({
       where: { userId, bankName: { equals: key.bankName, mode: 'insensitive' }, maskedNumber: key.last4 },
     });
     if (existing) return toDto(existing);
+    if (options.create === false) return null;
     try {
       return toDto(
         await this.prisma.account.create({ data: { userId, bankName: key.bankName, kind: key.kind, maskedNumber: key.last4 } }),

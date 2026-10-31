@@ -266,6 +266,92 @@ export interface paths {
         patch: operations["recategorizeTransaction"];
         trace?: never;
     };
+    "/v1/imports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The latest 20 imports, newest first */
+        get: operations["listImports"];
+        put?: never;
+        /** Upload a CSV or XLSX statement; it is parsed in the background */
+        post: operations["uploadImport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/imports/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getImport"];
+        put?: never;
+        post?: never;
+        /** Discard an import that was not added */
+        delete: operations["discardImport"];
+        options?: never;
+        head?: never;
+        /** Pick the account; the duplicate check runs again */
+        patch: operations["setImportAccount"];
+        trace?: never;
+    };
+    "/v1/imports/{id}/rows": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listImportRows"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/imports/{id}/rows/{rowNo}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Tick or untick a row, pick its category, or correct it */
+        patch: operations["updateImportRow"];
+        trace?: never;
+    };
+    "/v1/imports/{id}/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add the ticked rows to the ledger in one transaction */
+        post: operations["confirmImport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -576,6 +662,139 @@ export interface components {
             transaction: components["schemas"]["TransactionDetailDto"];
             /** @description Other transactions from the same merchant that moved too */
             updatedCount: number;
+        };
+        /** @enum {string} */
+        ImportStatus: "parsing" | "review" | "imported" | "failed";
+        ImportDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example Acct_Statement_Oct2026.xlsx */
+            fileName: string;
+            status: components["schemas"]["ImportStatus"];
+            /**
+             * @description Bank named in the file, if any
+             * @example HDFC Bank
+             */
+            bankDetected: string | null;
+            /** @description Null until detected or picked */
+            account: components["schemas"]["TransactionAccountDto"] | null;
+            /**
+             * Format: date
+             * @example 2026-10-01
+             */
+            periodFrom: string | null;
+            /**
+             * Format: date
+             * @example 2026-10-31
+             */
+            periodTo: string | null;
+            /** @example 160 */
+            rowCount: number;
+            /**
+             * @description Rows not in the ledger yet
+             * @example 142
+             */
+            newCount: number;
+            /**
+             * @description Rows already in the ledger (merged on confirm, never added twice)
+             * @example 18
+             */
+            duplicateCount: number;
+            /**
+             * @description Possible duplicates and balance mismatches to look at
+             * @example 2
+             */
+            flaggedCount: number;
+            /**
+             * @description New debit rows no rule could categorize
+             * @example 6
+             */
+            needsCategoryCount: number;
+            /**
+             * @description Rows that will be added: ticked and new
+             * @example 0
+             */
+            selectedCount: number;
+            /** @example 0 */
+            importedCount: number;
+            /** @example 0 */
+            mergedCount: number;
+            /**
+             * @description Why parsing failed
+             * @example IMPORT_NO_ROWS
+             */
+            error: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            confirmedAt: string | null;
+        };
+        UploadResultDto: {
+            import: components["schemas"]["ImportDto"];
+            /**
+             * Format: date-time
+             * @description Set when this exact file was imported before
+             */
+            alreadyImportedAt?: string;
+        };
+        ImportListDto: {
+            items: components["schemas"]["ImportDto"][];
+        };
+        /** @enum {string} */
+        ImportRowStatus: "new" | "duplicate" | "possible_duplicate";
+        /** @enum {string} */
+        ImportRowAction: "import" | "skip";
+        ImportRowDto: {
+            /** @example 12 */
+            rowNo: number;
+            /**
+             * Format: date
+             * @example 2026-10-31
+             */
+            occurredOn: string;
+            /** @example 48600 */
+            amountPaise: number;
+            direction: components["schemas"]["Direction"];
+            /** @example UPI-SWIGGY LIMITED-SWIGGYUPI@AXISBANK-... */
+            narration: string;
+            /** @example Swiggy Limited */
+            merchantName: string | null;
+            referenceNo: string | null;
+            balancePaise: number | null;
+            category: components["schemas"]["TransactionCategoryDto"] | null;
+            categorySource: components["schemas"]["CategorySource"];
+            status: components["schemas"]["ImportRowStatus"];
+            /**
+             * Format: uuid
+             * @description The ledger transaction it matches
+             */
+            duplicateOf: string | null;
+            /** @description The running balance doesn't add up at this row */
+            balanceMismatch: boolean;
+            action: components["schemas"]["ImportRowAction"];
+            edited: boolean;
+        };
+        ImportRowListDto: {
+            items: components["schemas"]["ImportRowDto"][];
+        };
+        UpdateImportRowDto: {
+            /** @enum {string} */
+            action?: "import" | "skip";
+            /** Format: uuid */
+            categoryId?: string;
+            /** @example 48600 */
+            amountPaise?: number;
+            /**
+             * Format: date
+             * @example 2026-10-31
+             */
+            occurredOn?: string;
+            /** @example Swiggy */
+            merchantName?: string | null;
+        };
+        UpdateImportDto: {
+            /** Format: uuid */
+            accountId: string;
         };
     };
     responses: never;
@@ -1522,6 +1741,354 @@ export interface operations {
             };
             /** @description Transaction or category not found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    listImports: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportListDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    uploadImport: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                    /** Format: uuid */
+                    accountId?: string;
+                };
+            };
+        };
+        responses: {
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UploadResultDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description FILE_TOO_LARGE (over 10 MB) */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description IMPORT_PDF_NOT_YET or IMPORT_UNSUPPORTED_FORMAT */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getImport: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    discardImport: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description IMPORT_ALREADY_CONFIRMED */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    setImportAccount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateImportDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description IMPORT_NOT_IN_REVIEW */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    listImportRows: {
+        parameters: {
+            query?: {
+                filter?: "all" | "new" | "duplicates" | "flagged" | "needs_category";
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportRowListDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    updateImportRow: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                rowNo: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateImportRowDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportRowDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description IMPORT_NOT_IN_REVIEW */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    confirmImport: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description IMPORT_NOT_IN_REVIEW or ACCOUNT_REQUIRED */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -34,6 +34,26 @@ export class CategorizerService {
     return null;
   }
 
+  /**
+   * categorize() for many rows with one query: the user's merchant rules for every key are loaded
+   * at once. Results are in input order.
+   */
+  async categorizeMany(userId: string, inputs: readonly CategorizeInput[], db: Db = this.prisma): Promise<(CategoryMatch | null)[]> {
+    const keys = [...new Set(inputs.map((i) => i.merchantKey).filter((k): k is string => !!k))];
+    const own = keys.length
+      ? await db.merchantRule.findMany({ where: { userId, patternKey: { in: keys } }, select: { patternKey: true, categoryId: true } })
+      : [];
+    const byKey = new Map(own.map((r) => [r.patternKey, r.categoryId]));
+    return inputs.map((input) => {
+      const ctx = { userRuleCategoryId: (input.merchantKey && byKey.get(input.merchantKey)) || null };
+      for (const rule of CATEGORIZER_RULES) {
+        const match = rule.apply(input, ctx);
+        if (match) return match;
+      }
+      return null;
+    });
+  }
+
   /** "Apply to all from this merchant": future rows from it get this category. */
   async saveMerchantRule(userId: string, key: string, merchantName: string, categoryId: string, db: Db = this.prisma): Promise<void> {
     await db.merchantRule.upsert({

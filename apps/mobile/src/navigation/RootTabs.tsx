@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View } from 'react-native';
 import { createBottomTabNavigator, type BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { HomeScreen } from '../features/home';
 import { ImportsScreen } from '../features/imports';
+import { useLandingTab } from '../features/onboarding';
 import { SettingsScreen } from '../features/settings';
 import { useAccounts } from '../features/accounts';
 import { TransactionsScreen, useOpenAddSheet } from '../features/transactions';
@@ -22,10 +23,12 @@ function renderTabBar(props: BottomTabBarProps) {
 
 export function RootTabs() {
   const openAdd = useOpenAddSheet();
+  // Imports right after onboarding when the user chose "Import a statement"; Home otherwise.
+  const [initialTab] = useState(() => useLandingTab.getState().take());
   // Keeps the accounts list cached so the Add sheet can pre-select one.
   useAccounts();
   return (
-    <Tab.Navigator screenOptions={{ headerShown: false }} tabBar={renderTabBar}>
+    <Tab.Navigator initialRouteName={initialTab} screenOptions={{ headerShown: false }} tabBar={renderTabBar}>
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Transactions" component={TransactionsScreen} />
       <Tab.Screen
