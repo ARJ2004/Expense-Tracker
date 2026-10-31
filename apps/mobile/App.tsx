@@ -3,7 +3,7 @@ import { StatusBar } from 'react-native';
 import { DarkTheme, DefaultTheme, NavigationContainer, type Theme as NavTheme } from '@react-navigation/native';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { queryClient } from './src/lib';
+import { queryClient, usePreferences } from './src/lib';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { ThemeProvider, useTheme } from './src/theme';
 
@@ -23,10 +23,11 @@ function ThemedNavigation() {
 }
 
 export default function App() {
+  const appearance = usePreferences((s) => s.appearance);
   return (
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
-        <ThemeProvider>
+        <ThemeProvider scheme={appearance === 'system' ? undefined : appearance}>
           <ThemedNavigation />
         </ThemeProvider>
       </QueryClientProvider>

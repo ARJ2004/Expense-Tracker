@@ -2,7 +2,9 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useNavigation, type NavigationProp } from '@react-navigation/native';
 import { AccountsScreen } from '../features/accounts';
+import { CategorySpendScreen } from '../features/home';
 import { ImportReviewScreen } from '../features/imports';
+import { CategoriesScreen, DeleteAccountScreen, IncomeScreen } from '../features/settings';
 import { AddTransactionSheet, TransactionDetailScreen } from '../features/transactions';
 import type { MainStackParamList } from '../lib';
 import { RootTabs } from './RootTabs';
@@ -19,6 +21,10 @@ export function MainNavigator() {
         <Stack.Screen name="TransactionDetail" component={TransactionDetailScreen} />
         <Stack.Screen name="Accounts" component={AccountsScreen} />
         <Stack.Screen name="ImportReview" component={ImportReviewScreen} />
+        <Stack.Screen name="CategorySpend" component={CategorySpendScreen} />
+        <Stack.Screen name="Categories" component={CategoriesScreen} />
+        <Stack.Screen name="Income" component={IncomeScreen} />
+        <Stack.Screen name="DeleteAccount" component={DeleteAccountScreen} />
       </Stack.Navigator>
       <AddTransactionSheet
         onSaved={(txn) => navigation.navigate('Main', { screen: 'TransactionDetail', params: { id: txn.id } })}

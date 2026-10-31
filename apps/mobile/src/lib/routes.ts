@@ -16,4 +16,9 @@ export type MainStackParamList = {
   Accounts: undefined;
   /** alreadyImportedAt: this exact file was added before (shown as a notice). */
   ImportReview: { id: string; alreadyImportedAt?: string };
+  /** Home's "See all": every category with spend in a month ("YYYY-MM"). */
+  CategorySpend: { month: string };
+  Categories: undefined;
+  Income: undefined;
+  DeleteAccount: undefined;
 };

@@ -13,6 +13,11 @@ export interface ColorTokens {
   heroText: string;
   heroMuted: string;
   heroTrack: string;
+  /** "56% used" pill on the hero card. */
+  heroPillBg: string;
+  heroPillFg: string;
+  /** Income figure on the hero card. */
+  heroIncome: string;
   highlight: string;
   /** Links and green text; emerald is a fill only on light backgrounds. */
   accent: string;
@@ -55,6 +60,9 @@ export const altusLight: ColorTokens = {
   heroText: '#FFFFFF',
   heroMuted: '#9FC3D8',
   heroTrack: 'rgba(255,255,255,0.14)',
+  heroPillBg: 'rgba(46,204,113,0.18)',
+  heroPillFg: '#BFF2D4',
+  heroIncome: '#2ECC71',
   highlight: '#2ECC71',
   accent: '#14804A',
   accentSoft: '#E3F5EA',
@@ -94,6 +102,9 @@ export const altusDark: ColorTokens = {
   heroText: '#FFFFFF',
   heroMuted: '#9FC3D8',
   heroTrack: 'rgba(255,255,255,0.12)',
+  heroPillBg: 'rgba(46,204,113,0.18)',
+  heroPillFg: '#BFF2D4',
+  heroIncome: '#5FE09A',
   highlight: '#2ECC71',
   accent: '#2ECC71',
   accentSoft: '#0D3B2A',

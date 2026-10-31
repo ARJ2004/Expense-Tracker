@@ -93,15 +93,24 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        // Play upload key. Set ALTUS_UPLOAD_STORE_FILE, ALTUS_UPLOAD_STORE_PASSWORD, ALTUS_UPLOAD_KEY_ALIAS and
+        // ALTUS_UPLOAD_KEY_PASSWORD in ~/.gradle/gradle.properties (never in this repo).
+        if (project.hasProperty('ALTUS_UPLOAD_STORE_FILE')) {
+            release {
+                storeFile file(ALTUS_UPLOAD_STORE_FILE)
+                storePassword ALTUS_UPLOAD_STORE_PASSWORD
+                keyAlias ALTUS_UPLOAD_KEY_ALIAS
+                keyPassword ALTUS_UPLOAD_KEY_PASSWORD
+            }
+        }
     }
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
         }
         release {
-            // Caution! In production, you need to generate your own keystore file.
-            // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            // Without the upload key a release build is debug-signed: fine on a test phone, refused by Play.
+            signingConfig project.hasProperty('ALTUS_UPLOAD_STORE_FILE') ? signingConfigs.release : signingConfigs.debug
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
         }

@@ -36,4 +36,44 @@ jest.mock('@react-native-documents/picker', () => ({
   isErrorWithCode: (e) => e != null && typeof e.code === 'string',
   errorCodes: { OPERATION_CANCELED: 'OPERATION_CANCELED' },
   types: { csv: ['text/csv'], xlsx: 'xlsx', plainText: 'text/plain', pdf: 'application/pdf' },
+  saveDocuments: jest.fn(async ({ sourceUris, fileName }) => [{ uri: `content://saved/${fileName}`, name: fileName, error: null, source: sourceUris[0] }]),
 }));
+
+/* File download to disk: records the request, answers with the status set on __next. */
+jest.mock('react-native-blob-util', () => {
+  const state = { next: [200], requests: [], unlinked: [] };
+  const fetch = jest.fn(async (method, url, headers) => {
+    state.requests.push({ method, url, headers });
+    const status = state.next.length > 1 ? state.next.shift() : state.next[0];
+    return { info: () => ({ status }) };
+  });
+  return {
+    __esModule: true,
+    default: {
+      config: jest.fn(() => ({ fetch })),
+      fs: { dirs: { CacheDir: '/cache' }, unlink: jest.fn(async (path) => void state.unlinked.push(path)) },
+    },
+    __state: state,
+  };
+});
+
+/* MMKV is a Nitro (JSI) module: an in-memory store with the same calls, one per id. */
+jest.mock('react-native-mmkv', () => {
+  const stores = new Map();
+  const createMMKV = (config = {}) => {
+    const id = config.id ?? 'mmkv.default';
+    if (!stores.has(id)) stores.set(id, new Map());
+    const data = stores.get(id);
+    return {
+      set: (key, value) => data.set(key, value),
+      getString: (key) => (typeof data.get(key) === 'string' ? data.get(key) : undefined),
+      getNumber: (key) => (typeof data.get(key) === 'number' ? data.get(key) : undefined),
+      getBoolean: (key) => (typeof data.get(key) === 'boolean' ? data.get(key) : undefined),
+      contains: (key) => data.has(key),
+      remove: (key) => data.delete(key),
+      getAllKeys: () => [...data.keys()],
+      clearAll: () => data.clear(),
+    };
+  };
+  return { createMMKV };
+});

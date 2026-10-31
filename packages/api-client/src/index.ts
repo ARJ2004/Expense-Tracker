@@ -33,6 +33,12 @@ export type ImportRowStatus = components['schemas']['ImportRowStatus'];
 export type ImportRowAction = components['schemas']['ImportRowAction'];
 export type UploadImportResult = components['schemas']['UploadResultDto'];
 export type UpdateImportRow = components['schemas']['UpdateImportRowDto'];
+export type UpdateMe = components['schemas']['UpdateMeDto'];
+export type DashboardSummary = components['schemas']['DashboardSummaryDto'];
+export type CategorySpend = components['schemas']['CategorySpendDto'];
+export type MerchantSpend = components['schemas']['MerchantSpendDto'];
+export type DashboardTrend = components['schemas']['DashboardTrendDto'];
+export type TrendBucket = components['schemas']['TrendBucket'];
 export type ImportRowFilter = NonNullable<NonNullable<paths['/v1/imports/{id}/rows']['get']['parameters']['query']>['filter']>;
 
 /** Creates a typed client for the Expense Tracker API; every path, body and response is checked. */

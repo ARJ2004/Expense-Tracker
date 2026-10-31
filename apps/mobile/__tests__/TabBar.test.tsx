@@ -8,6 +8,7 @@ import { ThemeProvider } from '../src/theme';
 
 jest.mock('../src/features/settings/hooks', () => ({
   useHealth: () => ({ isPending: false, isError: false, data: { version: '0.0.1' } }),
+  useExportLedger: () => ({ isPending: false, mutate: jest.fn() }),
 }));
 
 const metrics = { frame: { x: 0, y: 0, width: 390, height: 844 }, insets: { top: 0, left: 0, right: 0, bottom: 0 } };
@@ -36,9 +37,9 @@ describe('RootTabs', () => {
     expect(screen.getByRole('tab', { name: 'Home' }).props.accessibilityState).toEqual({ selected: true });
   });
 
-  it('switches to Settings and shows the API health row', async () => {
+  it('switches to Settings and shows the API status line', async () => {
     await renderTabs();
     await fireEvent.press(await screen.findByRole('tab', { name: 'Settings' }));
-    expect(await screen.findByText('ok · v0.0.1')).toBeTruthy();
+    expect(await screen.findByText('Altus debug · API online')).toBeTruthy();
   });
 });

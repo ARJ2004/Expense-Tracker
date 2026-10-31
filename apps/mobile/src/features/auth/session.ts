@@ -15,6 +15,8 @@ interface SessionState {
   signOut: () => Promise<void>;
   /** The API refused our refresh token: drop everything and show Sign in. */
   expired: () => void;
+  /** The account was deleted on the server: forget the tokens and cache locally, no logout call. */
+  deleted: () => Promise<void>;
 }
 
 export const useSession = create<SessionState>((set) => ({
@@ -49,6 +51,13 @@ export const useSession = create<SessionState>((set) => ({
   },
 
   expired: () => {
+    queryClient.clear();
+    set({ status: 'signedOut', user: null });
+  },
+
+  deleted: async () => {
+    await sessionTokens.clear();
+    await signOutOfGoogle();
     queryClient.clear();
     set({ status: 'signedOut', user: null });
   },

@@ -9,7 +9,7 @@ export interface Theme {
 
 const ThemeContext = createContext<Theme>({ scheme: 'light', colors: altusLight });
 
-/** Follows the phone's light/dark setting. */
+/** Follows the phone's light/dark setting unless `scheme` forces one (Settings → Appearance). */
 export function ThemeProvider({ children, scheme }: PropsWithChildren<{ scheme?: 'light' | 'dark' }>) {
   const system = useColorScheme();
   const active = scheme ?? (system === 'dark' ? 'dark' : 'light');

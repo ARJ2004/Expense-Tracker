@@ -13,3 +13,6 @@ export const GOOGLE_WEB_CLIENT_ID = '';
 
 /** Debug builds offer "Continue as dev user", which the API accepts only with DEV_AUTH_ENABLED. */
 export const DEV_SIGN_IN_EMAIL = __DEV__ ? 'dev@altus.local' : null;
+
+/** Sentry DSN for crash reports; empty keeps Sentry off (debug builds and until the project exists). */
+export const SENTRY_DSN = '';

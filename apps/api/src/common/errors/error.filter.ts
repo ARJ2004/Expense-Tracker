@@ -7,6 +7,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import type { Response } from 'express';
+import { reportError } from '../observability/sentry';
 import { AppError } from './app-error';
 import type { ErrorResponse } from './error-response.dto';
 
@@ -31,6 +32,7 @@ export class ErrorFilter implements ExceptionFilter {
     // Raised-on-purpose AppErrors (e.g. DB_UNAVAILABLE) are expected; only unexpected 5xx get a stack trace.
     if (status >= 500 && !(exception instanceof AppError)) {
       this.logger.error(exception instanceof Error ? exception.stack : String(exception));
+      reportError(exception);
     }
     res.status(status).json(body);
   }

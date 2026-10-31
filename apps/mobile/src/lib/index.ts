@@ -7,3 +7,4 @@ export { sessionTokens } from './session-tokens';
 export { newUuid } from './ids';
 export { useDebouncedValue } from './useDebouncedValue';
 export type { MainStackParamList, MainTabParamList } from './routes';
+export { usePreferences, type Appearance } from './preferences';
