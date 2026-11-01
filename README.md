@@ -116,6 +116,9 @@ pnpm run api-client:generate             # after changing any API route or DTO
 The Android emulator reaches the API on your computer at `http://10.0.2.2:4000`. A phone on USB
 can use `adb reverse tcp:4000 tcp:4000`.
 
+Signing a release build and keeping Google sign-in working on Play:
+[docs/release-signing.md](docs/release-signing.md).
+
 ## Testing the SMS parser on real messages
 
 Real SMS never go into git. To turn your own inbox into anonymized test cases:
