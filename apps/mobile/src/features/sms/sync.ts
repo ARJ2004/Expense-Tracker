@@ -1,16 +1,14 @@
-import { MAX_AMOUNT_PAISE } from '@et/domain';
+import { CAPTURE_LIMITS, MAX_AMOUNT_PAISE, withinFutureLimit } from '@et/domain';
 import { isNotAPayment, parseSms, smsMessageKey } from '@et/parsers';
 import type { CapturedTxn, IngestBatchResult } from '@et/api-client';
 import type { InboxMessage } from '../../native/NativeSmsInbox';
 
 /** The API takes at most this many rows per call. */
-export const BATCH_SIZE = 100;
+export const BATCH_SIZE = CAPTURE_LIMITS.maxBatchItems;
 /** Inbox messages read per native call; the loop pages until the inbox is caught up. */
 export const READ_PAGE = 500;
 /** First sync looks back this far (statement imports cover anything older). */
 export const FIRST_SYNC_DAYS = 90;
-/** The API counts a row dated further ahead than this as rejected (a phone clock far off). */
-const MAX_FUTURE_MS = 86_400_000;
 
 export interface SyncDeps {
   readInbox(sinceMs: number, limit: number): Promise<InboxMessage[]>;
@@ -18,6 +16,8 @@ export interface SyncDeps {
   countInbox?(sinceMs: number): Promise<number>;
   /** Called after each page: bank messages handled so far, of `total`. */
   onProgress?(read: number, total: number): void;
+  /** False once the sync must stop (capture turned off, another user signed in); checked before each read and send. */
+  active?(): boolean;
   send(items: CapturedTxn[]): Promise<IngestBatchResult>;
   /** Receive time of the newest message already handled; null before the first sync. */
   watermark(): number | null;
@@ -35,45 +35,41 @@ export interface SyncResult extends IngestBatchResult {
 }
 
 /**
- * The row as the API will accept it (the same limits as CapturedTxnDto): an optional field that
- * doesn't fit is left out, so the payment still counts; a row with no usable amount, bank or time
- * is null. Without this, one odd message would fail its whole batch on every sync.
+ * The row as the API will accept it (CAPTURE_LIMITS, which CapturedTxnDto validates with): an
+ * optional field that doesn't fit is left out, so the payment still counts; a row with no usable
+ * amount, bank or time is null and is counted as rejected here instead of being sent.
  */
 export function sendable(item: CapturedTxn, now: number): CapturedTxn | null {
+  const { bankLength, counterpartyLength } = CAPTURE_LIMITS;
   if (!Number.isInteger(item.amountPaise) || item.amountPaise < 1 || item.amountPaise > MAX_AMOUNT_PAISE) return null;
-  if (item.bank.length < 1 || item.bank.length > 60) return null;
+  if (item.bank.length < bankLength.min || item.bank.length > bankLength.max) return null;
   const at = Date.parse(item.occurredAt);
-  if (!Number.isFinite(at) || at > now + MAX_FUTURE_MS) return null;
+  if (!Number.isFinite(at) || !withinFutureLimit(new Date(at), new Date(now))) return null;
   const out: CapturedTxn = { ...item };
-  if (out.last4 !== undefined && !/^\d{3,4}$/.test(out.last4)) delete out.last4;
-  if (out.counterparty !== undefined && (out.counterparty.length < 1 || out.counterparty.length > 80)) delete out.counterparty;
-  if (out.referenceNo !== undefined && !/^[A-Za-z0-9]{6,22}$/.test(out.referenceNo)) delete out.referenceNo;
-  if (out.narration !== undefined && !/^[A-Z ]{1,24}$/.test(out.narration)) delete out.narration;
+  if (out.last4 !== undefined && !CAPTURE_LIMITS.last4.test(out.last4)) delete out.last4;
+  if (out.counterparty !== undefined && (out.counterparty.length < counterpartyLength.min || out.counterparty.length > counterpartyLength.max)) delete out.counterparty;
+  if (out.referenceNo !== undefined && !CAPTURE_LIMITS.referenceNo.test(out.referenceNo)) delete out.referenceNo;
+  if (out.narration !== undefined && !CAPTURE_LIMITS.narration.test(out.narration)) delete out.narration;
   return out;
 }
 
 /**
- * Sends one batch. If the API still refuses it as invalid, each row is sent on its own and the
- * refused ones are counted as rejected, so the watermark always moves past a bad message.
+ * Sends one batch. The API rejects bad rows one by one, so a whole batch is refused only by an
+ * older API: then it is split in halves until the refused row is alone and counted as rejected
+ * (about 14 calls for one bad row in 100, well inside the rate limit), so the watermark always
+ * moves past a bad message. Anything else, a rate limit or no network, is thrown: the sync stops
+ * where it is and the next one carries on from there.
  */
 async function sendChunk(deps: SyncDeps, items: CapturedTxn[]): Promise<IngestBatchResult> {
   try {
     return await deps.send(items);
   } catch (e) {
-    if (!isValidationError(e) || items.length === 1) {
-      if (isValidationError(e)) return { created: 0, merged: 0, skipped: 0, rejected: 1 };
-      throw e;
-    }
+    if (!isValidationError(e)) throw e;
+    if (items.length === 1) return { created: 0, merged: 0, skipped: 0, rejected: 1 };
   }
-  const total: IngestBatchResult = { created: 0, merged: 0, skipped: 0, rejected: 0 };
-  for (const item of items) {
-    const r = await sendChunk(deps, [item]);
-    total.created += r.created;
-    total.merged += r.merged;
-    total.skipped += r.skipped;
-    total.rejected += r.rejected;
-  }
-  return total;
+  const half = Math.ceil(items.length / 2);
+  const [a, b] = [await sendChunk(deps, items.slice(0, half)), await sendChunk(deps, items.slice(half))];
+  return { created: a.created + b.created, merged: a.merged + b.merged, skipped: a.skipped + b.skipped, rejected: a.rejected + b.rejected };
 }
 
 function isValidationError(e: unknown): boolean {
@@ -90,7 +86,7 @@ export function toCaptured(message: InboxMessage): CapturedTxn | null {
   if (!txn) return null;
   const item: CapturedTxn = {
     source: 'sms',
-    messageKey: smsMessageKey(message.sender, receivedAt, message.body),
+    messageKey: smsMessageKey(message.sender, receivedAt, txn),
     amountPaise: txn.amountPaise,
     direction: txn.direction,
     occurredAt: txn.occurredAt.toISOString(),
@@ -117,7 +113,9 @@ export async function syncInbox(deps: SyncDeps): Promise<SyncResult> {
   const expected = deps.onProgress && deps.countInbox ? await deps.countInbox(since) : null;
   if (expected !== null) deps.onProgress!(0, expected);
 
+  const active = deps.active ?? (() => true);
   for (;;) {
+    if (!active()) break;
     const page = await deps.readInbox(since, READ_PAGE);
     if (page.length === 0) break;
     total.read += page.length;
@@ -134,14 +132,17 @@ export async function syncInbox(deps: SyncDeps): Promise<SyncResult> {
       else total.rejected++;
     }
     for (let i = 0; i < pending.length; i += BATCH_SIZE) {
+      if (!active()) return total;
       const chunk = pending.slice(i, i + BATCH_SIZE);
       const result = await sendChunk(deps, chunk.map((c) => c.item));
       total.created += result.created;
       total.merged += result.merged;
       total.skipped += result.skipped;
       total.rejected += result.rejected;
+      if (!active()) return total;
       deps.setWatermark(chunk[chunk.length - 1]!.receivedAt);
     }
+    if (!active()) return total;
     // The whole page is handled (non-payments included): move past it.
     since = page[page.length - 1]!.receivedAt;
     deps.setWatermark(since);

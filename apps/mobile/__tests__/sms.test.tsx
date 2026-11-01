@@ -158,7 +158,7 @@ describe('syncInbox', () => {
     expect(f.watermark()).toBe(future.receivedAt);
   });
 
-  it('when the API refuses a batch, sends its rows one by one and skips only the refused one', async () => {
+  it('when an older API refuses a batch, splits it until the refused row is alone and skips only that row', async () => {
     const messages = Array.from({ length: 3 }, (_, i) => HDFC(i, T0 - 10_000 + i));
     const bad = toCaptured(messages[1]!)!.messageKey;
     const f = fake(messages);
@@ -168,8 +168,32 @@ describe('syncInbox', () => {
     });
     const result = await syncInbox(f.deps);
     expect(result).toMatchObject({ created: 2, rejected: 1 });
-    expect(f.deps.send).toHaveBeenCalledTimes(4); // the batch, then each row
+    expect(f.deps.send).toHaveBeenCalledTimes(5); // [0,1,2] → [0,1] → [0], [1]; then [2]
     expect(f.watermark()).toBe(messages[2]!.receivedAt);
+  });
+
+  it('isolates one bad row in a full batch in a handful of calls, not one per row', async () => {
+    const messages = Array.from({ length: 100 }, (_, i) => HDFC(i, T0 - 10_000 + i));
+    const bad = toCaptured(messages[57]!)!.messageKey;
+    const f = fake(messages);
+    f.deps.send = jest.fn(async (items) => {
+      if (items.some((i) => i.messageKey === bad)) throw Object.assign(new Error('invalid'), { code: 'VALIDATION_FAILED' });
+      return { created: items.length, merged: 0, skipped: 0, rejected: 0 };
+    });
+    expect(await syncInbox(f.deps)).toMatchObject({ created: 99, rejected: 1 });
+    expect((f.deps.send as jest.Mock).mock.calls.length).toBeLessThanOrEqual(15);
+  });
+
+  it('stops at a rate limit and keeps the watermark where the last accepted batch left it', async () => {
+    const messages = Array.from({ length: 150 }, (_, i) => HDFC(i, T0 - 10_000 + i));
+    const f = fake(messages);
+    let calls = 0;
+    f.deps.send = jest.fn(async (items) => {
+      if (++calls === 2) throw Object.assign(new Error('slow down'), { code: 'RATE_LIMITED' });
+      return { created: items.length, merged: 0, skipped: 0, rejected: 0 };
+    });
+    await expect(syncInbox(f.deps)).rejects.toMatchObject({ code: 'RATE_LIMITED' });
+    expect(f.watermark()).toBe(messages[99]!.receivedAt);
   });
 });
 
@@ -379,5 +403,71 @@ describe('onBankSms (the headless task)', () => {
     await run;
     expect(useSmsCapture.getState().watermarkMs).toBe(T0);
     expect(posts.at(-1)).toEqual({ items: [expect.objectContaining({ amountPaise: 60_000 })] });
+  });
+});
+
+describe('SMS capture belongs to one user', () => {
+  const { useSmsCapture } = require('../src/features/sms') as typeof import('../src/features/sms');
+  const { runSmsSync } = require('../src/features/sms/run') as typeof import('../src/features/sms/run');
+  const { useSession } = require('../src/features/auth') as typeof import('../src/features/auth');
+  const user = (id: string) => ({ id, email: `${id}@example.com`, name: id, monthlyIncomePaise: null, incomeFrequency: null, onboarded: true, currency: 'INR', timezone: 'Asia/Kolkata' });
+
+  beforeEach(() => {
+    posts.length = 0;
+    mockReadInbox.mockReset();
+    useSession.setState({ user: null, status: 'signedOut' });
+    useSmsCapture.getState().reset();
+  });
+
+  it('turns capture off the moment another user signs in, so nothing of the last user is read', async () => {
+    useSession.setState({ user: user('asha') as never, status: 'signedIn' });
+    useSmsCapture.getState().setEnabled(true);
+    useSession.setState({ user: null, status: 'signedOut' });
+
+    // Ravi signs in on the same phone: claimed synchronously, before any screen or sync runs.
+    useSession.setState({ user: user('ravi') as never, status: 'signedIn' });
+    expect(useSmsCapture.getState().enabled).toBe(false);
+    mockReadInbox.mockResolvedValue([HDFC(1, T0)]);
+    expect(await runSmsSync()).toMatchObject({ read: 0, created: 0 });
+    expect(mockReadInbox).not.toHaveBeenCalled();
+    expect(posts).toHaveLength(0);
+  });
+
+  it('keeps capture on when the same user signs in again', () => {
+    useSession.setState({ user: user('asha') as never, status: 'signedIn' });
+    useSmsCapture.getState().setEnabled(true);
+    useSession.setState({ user: null, status: 'signedOut' });
+    useSession.setState({ user: user('asha') as never, status: 'signedIn' });
+    expect(useSmsCapture.getState().enabled).toBe(true);
+  });
+
+  it('stops a running sync at Turn off and leaves the watermark cleared', async () => {
+    useSession.setState({ user: user('asha') as never, status: 'signedIn' });
+    useSmsCapture.getState().setEnabled(true);
+    const page = Array.from({ length: READ_PAGE }, (_, i) => HDFC(i, T0 - 100_000 + i));
+    // Turn off lands while the first page is being read.
+    mockReadInbox.mockImplementationOnce(async () => {
+      useSmsCapture.getState().reset();
+      return page;
+    });
+    await runSmsSync();
+    expect(posts).toHaveLength(0);
+    expect(useSmsCapture.getState()).toMatchObject({ enabled: false, watermarkMs: null, lastSyncMs: null });
+  });
+});
+
+describe('ledger cache refresh', () => {
+  const { invalidateLedger, ledgerRoots } = require('../src/lib') as typeof import('../src/lib');
+  const { transactionKeys } = require('../src/features/transactions') as typeof import('../src/features/transactions');
+  const { QueryClient } = require('@tanstack/react-query') as typeof import('@tanstack/react-query');
+
+  it('refreshes lists, open details, Home and source counts, and nothing else', async () => {
+    const qc = new QueryClient();
+    const keys = [transactionKeys.list({} as never), transactionKeys.detail('t1'), ['dashboard', 'summary', '2026-11'], ['ingest', 'sources'], ['categories'], ['imports'], ['health']];
+    keys.forEach((k) => qc.setQueryData(k, 1));
+    await invalidateLedger(qc);
+    const stale = keys.filter((k) => qc.getQueryState(k)?.isInvalidated).map((k) => k[0]);
+    expect(stale).toEqual(['transactions', 'transactions', 'dashboard', 'ingest']);
+    expect(Object.keys(ledgerRoots)).toEqual(['transactions', 'dashboard', 'sources']);
   });
 });

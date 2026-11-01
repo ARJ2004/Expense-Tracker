@@ -2,6 +2,7 @@ import { createMMKV } from 'react-native-mmkv';
 import { create } from 'zustand';
 import { bankSenderPatterns } from '@et/parsers';
 import SmsInbox from '../../native/NativeSmsInbox';
+import { useSession } from '../auth';
 
 /** Device-only SMS capture state. Never synced: the choice and progress belong to this phone. */
 const storage = createMMKV({ id: 'sms-capture' });
@@ -31,6 +32,11 @@ interface SmsCaptureState {
   lastSyncMs: number | null;
   /** A sync reading many messages (the first 90 days): how far it is. Not stored. */
   progress: SyncProgress | null;
+  /**
+   * Bumped by every reset (Turn off, another user claiming the phone). A sync that started under an
+   * older generation stops before its next read or send and never moves the watermark. Not stored.
+   */
+  generation: number;
   setProgress: (progress: SyncProgress | null) => void;
   setEnabled: (enabled: boolean) => void;
   setWatermark: (ms: number) => void;
@@ -53,6 +59,7 @@ const read = () => ({
 export const useSmsCapture = create<SmsCaptureState>((set, get) => ({
   ...read(),
   progress: null,
+  generation: 0,
   setProgress: (progress) => set({ progress }),
   setEnabled: (enabled) => {
     storage.set(ENABLED, enabled);
@@ -77,6 +84,22 @@ export const useSmsCapture = create<SmsCaptureState>((set, get) => ({
     storage.remove(WATERMARK);
     storage.remove(LAST_SYNC);
     mirrorLiveCapture(false);
-    set({ enabled: false, watermarkMs: null, lastSyncMs: null, progress: null });
+    set({ enabled: false, watermarkMs: null, lastSyncMs: null, progress: null, generation: get().generation + 1 });
   },
 }));
+
+/**
+ * True while a sync started at `generation` may keep going: capture is still on and nothing reset
+ * it since (Turn off, or another user signing in on this phone).
+ */
+export function syncStillAllowed(generation: number): boolean {
+  const s = useSmsCapture.getState();
+  return s.enabled && s.generation === generation;
+}
+
+// Capture belongs to whoever turned it on. Claim the moment someone signs in, before any screen
+// (or a sync it starts) can run with the previous user's setting; another user starts with it off.
+useSession.subscribe((state, prev) => {
+  const id = state.user?.id;
+  if (id && id !== prev.user?.id) useSmsCapture.getState().claim(id);
+});

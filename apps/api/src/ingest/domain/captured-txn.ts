@@ -1,4 +1,4 @@
-import { paise, type AccountKind, type NormalizedTxn } from '@et/domain';
+import { paise, withinFutureLimit, type AccountKind, type NormalizedTxn } from '@et/domain';
 import type { SourceInput } from './source-input';
 
 /** One device-parsed row as the API receives it (the shape of CapturedTxnDto). */
@@ -17,15 +17,13 @@ export interface CapturedTxn {
   narration?: string;
 }
 
-const MAX_FUTURE_MS = 86_400_000;
-
 /**
  * The row as ingest sees it, and what makes it idempotent. Throws RangeError for a time more than a
  * day ahead (a phone clock far off), which the service counts as rejected.
  */
 export function capturedToIngest(item: CapturedTxn, now: Date = new Date()): { txn: NormalizedTxn; source: SourceInput } {
   const occurredAt = new Date(item.occurredAt);
-  if (occurredAt.getTime() > now.getTime() + MAX_FUTURE_MS) throw new RangeError('occurredAt is in the future');
+  if (!withinFutureLimit(occurredAt, now)) throw new RangeError('occurredAt is in the future');
   const txn: NormalizedTxn = {
     source: item.source,
     amountPaise: paise(item.amountPaise),

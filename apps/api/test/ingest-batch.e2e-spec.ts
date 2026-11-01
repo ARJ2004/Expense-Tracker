@@ -164,6 +164,12 @@ describe('POST /v1/ingest/batch (bank SMS)', () => {
   it.each([
     ['an empty batch', []],
     ['101 items', Array.from({ length: 101 }, (_, i) => sms(`n${i}`))],
+  ])('refuses %s', async (_name, items) => {
+    const res = await send(asha, items as unknown[]).expect(400);
+    expect(res.body.error.code).toBe('VALIDATION_FAILED');
+  });
+
+  it.each([
     ['a message body field', [{ ...sms('x'), body: 'Sent Rs.486.00 From HDFC Bank' }]],
     ['a float amount', [sms('x', { amountPaise: 486.5 })]],
     ['a bad message key', [sms('x', { messageKey: 'abc' })]],
@@ -171,9 +177,10 @@ describe('POST /v1/ingest/batch (bank SMS)', () => {
     ['narration that is not a keyword', [sms('x', { narration: 'Sent Rs.486 to Swiggy' })]],
     ['an unknown source', [sms('x', { source: 'statement' })]],
     ['a user id', [sms('x', { userId: '00000000-0000-7000-8000-000000000001' })]],
-  ])('rejects %s', async (_name, items) => {
-    const res = await send(asha, items as unknown[]).expect(400);
-    expect(res.body.error.code).toBe('VALIDATION_FAILED');
+  ])('rejects a row with %s and stores nothing from it', async (_name, items) => {
+    const res = await send(asha, items as unknown[]).expect(200);
+    expect(res.body).toEqual({ created: 0, merged: 0, skipped: 0, rejected: 1 });
+    expect(await ledger(asha)).toHaveLength(0);
   });
 
   it('counts a row dated more than a day ahead as rejected and still takes the rest', async () => {
@@ -182,6 +189,20 @@ describe('POST /v1/ingest/batch (bank SMS)', () => {
     expect(await ledger(asha)).toHaveLength(1);
     const alone = await send(asha, [sms('future-2', { occurredAt: new Date(Date.now() + 3 * 86_400_000).toISOString() })]).expect(200);
     expect(alone.body).toEqual({ created: 0, merged: 0, skipped: 0, rejected: 1 });
+  });
+
+  it('rejects an invalid row on its own and still takes the rest of the batch', async () => {
+    const res = await send(asha, [
+      sms('good-1', { referenceNo: undefined }),
+      sms('bad-amount', { amountPaise: -5, referenceNo: undefined }),
+      sms('good-2', { amountPaise: 1_000, referenceNo: undefined, occurredAt: '2026-10-03T07:00:00Z' }),
+    ]).expect(200);
+    expect(res.body).toEqual({ created: 2, merged: 0, skipped: 0, rejected: 1 });
+  });
+
+  it('still refuses a batch that is not a list of rows', async () => {
+    await send(asha, ['not a row'] as never).expect(400);
+    await http().post('/v1/ingest/batch').set(bearer(asha)).send({ items: [] }).expect(400);
   });
 
   it('needs a token', async () => {

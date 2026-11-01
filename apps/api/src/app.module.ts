@@ -14,6 +14,7 @@ import { HealthModule } from './health/health.module';
 import { ImportsModule } from './imports';
 import { TransactionsModule } from './transactions';
 import { UsersModule } from './users';
+import { tunables } from './config/tunables';
 
 @Module({
   imports: [
@@ -28,7 +29,7 @@ import { UsersModule } from './users';
         },
       },
     }),
-    ThrottlerModule.forRoot([{ ttl: 60_000, limit: 300 }]),
+    ThrottlerModule.forRoot([tunables.rateLimits.default]),
     // Modules react to each other through typed domain events (transaction.created, import.confirmed).
     EventEmitterModule.forRoot(),
     CommonModule,

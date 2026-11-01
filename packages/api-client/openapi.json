@@ -2652,7 +2652,7 @@
           "messageKey": {
             "type": "string",
             "pattern": "^[0-9a-f]{64}$",
-            "description": "smsMessageKey(): SHA-256 hex of sender, receive time and body; makes resends no-ops"
+            "description": "smsMessageKey(): SHA-256 hex of sender, receive time and the parsed fields (never the body); makes resends no-ops"
           },
           "amountPaise": {
             "type": "integer",
@@ -2758,7 +2758,7 @@
           "rejected": {
             "type": "number",
             "example": 0,
-            "description": "Refused one by one (dated more than a day ahead); the rest of the batch still went in"
+            "description": "Refused one by one (invalid, or dated more than a day ahead); the rest of the batch still went in"
           }
         },
         "required": [

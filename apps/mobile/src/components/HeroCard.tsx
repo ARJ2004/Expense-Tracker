@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { formatINR } from '@et/domain';
 import { wholeRupees } from './rounding';
 import { fonts, radius, space, useTheme } from '../theme';
-import { ProgressBar, Text } from '../ui';
+import { HeroSurface, ProgressBar, Text } from '../ui';
 
 export interface HeroStat {
   label: string;
@@ -29,9 +29,9 @@ export interface HeroCardProps {
 export function HeroCard({ label, paise, pill, progress, stats = [] }: HeroCardProps) {
   const { colors } = useTheme();
   return (
-    <View style={[styles.card, { backgroundColor: colors.hero, borderColor: colors.heroBorder }]}>
+    <HeroSurface>
       <View style={styles.top}>
-        <Text variant="label" style={[styles.label, { color: colors.heroMuted }]}>
+        <Text variant="eyebrow" style={{ color: colors.heroMuted }}>
           {label}
         </Text>
         {pill && (
@@ -58,14 +58,12 @@ export function HeroCard({ label, paise, pill, progress, stats = [] }: HeroCardP
           ))}
         </View>
       )}
-    </View>
+    </HeroSurface>
   );
 }
 
 const styles = StyleSheet.create({
-  card: { borderRadius: radius.card, borderWidth: 1, padding: 22, gap: 10 },
   top: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  label: { fontSize: 13 },
   pill: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: radius.pill, overflow: 'hidden' },
   stats: { flexDirection: 'row', gap: space.sm, marginTop: space.xxs },
   stat: { flex: 1, gap: 2 },

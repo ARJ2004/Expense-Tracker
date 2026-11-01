@@ -129,9 +129,23 @@ describe('message key', () => {
 
   it('is stable for the same message and differs for another', () => {
     const at = new Date('2026-10-18T07:42:10.400Z');
-    const a = smsMessageKey('VM-HDFCBK', at, 'Sent Rs.486.00  From HDFC');
-    expect(smsMessageKey('vm-hdfcbk ', new Date('2026-10-18T07:42:10.900Z'), 'Sent Rs.486.00 From HDFC')).toBe(a);
-    expect(smsMessageKey('VM-HDFCBK', new Date('2026-10-18T07:42:11Z'), 'Sent Rs.486.00 From HDFC')).not.toBe(a);
+    const body = 'Sent Rs.486.00 From HDFC Bank A/C *1234 To SWIGGY On 18/10/26 Ref 427512345601 Not You? Call 18002586161';
+    const txn = parseSms('VM-HDFCBK', body, at)!;
+    const a = smsMessageKey('VM-HDFCBK', at, txn);
+    expect(smsMessageKey('vm-hdfcbk ', new Date('2026-10-18T07:42:10.900Z'), txn)).toBe(a);
+    expect(smsMessageKey('VM-HDFCBK', new Date('2026-10-18T07:42:11Z'), txn)).not.toBe(a);
+    expect(smsMessageKey('VM-HDFCBK', at, { ...txn, amountPaise: txn.amountPaise + 1 } as typeof txn)).not.toBe(a);
     expect(a).toMatch(/^[0-9a-f]{64}$/);
+  });
+
+  it('depends only on the parsed fields, never on the rest of the body', () => {
+    // Same payment, different "Avl Bal": the key must not change, so it can't encode the balance.
+    const at = new Date('2026-10-18T07:42:10Z');
+    const base = 'Sent Rs.486.00 From HDFC Bank A/C *1234 To SWIGGY On 18/10/26 Ref 427512345601 Not You? Call 18002586161/SMS BLOCK UPI to 7308080808';
+    const one = parseSms('VM-HDFCBK', `${base} Avl Bal Rs.12,000.00`, at);
+    const two = parseSms('VM-HDFCBK', `${base} Avl Bal Rs.99,999.00`, at);
+    expect(one).not.toBeNull();
+    expect(two).not.toBeNull();
+    expect(smsMessageKey('VM-HDFCBK', at, one!)).toBe(smsMessageKey('VM-HDFCBK', at, two!));
   });
 });

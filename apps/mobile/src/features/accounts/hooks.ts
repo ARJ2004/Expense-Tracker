@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Account, CreateAccount, UpdateAccount } from '@et/api-client';
-import { api, toApiError } from '../../lib';
+import { api, ledgerRoots, toApiError } from '../../lib';
 
 export const accountKeys = { all: ['accounts'] as const };
 
@@ -36,7 +36,7 @@ export function useUpdateAccount() {
       return data;
     },
     // Account names show on transactions too.
-    onSuccess: () => Promise.all([queryClient.invalidateQueries({ queryKey: accountKeys.all }), queryClient.invalidateQueries({ queryKey: ['transactions'] })]),
+    onSuccess: () => Promise.all([queryClient.invalidateQueries({ queryKey: accountKeys.all }), queryClient.invalidateQueries({ queryKey: ledgerRoots.transactions })]),
   });
 }
 

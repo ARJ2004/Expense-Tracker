@@ -9,8 +9,9 @@ export type SourceInput =
   | {
       kind: 'sms';
       /**
-       * The phone's SHA-256 of sender, receive time and body (smsMessageKey in @et/parsers). The
-       * body never leaves the phone; re-reading the inbox sends the same key, so nothing doubles.
+       * The phone's SHA-256 of sender, receive time and parsed fields (smsMessageKey in
+       * @et/parsers). The body never leaves the phone and isn't hashed either; re-reading the
+       * inbox sends the same key, so nothing doubles.
        */
       messageKey: string;
     }

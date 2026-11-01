@@ -1,26 +1,16 @@
 import { useEffect } from 'react';
 import { AppState } from 'react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { api, toApiError } from '../../lib';
-import { transactionKeys } from '../transactions';
+import { api, invalidateLedger, ledgerRoots, toApiError } from '../../lib';
 import { ensureLiveSmsPermission } from './permission';
 import { runSmsSync } from './run';
 import { mirrorLiveCapture, useSmsCapture } from './store';
 
 /** Data sources: transactions and last activity per source, from the API. */
-export const sourceKeys = { all: ['ingest', 'sources'] as const };
+export const sourceKeys = { all: ledgerRoots.sources };
 
 /** App open syncs at most this often (the SMS receiver covers the rest). */
 const FOREGROUND_EVERY_MS = 60_000;
-
-/** Everything a sync can change: the ledger, Home and the per-source counts. */
-function invalidateAfterSync(queryClient: ReturnType<typeof useQueryClient>) {
-  return Promise.all([
-    queryClient.invalidateQueries({ queryKey: transactionKeys.all }),
-    queryClient.invalidateQueries({ queryKey: ['dashboard'] }),
-    queryClient.invalidateQueries({ queryKey: sourceKeys.all }),
-  ]);
-}
 
 /**
  * Reads new bank SMS, parses them on the phone and sends the transactions. Afterwards the ledger
@@ -30,7 +20,7 @@ export function useSmsSync() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: runSmsSync,
-    onSettled: () => invalidateAfterSync(queryClient),
+    onSettled: () => invalidateLedger(queryClient),
   });
 }
 
@@ -42,14 +32,16 @@ export function useSmsForegroundSync() {
   const queryClient = useQueryClient();
   const enabled = useSmsCapture((s) => s.enabled);
   useEffect(() => {
-    mirrorLiveCapture(enabled);
-    if (!enabled) return;
+    // The store, not this render's value: a claim or Turn off in the same commit has already run.
+    const on = useSmsCapture.getState().enabled;
+    mirrorLiveCapture(on);
+    if (!on) return;
     ensureLiveSmsPermission();
     const sync = () => {
       const last = useSmsCapture.getState().lastSyncMs ?? 0;
       if (Date.now() - last < FOREGROUND_EVERY_MS) return;
       runSmsSync()
-        .then(() => invalidateAfterSync(queryClient))
+        .then(() => invalidateLedger(queryClient))
         .catch(() => undefined);
     };
     sync();

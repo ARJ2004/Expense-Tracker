@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { HealthResponse, Me, UpdateMe } from '@et/api-client';
-import { api, toApiError } from '../../lib';
+import { api, ledgerRoots, toApiError } from '../../lib';
 import { useSession } from '../auth';
 import { exportLedger } from './export';
 
@@ -30,7 +30,7 @@ export function useUpdateMe() {
     },
     onSuccess: async (me) => {
       setUser(me);
-      await queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      await queryClient.invalidateQueries({ queryKey: ledgerRoots.dashboard });
     },
   });
 }

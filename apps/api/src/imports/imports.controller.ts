@@ -49,6 +49,7 @@ import {
 } from './dto/import.dto';
 import { FileTooLargeFilter, MAX_UPLOAD_BYTES } from './file-too-large.filter';
 import { ImportsService, type UploadedFile as Upload } from './imports.service';
+import { tunables } from '../config/tunables';
 
 @ApiTags('imports')
 @ApiBearerAuth()
@@ -59,7 +60,7 @@ export class ImportsController {
 
   @Post()
   @HttpCode(HttpStatus.ACCEPTED)
-  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @Throttle({ default: tunables.rateLimits.upload })
   @UseFilters(FileTooLargeFilter)
   @UseInterceptors(FileInterceptor('file', { limits: { fileSize: MAX_UPLOAD_BYTES, files: 1 } }))
   @ApiOperation({ operationId: 'uploadImport', summary: 'Upload a CSV, XLSX or text PDF statement; it is parsed in the background' })
@@ -127,7 +128,7 @@ export class ImportsController {
 
   @Post(':id/unlock')
   @HttpCode(HttpStatus.OK)
-  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  @Throttle({ default: tunables.rateLimits.unlock })
   @ApiOperation({ operationId: 'unlockImport', summary: 'Open a password-protected PDF statement and parse it; the password is never stored' })
   @ApiOkResponse({ type: ImportDto })
   @ApiNotFoundResponse({ type: ErrorResponse })

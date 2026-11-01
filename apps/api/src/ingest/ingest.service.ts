@@ -1,10 +1,11 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Prisma } from '@prisma/client';
-import { merchantKey, type CategorySource, type Direction, type NormalizedTxn, type TxnType } from '@et/domain';
+import { merchantKey, OTHER_CATEGORY_ID, type CategorySource, type Direction, type NormalizedTxn, type TxnType } from '@et/domain';
 import { AccountsService } from '../accounts';
 import { CategoriesService, CategorizerService } from '../categories';
 import { AppError, PrismaService, uuidv7 } from '../common';
+import { tunables } from '../config/tunables';
 import { firstMatch, type CategoryHit, type DedupCandidate, type DedupMatch, type TypeContext } from './domain/pipeline';
 import { CATEGORY_RULES, DEDUP_RULES, FALLBACK_CATEGORY, TYPE_RULES } from './domain/rules';
 import { categoryForType } from './domain/rules/type-category';
@@ -22,8 +23,8 @@ import {
 
 type Db = Prisma.TransactionClient;
 
-/** Dedup rule 4's window, plus a day either side for the IST/UTC boundary. */
-const CANDIDATE_WINDOW_MS = 4 * 86_400_000;
+/** Dedup rule 4's window, plus a day for the IST/UTC boundary. */
+const CANDIDATE_WINDOW_MS = (tunables.dedup.possibleDuplicateDays + 1) * 86_400_000;
 
 export interface IngestResult {
   transactionId: string;
@@ -437,6 +438,18 @@ export class IngestService {
       select: { sourceHash: true, transactionId: true },
     });
     return new Map(rows.map((r) => [r.sourceHash, r.transactionId]));
+  }
+
+  /**
+   * A custom category is being deleted: file its transactions under Other (the fallback for a debit
+   * or a credit alike once the user's own category is gone). Runs in the caller's transaction, so
+   * the move commits with the delete.
+   */
+  async moveOutOfCategory(userId: string, categoryId: string, tx: Db): Promise<void> {
+    const rows = await tx.transaction.findMany({ where: { userId, categoryId }, select: { id: true } });
+    if (rows.length === 0) return;
+    await tx.transaction.updateMany({ where: { userId, categoryId }, data: { categoryId: OTHER_CATEGORY_ID, categorySource: 'default' } });
+    this.events.emit(TRANSACTIONS_RECATEGORIZED, { userId, transactionIds: rows.map((r) => r.id) } satisfies TransactionsRecategorizedEvent);
   }
 
   /** Live transactions that any dedup rule could match: same amounts, within rule 4's window. */

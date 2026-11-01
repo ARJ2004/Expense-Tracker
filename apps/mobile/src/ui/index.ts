@@ -4,6 +4,7 @@ export { Button, type ButtonProps, type ButtonVariant } from './Button';
 export { Card, type CardProps } from './Card';
 export { Chip, ChipGroup, ChipMultiGroup, type ChipGroupProps, type ChipMultiGroupProps, type ChipOption, type ChipProps } from './Chip';
 export { EmptyState, type EmptyStateProps } from './EmptyState';
+export { HeroSurface, type HeroSurfaceProps } from './HeroSurface';
 export { Icon, type IconName, type IconProps } from './Icon';
 export { IconButton, type IconButtonProps } from './IconButton';
 export { ListRow, type ListRowProps } from './ListRow';

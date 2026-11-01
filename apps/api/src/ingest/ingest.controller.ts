@@ -6,6 +6,7 @@ import { CaptureService } from './capture.service';
 import { IngestBatchDto, IngestBatchResultDto } from './dto/ingest-batch.dto';
 import { SourceStatsDto } from './dto/source-stats.dto';
 import { SourceStatsService } from './source-stats.service';
+import { tunables } from '../config/tunables';
 
 /**
  * HTTP edge for transactions the phone captured (writes go through IngestService.ingestBatch),
@@ -30,8 +31,7 @@ export class IngestController {
 
   @Post('batch')
   @HttpCode(HttpStatus.OK)
-  // A first sync of 90 days is a handful of batches; 60 a minute leaves room and caps a runaway loop.
-  @Throttle({ default: { limit: 60, ttl: 60_000 } })
+  @Throttle({ default: tunables.rateLimits.ingestBatch })
   @ApiTooManyRequestsResponse({ type: ErrorResponse, description: 'RATE_LIMITED' })
   @ApiOperation({
     operationId: 'ingestBatch',

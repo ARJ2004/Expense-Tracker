@@ -5,7 +5,7 @@ import type { ImportRow } from '@et/api-client';
 import { formatINR, SYSTEM_CATEGORIES } from '@et/domain';
 import { CategoryPicker } from '../../../components';
 import { ApiError, errorMessage, type MainStackParamList } from '../../../lib';
-import { radius, space, useTheme } from '../../../theme';
+import { space, useTheme } from '../../../theme';
 import { Button, Card, Chip, ChipGroup, EmptyState, IconButton, Screen, Text, TopBar } from '../../../ui';
 import { accountName, useAccounts } from '../../accounts';
 import { useCategories } from '../../categories';
@@ -143,7 +143,7 @@ export function ImportReviewScreen({ route, navigation }: Props) {
     <Screen footer={footer}>
       {top(done ? undefined : <IconButton icon="trash" accessibilityLabel="Discard import" onPress={askDiscard} />)}
       <View style={styles.file}>
-        <Text variant="title" style={styles.fileName} numberOfLines={2}>
+        <Text variant="lead" numberOfLines={2}>
           {data.fileName}
         </Text>
         <Text variant="secondary" tone="muted">
@@ -179,7 +179,8 @@ export function ImportReviewScreen({ route, navigation }: Props) {
         </Card>
       )}
 
-      <View style={[styles.summary, { backgroundColor: colors.surface }]}>
+      <Card>
+        <View style={styles.summary}>
         {done ? (
           <>
             <Stat value={data.importedCount} label="added" />
@@ -193,7 +194,8 @@ export function ImportReviewScreen({ route, navigation }: Props) {
             <Stat value={data.needsCategoryCount} label="need a category" accent />
           </>
         )}
-      </View>
+        </View>
+      </Card>
 
       {!done && pickList.length > 0 && (
         <>
@@ -239,7 +241,7 @@ export function ImportReviewScreen({ route, navigation }: Props) {
 function Stat({ value, label, accent = false }: { value: number; label: string; accent?: boolean }) {
   return (
     <View style={styles.stat} accessible accessibilityLabel={`${value} ${label}`}>
-      <Text variant="mono" tone={accent ? 'accent' : 'default'} style={styles.statValue}>
+      <Text variant="figure" tone={accent ? 'accent' : 'default'}>
         {value}
       </Text>
       <Text variant="label" tone="muted">
@@ -285,12 +287,10 @@ function PickRow({ row, quick, onChoose, onMore }: PickRowProps) {
 const styles = StyleSheet.create({
   center: { alignItems: 'center', gap: space.sm, paddingVertical: space.xxl },
   file: { gap: space.xxs },
-  fileName: { fontSize: 20, lineHeight: 26 },
-  summary: { flexDirection: 'row', gap: space.sm, borderRadius: radius.card, paddingVertical: 18, paddingHorizontal: space.lg },
+  summary: { flexDirection: 'row', gap: space.sm },
   stat: { flex: 1, gap: 2 },
-  statValue: { fontSize: 22, lineHeight: 28 },
   pickHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
-  pickRow: { gap: 10, paddingVertical: 14 },
+  pickRow: { gap: space.xs, paddingVertical: space.sm },
   pickTop: { flexDirection: 'row', justifyContent: 'space-between', gap: space.sm },
   pickText: { flex: 1, gap: 2 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.xs },

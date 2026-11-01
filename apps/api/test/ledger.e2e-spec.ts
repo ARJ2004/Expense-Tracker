@@ -1,6 +1,8 @@
 import type { INestApplication } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import request from 'supertest';
+import { PrismaService } from '../src/common';
+import { IngestService } from '../src/ingest';
 import { INCOME_CATEGORY_ID, OTHER_CATEGORY_ID, SYSTEM_CATEGORIES } from '@et/domain';
 import { bearer, boot, resetDb, signIn, type Session } from './helpers';
 
@@ -74,6 +76,27 @@ describe('ledger: categories, accounts, transactions', () => {
       const after = await http().get(`/v1/transactions/${t.body.id}`).set(bearer(asha)).expect(200);
       expect(after.body.category.id).toBe(OTHER_CATEGORY_ID);
       expect(after.body.categorySource).toBe('default');
+      const orphans = await app.get(PrismaService).transaction.count({ where: { categoryId: null } });
+      expect(orphans).toBe(0);
+    });
+
+    it("moves only that category's rows, never another user's", async () => {
+      const pets = await http().post('/v1/categories').set(bearer(asha)).send({ name: 'Pets', icon: 'other', color: 'chart4' });
+      const kept = await add(asha, { categoryId: FOOD }).expect(201);
+      const theirs = await add(ravi, { categoryId: FOOD }).expect(201);
+      await add(asha, { categoryId: pets.body.id }).expect(201);
+      await http().delete(`/v1/categories/${pets.body.id}`).set(bearer(asha)).expect(204);
+      expect((await http().get(`/v1/transactions/${kept.body.id}`).set(bearer(asha))).body.category.id).toBe(FOOD);
+      expect((await http().get(`/v1/transactions/${theirs.body.id}`).set(bearer(ravi))).body.category.id).toBe(FOOD);
+    });
+
+    it('keeps the category when moving its transactions fails, so no row is left without one', async () => {
+      const pets = await http().post('/v1/categories').set(bearer(asha)).send({ name: 'Pets', icon: 'other', color: 'chart4' });
+      const t = await add(asha, { categoryId: pets.body.id }).expect(201);
+      const spy = jest.spyOn(app.get(IngestService), 'moveOutOfCategory').mockRejectedValueOnce(new Error('db hiccup'));
+      await http().delete(`/v1/categories/${pets.body.id}`).set(bearer(asha)).expect(500);
+      spy.mockRestore();
+      expect((await http().get(`/v1/transactions/${t.body.id}`).set(bearer(asha))).body.category.id).toBe(pets.body.id);
     });
   });
 

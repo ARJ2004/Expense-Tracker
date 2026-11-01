@@ -549,7 +549,7 @@ export interface components {
         AccountKind: "savings" | "credit_card" | "wallet" | "cash";
         CapturedTxnDto: {
             source: components["schemas"]["DeviceSource"];
-            /** @description smsMessageKey(): SHA-256 hex of sender, receive time and body; makes resends no-ops */
+            /** @description smsMessageKey(): SHA-256 hex of sender, receive time and the parsed fields (never the body); makes resends no-ops */
             messageKey: string;
             /** @example 48600 */
             amountPaise: number;
@@ -602,7 +602,7 @@ export interface components {
              */
             skipped: number;
             /**
-             * @description Refused one by one (dated more than a day ahead); the rest of the batch still went in
+             * @description Refused one by one (invalid, or dated more than a day ahead); the rest of the batch still went in
              * @example 0
              */
             rejected: number;

@@ -1,12 +1,12 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import type { DashboardSummary, DashboardTrend, TrendBucket } from '@et/api-client';
-import { api, toApiError } from '../../lib';
+import { api, ledgerRoots, toApiError } from '../../lib';
 
-/** Ledger writes invalidate ['dashboard'] (transactions/hooks.ts), so every figure here refreshes. */
+/** Ledger writes refresh everything under ledgerRoots.dashboard (lib/ledger-cache.ts), so every figure here refreshes. */
 export const dashboardKeys = {
-  all: ['dashboard'] as const,
-  summary: (month: string) => ['dashboard', 'summary', month] as const,
-  trend: (from: string, to: string, bucket: TrendBucket) => ['dashboard', 'trend', from, to, bucket] as const,
+  all: ledgerRoots.dashboard,
+  summary: (month: string) => [...ledgerRoots.dashboard, 'summary', month] as const,
+  trend: (from: string, to: string, bucket: TrendBucket) => [...ledgerRoots.dashboard, 'trend', from, to, bucket] as const,
 };
 
 /** One IST month's spend, income, categories and merchants. Keeps the last month on screen while the next loads. */

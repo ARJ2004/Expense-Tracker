@@ -1,6 +1,7 @@
 import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react-native';
-import { Button, EmptyState, IconButton, ListRow } from '../src/ui';
+import { Text as RNText } from 'react-native';
+import { Button, EmptyState, HeroSurface, IconButton, ListRow, Text } from '../src/ui';
 import { ThemeProvider } from '../src/theme';
 
 const wrap = (ui: React.ReactElement, scheme: 'light' | 'dark' = 'light') =>
@@ -14,11 +15,32 @@ describe('Button', () => {
     expect(onPress).toHaveBeenCalledTimes(1);
   });
 
+  it('draws an icon before the label and keeps the label as its name', async () => {
+    await wrap(<Button label="Continue with Google" variant="secondary" icon={<RNText>G</RNText>} />, 'dark');
+    expect(screen.getByRole('button', { name: 'Continue with Google' })).toBeTruthy();
+    expect(screen.getByText('G')).toBeTruthy();
+  });
+
   it('ignores presses while disabled', async () => {
     const onPress = jest.fn();
     await wrap(<Button label="Save" disabled onPress={onPress} />);
     await fireEvent.press(screen.getByRole('button', { name: 'Save' }));
     expect(onPress).not.toHaveBeenCalled();
+  });
+});
+
+describe('HeroSurface', () => {
+  it.each(['light', 'dark'] as const)('draws its content on the hero colour (%s)', async (scheme) => {
+    const { altusDark, altusLight } = require('../src/theme') as typeof import('../src/theme');
+    await wrap(
+      <HeroSurface>
+        <Text>Spent this month</Text>
+      </HeroSurface>,
+      scheme,
+    );
+    const card = screen.toJSON() as unknown as { props: { style: unknown } };
+    const flat = Object.assign({}, ...[card.props.style].flat(2).filter(Boolean));
+    expect(flat.backgroundColor).toBe((scheme === 'dark' ? altusDark : altusLight).hero);
   });
 });
 

@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Import, ImportRow, ImportRowFilter, UpdateImportRow, UploadImportResult } from '@et/api-client';
-import { api, toApiError } from '../../lib';
-import { transactionKeys } from '../transactions';
+import { api, invalidateLedger, toApiError } from '../../lib';
 import type { PickedFile } from './pick-file';
 
 /** While the parse job runs, the import is polled this often. */
@@ -10,6 +9,8 @@ const PARSING_POLL_MS = 2_000;
 export const importKeys = {
   all: ['imports'] as const,
   detail: (id: string) => ['import', id] as const,
+  /** Every filter of one import's rows. */
+  allRows: (id: string) => ['import', id, 'rows'] as const,
   rows: (id: string, filter: ImportRowFilter) => ['import', id, 'rows', filter] as const,
 };
 
@@ -81,7 +82,7 @@ export function useUpdateImportRow(id: string) {
       return data;
     },
     onSuccess: async (row) => {
-      queryClient.setQueriesData<ImportRow[]>({ queryKey: ['import', id, 'rows'] }, (rows) =>
+      queryClient.setQueriesData<ImportRow[]>({ queryKey: importKeys.allRows(id) }, (rows) =>
         rows?.map((r) => (r.rowNo === row.rowNo ? row : r)),
       );
       await queryClient.invalidateQueries({ queryKey: importKeys.detail(id), exact: true });
@@ -100,7 +101,7 @@ export function useSetImportAccount(id: string) {
     },
     onSuccess: async (imp) => {
       queryClient.setQueryData(importKeys.detail(id), imp);
-      await queryClient.invalidateQueries({ queryKey: ['import', id, 'rows'] });
+      await queryClient.invalidateQueries({ queryKey: importKeys.allRows(id) });
     },
   });
 }
@@ -134,8 +135,7 @@ export function useConfirmImport(id: string) {
       queryClient.setQueryData(importKeys.detail(id), imp);
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: importKeys.all }),
-        queryClient.invalidateQueries({ queryKey: transactionKeys.all }),
-        queryClient.invalidateQueries({ queryKey: ['dashboard'] }),
+        invalidateLedger(queryClient),
       ]);
     },
   });

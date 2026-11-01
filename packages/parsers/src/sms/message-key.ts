@@ -1,3 +1,5 @@
+import type { NormalizedTxn } from '@et/domain';
+
 /**
  * SHA-256 in plain TypeScript (FIPS 180-4), so the same code runs on the phone (Hermes has no
  * crypto module) and in Node. Used only to fingerprint an SMS; never for secrets.
@@ -75,10 +77,26 @@ export function sha256Hex(text: string): string {
 }
 
 /**
- * A stable fingerprint of one SMS (sender, receive time to the second, body), sent instead of the
- * body. The same message read twice gives the same key, so re-syncing the inbox adds nothing.
+ * A stable fingerprint of one bank SMS, made only from what the API receives anyway: the sender,
+ * the receive time to the second and the parsed fields. The same message read twice (or on another
+ * phone, or after a reinstall) gives the same key, so re-syncing adds nothing. The body is not part
+ * of it, so the key can't be brute-forced back into text the API never saw (an available balance).
+ * "v2" keeps these apart from the earlier body-based keys.
  */
-export function smsMessageKey(sender: string, receivedAt: Date, body: string): string {
+export function smsMessageKey(sender: string, receivedAt: Date, txn: NormalizedTxn): string {
   const seconds = Math.floor(receivedAt.getTime() / 1000);
-  return sha256Hex(`${sender.trim().toUpperCase()}\n${seconds}\n${body.replace(/\s+/g, ' ').trim()}`);
+  const fields = [
+    'v2',
+    sender.trim().toUpperCase(),
+    seconds,
+    txn.amountPaise,
+    txn.direction,
+    txn.occurredAt.toISOString(),
+    txn.accountHint?.bank ?? '',
+    txn.accountHint?.last4 ?? '',
+    txn.counterparty ?? '',
+    txn.referenceNo?.toUpperCase() ?? '',
+    txn.narration ?? '',
+  ];
+  return sha256Hex(fields.join('\n'));
 }

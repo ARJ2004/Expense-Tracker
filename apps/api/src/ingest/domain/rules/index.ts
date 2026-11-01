@@ -7,6 +7,7 @@ import { DirectionTypeRule } from './direction-type.rule';
 import { OwnAccountTransferRule } from './own-account-transfer.rule';
 import { RefundRule } from './refund.rule';
 import { UserChoiceRule } from './user-choice.rule';
+import { tunables, type Tunables } from '../../../config/tunables';
 
 /**
  * Category steps inside ingest, in order: the user's pick (CATEGORY_RULES), then the categories
@@ -30,9 +31,9 @@ export const TYPE_RULES: readonly TypeRule[] = [
  * sources (statement rows and bank SMS). A manual entry is the user's own word and is never
  * merged on the way in; a later statement row merges into it instead.
  */
-export const DEDUP_RULES: readonly DedupRule[] = [
-  new ReferenceRule(),
-  new SameAccountDayRule(),
-  new SimilarCounterpartyRule(),
-  new PossibleDuplicateRule(),
-];
+export function dedupRules(t: Tunables['dedup']): readonly DedupRule[] {
+  return [new ReferenceRule(), new SameAccountDayRule(), new SimilarCounterpartyRule(t.minCounterpartySimilarity), new PossibleDuplicateRule(t.possibleDuplicateDays)];
+}
+
+/** The rules with this API's tunables (config/tunables.ts). */
+export const DEDUP_RULES: readonly DedupRule[] = dedupRules(tunables.dedup);

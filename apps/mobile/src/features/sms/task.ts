@@ -1,5 +1,5 @@
 import { AppRegistry } from 'react-native';
-import { queryClient, secureStore } from '../../lib';
+import { invalidateLedger, queryClient, secureStore } from '../../lib';
 import { runSmsSync } from './run';
 import { useSmsCapture } from './store';
 
@@ -25,8 +25,8 @@ export async function onBankSms(): Promise<void> {
     try {
       const result = await runSmsSync();
       if (result.read > 0) {
-        // The app may be open: show the new row on Home and in the ledger.
-        await queryClient.invalidateQueries();
+        // The app may be open: show the new row on Home, in the ledger and in the source counts.
+        await invalidateLedger(queryClient);
         return;
       }
     } catch {

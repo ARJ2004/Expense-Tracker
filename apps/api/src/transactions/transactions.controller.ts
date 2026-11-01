@@ -12,7 +12,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import type { Response } from 'express';
-import { paise } from '@et/domain';
+import { paise, withinFutureLimit } from '@et/domain';
 import { AppError, CurrentUser, ErrorResponse, type AuthUser } from '../common';
 import {
   IngestService,
@@ -26,7 +26,6 @@ import {
 import { LedgerQueryDto, RecategorizeDto } from './dto/ledger-query.dto';
 import { CreateTransactionDto, UpdateTransactionDto } from './dto/write-transaction.dto';
 
-const MAX_FUTURE_MS = 86_400_000;
 
 /** HTTP edge of the ledger: writes go to IngestService, reads to LedgerQueryService. */
 @ApiTags('transactions')
@@ -158,7 +157,7 @@ export class TransactionsController {
 
 function notInFuture(iso: string): Date {
   const at = new Date(iso);
-  if (at.getTime() > Date.now() + MAX_FUTURE_MS) {
+  if (!withinFutureLimit(at)) {
     throw new AppError('VALIDATION_FAILED', 'occurredAt cannot be more than a day in the future', HttpStatus.BAD_REQUEST);
   }
   return at;

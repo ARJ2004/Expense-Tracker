@@ -1,12 +1,11 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useNavigation, type NavigationProp } from '@react-navigation/native';
 import { AccountsScreen } from '../features/accounts';
 import { CategorySpendScreen } from '../features/home';
 import { ImportReviewScreen } from '../features/imports';
 import { CategoriesScreen, DeleteAccountScreen, IncomeScreen } from '../features/settings';
-import { useSession } from '../features/auth';
-import { DataSourcesScreen, useSmsCapture, useSmsForegroundSync } from '../features/sms';
+import { DataSourcesScreen, useSmsForegroundSync } from '../features/sms';
 import { AddTransactionSheet, TransactionDetailScreen } from '../features/transactions';
 import type { MainStackParamList } from '../lib';
 import { RootTabs } from './RootTabs';
@@ -16,12 +15,7 @@ const Stack = createNativeStackNavigator<MainStackParamList>();
 /** Signed-in app: the tabs, screens pushed over them, and the Add sheet available everywhere. */
 export function MainNavigator() {
   const navigation = useNavigation<NavigationProp<{ Main: { screen: keyof MainStackParamList; params?: object } }>>();
-  const userId = useSession((s) => s.user?.id);
-  const claimSms = useSmsCapture((s) => s.claim);
-  // SMS capture state on this phone belongs to one user; a different sign-in starts with it off.
-  useEffect(() => {
-    if (userId) claimSms(userId);
-  }, [userId, claimSms]);
+  // SMS capture on this phone belongs to one user; the sms store claims it at sign-in.
   useSmsForegroundSync();
   return (
     <>

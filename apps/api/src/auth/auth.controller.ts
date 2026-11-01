@@ -14,10 +14,11 @@ import { Throttle } from '@nestjs/throttler';
 import { CurrentUser, ErrorResponse, Public, type AuthUser } from '../common';
 import { AuthService } from './auth.service';
 import { AuthResponse, GoogleSignInDto, LogoutDto, RefreshDto } from './dto/auth.dto';
+import { tunables } from '../config/tunables';
 
 /** 10 requests per minute per IP on every auth route. */
 @ApiTags('auth')
-@Throttle({ default: { limit: 10, ttl: 60_000 } })
+@Throttle({ default: tunables.rateLimits.auth })
 @ApiTooManyRequestsResponse({ type: ErrorResponse })
 @ApiBadRequestResponse({ type: ErrorResponse })
 @ApiUnauthorizedResponse({ type: ErrorResponse })

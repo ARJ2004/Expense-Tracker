@@ -16,7 +16,8 @@ type Props = NativeStackScreenProps<MainStackParamList, 'Income'>;
 export function IncomeScreen({ navigation }: Props) {
   const user = useSession((s) => s.user);
   const update = useUpdateMe();
-  const [digits, setDigits] = useState(() => (user?.monthlyIncomePaise ? String(Math.round(user.monthlyIncomePaise / 100)) : ''));
+  // Income is entered in whole rupees; drop any paise rather than round them up into a rupee.
+  const [digits, setDigits] = useState(() => (user?.monthlyIncomePaise ? String(Math.trunc(user.monthlyIncomePaise / 100)) : ''));
   const [frequency, setFrequency] = useState<IncomeFrequency | null>(user?.incomeFrequency ?? null);
 
   const save = (body: Parameters<typeof update.mutate>[0]) =>

@@ -48,11 +48,13 @@ export class CategoriesService {
     }
   }
 
-  /** Deletes a custom category; its transactions move to Other (see CATEGORY_DELETED). */
+  /** Deletes a custom category; in the same transaction its transactions move to Other (see CATEGORY_DELETED). */
   async remove(userId: string, id: string): Promise<void> {
     await this.ownCustom(userId, id);
-    await this.prisma.category.delete({ where: { id } });
-    await this.events.emitAsync(CATEGORY_DELETED, { userId, categoryId: id } satisfies CategoryDeletedEvent);
+    await this.prisma.$transaction(async (tx) => {
+      await this.events.emitAsync(CATEGORY_DELETED, { userId, categoryId: id, tx } satisfies CategoryDeletedEvent);
+      await tx.category.delete({ where: { id } });
+    });
   }
 
   /** The category if the user may file a transaction under it (system or their own), else 404. */

@@ -8,18 +8,19 @@ import type {
   UpdateTransaction,
 } from '@et/api-client';
 import type { LedgerFilters } from '@et/domain';
-import { api, toApiError } from '../../lib';
+import { api, invalidateLedger, ledgerRoots, toApiError } from '../../lib';
 import { filtersToQuery } from './ledger';
 
 const PAGE_SIZE = 50;
 
 export const transactionKeys = {
-  all: ['transactions'] as const,
-  recent: ['transactions', 'recent'] as const,
-  recentCategories: ['transactions', 'recent-categories'] as const,
+  all: ledgerRoots.transactions,
+  recent: [...ledgerRoots.transactions, 'recent'] as const,
+  recentCategories: [...ledgerRoots.transactions, 'recent-categories'] as const,
   /** The filter object is part of the key, so changing a filter fetches again. */
-  list: (filters: LedgerFilters) => ['transactions', 'list', filters] as const,
-  detail: (id: string) => ['transaction', id] as const,
+  list: (filters: LedgerFilters) => [...ledgerRoots.transactions, 'list', filters] as const,
+  /** Under `all`, so a ledger-wide refresh (a merge, apply to merchant) reaches open details too. */
+  detail: (id: string) => [...ledgerRoots.transactions, 'detail', id] as const,
 };
 
 export function useTransaction(id: string) {
@@ -70,15 +71,12 @@ export function useRecentCategoryIds() {
   });
 }
 
-/** After any ledger write: lists and the dashboard are stale; the detail is whatever the API returned. */
+/** After any ledger write: lists, Home and source counts are stale; the detail is whatever the API returned. */
 function useLedgerWritten() {
   const queryClient = useQueryClient();
   return async (detail?: TransactionDetail) => {
     if (detail) queryClient.setQueryData(transactionKeys.detail(detail.id), detail);
-    await Promise.all([
-      queryClient.invalidateQueries({ queryKey: transactionKeys.all }),
-      queryClient.invalidateQueries({ queryKey: ['dashboard'] }),
-    ]);
+    await invalidateLedger(queryClient);
   };
 }
 
