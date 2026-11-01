@@ -19,6 +19,12 @@ export interface SyncDeps {
   /** False once the sync must stop (capture turned off, another user signed in); checked before each read and send. */
   active?(): boolean;
   send(items: CapturedTxn[]): Promise<IngestBatchResult>;
+  /**
+   * Whether a transaction from this sender is sent, held for the person to confirm the sender, or
+   * dropped; leave out to send everything. Held ones go to `hold` and count as handled.
+   */
+  decide?(sender: string, item: CapturedTxn): 'send' | 'hold' | 'drop';
+  hold?(sender: string, item: CapturedTxn, receivedAt: number): void;
   /** Receive time of the newest message already handled; null before the first sync. */
   watermark(): number | null;
   setWatermark(ms: number): void;
@@ -32,6 +38,8 @@ export interface SyncResult extends IngestBatchResult {
   found: number;
   /** Bank messages neither parsed nor known non-payments: a format no template reads yet. */
   unrecognised: number;
+  /** Transactions from senders the person hasn't confirmed yet, kept on the phone for them. */
+  held: number;
 }
 
 /**
@@ -109,7 +117,7 @@ export function toCaptured(message: InboxMessage): CapturedTxn | null {
 export async function syncInbox(deps: SyncDeps): Promise<SyncResult> {
   const now = deps.now?.() ?? Date.now();
   let since = deps.watermark() ?? now - FIRST_SYNC_DAYS * 86_400_000;
-  const total: SyncResult = { read: 0, found: 0, unrecognised: 0, created: 0, merged: 0, skipped: 0, rejected: 0 };
+  const total: SyncResult = { read: 0, found: 0, unrecognised: 0, held: 0, created: 0, merged: 0, skipped: 0, rejected: 0 };
   const expected = deps.onProgress && deps.countInbox ? await deps.countInbox(since) : null;
   if (expected !== null) deps.onProgress!(0, expected);
 
@@ -128,8 +136,16 @@ export async function syncInbox(deps: SyncDeps): Promise<SyncResult> {
       }
       total.found++;
       const item = sendable(parsed, now);
-      if (item) pending.push({ item, receivedAt: m.receivedAt });
-      else total.rejected++;
+      if (!item) {
+        total.rejected++;
+        continue;
+      }
+      const decision = deps.decide?.(m.sender, item) ?? 'send';
+      if (decision === 'send') pending.push({ item, receivedAt: m.receivedAt });
+      else if (decision === 'hold') {
+        deps.hold?.(m.sender, item, m.receivedAt);
+        total.held++;
+      }
     }
     for (let i = 0; i < pending.length; i += BATCH_SIZE) {
       if (!active()) return total;

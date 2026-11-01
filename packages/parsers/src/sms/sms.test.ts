@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { join } from 'node:path';
-import { bankSenderPatterns, isBankSender, parseSms, smsAmount, smsTemplates } from './index';
+import { isKnownBankSender, isTransactionSender, parseSms, smsAmount, transactionSenderPatterns } from './index';
 import { sha256Hex, smsMessageKey } from './message-key';
 
 interface FixtureCase {
@@ -52,7 +52,7 @@ describe('SMS fixtures', () => {
   });
 
   it('covers debit, credit and ignored messages for every bank', () => {
-    for (const bank of ['hdfc', 'sbi', 'icici', 'axis']) {
+    for (const bank of ['hdfc', 'sbi', 'icici', 'axis', 'generic']) {
       const parsed = cases.map((c) => parseSms(c.sender, c.body, new Date(c.receivedAt))).filter((t) => t?.template === bank);
       expect(parsed.some((t) => t!.direction === 'debit')).toBe(true);
       expect(parsed.some((t) => t!.direction === 'credit')).toBe(true);
@@ -79,7 +79,7 @@ describe('smsAmount', () => {
 
 describe('committed SMS', () => {
   /** Bank helplines and "SMS BLOCK" numbers printed in every alert: public, not personal. */
-  const BANK_NUMBERS = new Set(['7308080808', '919951860002', '9951860002', '9215676766']);
+  const BANK_NUMBERS = new Set(['7308080808', '919951860002', '9951860002', '9215676766', '9820620454']);
 
   it('carry no personal phone numbers, emails or full account numbers', () => {
     // Unreviewed drafts too: they are committed files as soon as they exist.
@@ -92,31 +92,36 @@ describe('committed SMS', () => {
   });
 });
 
-describe('bankSenderPatterns', () => {
-  it('lists every template, in syntax Kotlin reads the same way', () => {
-    const patterns = bankSenderPatterns();
-    expect(patterns).toHaveLength(smsTemplates.length);
-    for (const [i, source] of patterns.entries()) {
-      // Anchors, classes, groups, alternation and counts only: no lookbehind, named groups or flags but "i".
-      expect(source).toMatch(/^\^[A-Za-z0-9[\]{}()|,\\-]+$/);
-      expect(smsTemplates[i]!.sender.flags).toBe('i');
-    }
+describe('transactionSenderPatterns', () => {
+  it('is one pattern, in syntax Kotlin reads the same way', () => {
+    const patterns = transactionSenderPatterns();
+    expect(patterns).toHaveLength(1);
+    // Anchors, classes, groups, alternation and counts only: no lookarounds, named groups or flags but "i".
+    expect(patterns[0]).toMatch(/^\^[A-Za-z0-9[\]{}()|,\\$-]+$/);
   });
 
-  it('accepts each bank and nothing personal', () => {
-    const accepts = (sender: string) => bankSenderPatterns().some((p) => new RegExp(p, 'i').test(sender));
-    for (const s of ['VM-HDFCBK', 'AD-SBIINB', 'JD-ATMSBI', 'VM-ICICIB', 'AX-AXISBK']) expect(accepts(s)).toBe(true);
-    for (const s of ['+919876543210', 'VM-AMAZON', 'AD-SWIGGY', 'Mom']) expect(accepts(s)).toBe(false);
+  it('lets in business senders of any bank, and no person or promotion', () => {
+    const accepts = (sender: string) => transactionSenderPatterns().some((p) => new RegExp(p, 'i').test(sender));
+    for (const s of ['VM-HDFCBK', 'VH-SVCBNK', 'AD-SBIINB', 'JD-ATMSBI-S', 'AX-AXISBK-T', 'SVCBNK', 'BP-KOTAKB', 'VK-PNBSMS-G']) expect(accepts(s)).toBe(true);
+    for (const s of ['+919876543210', '9876543210', 'VM-AMAZON-P', 'AD-SWIGGY-P', 'Mom', 'VM-HDFCBANK1']) expect(accepts(s)).toBe(false);
   });
 });
 
-describe('isBankSender', () => {
-  it('accepts bank headers and rejects phone numbers', () => {
-    expect(isBankSender('VM-HDFCBK')).toBe(true);
-    expect(isBankSender('JD-ATMSBI')).toBe(true);
-    expect(isBankSender('AX-ICICIT')).toBe(true);
-    expect(isBankSender('+919876543210')).toBe(false);
-    expect(isBankSender('VM-AMAZON')).toBe(false);
+describe('isTransactionSender', () => {
+  it('accepts business headers and rejects phone numbers and promotions', () => {
+    expect(isTransactionSender('VM-HDFCBK')).toBe(true);
+    expect(isTransactionSender('VH-SVCBNK-S')).toBe(true);
+    expect(isTransactionSender('SVCBNK')).toBe(true);
+    expect(isTransactionSender('+919876543210')).toBe(false);
+    expect(isTransactionSender('123456')).toBe(false);
+    expect(isTransactionSender('VM-OFFERS-P')).toBe(false);
+  });
+});
+
+describe('isKnownBankSender', () => {
+  it('trusts template banks and known bank headers, nothing else', () => {
+    for (const s of ['VM-HDFCBK', 'AD-SBIINB-S', 'VH-SVCBNK', 'BP-KOTAKB-T', 'JK-CANBNK']) expect(isKnownBankSender(s)).toBe(true);
+    for (const s of ['VM-NEWBNK', 'AD-PHONPE-S', 'VM-HDFCBK-P', '+919876543210']) expect(isKnownBankSender(s)).toBe(false);
   });
 });
 

@@ -25,6 +25,7 @@ export function SettingsScreen() {
   const health = useHealth();
   const appearance = usePreferences((s) => s.appearance);
   const smsEnabled = useSmsCapture((s) => s.enabled);
+  const toReview = useSmsCapture((s) => Object.keys(s.held).length);
   const exportLedger = useExportLedger();
   const [appearanceOpen, setAppearanceOpen] = useState(false);
 
@@ -65,8 +66,8 @@ export function SettingsScreen() {
       <Card padding="rows">
         <ListRow
           label="Data sources"
-          value={smsCaptureAvailable() ? (smsEnabled ? 'SMS on' : 'SMS off') : undefined}
-          valueTone={smsEnabled ? 'accent' : 'muted'}
+          value={smsCaptureAvailable() ? (smsEnabled ? (toReview > 0 ? `${toReview} to review` : 'SMS on') : 'SMS off') : undefined}
+          valueTone={smsEnabled ? (toReview > 0 ? 'spend' : 'accent') : 'muted'}
           onPress={() => navigation.navigate('DataSources')}
         />
         <ListRow label="Appearance" value={APPEARANCE_LABELS[appearance]} onPress={() => setAppearanceOpen(true)} />

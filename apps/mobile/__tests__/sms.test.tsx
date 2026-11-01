@@ -6,11 +6,17 @@ import { coverageLabel, progressLabel, syncSummary, transactionsLabel } from '..
 import type { InboxMessage } from '../src/native/NativeSmsInbox';
 
 const posts: unknown[] = [];
+/** Last digits of the signed-in person's accounts, as GET /v1/accounts returns them. */
+let accountDigits: string[] = [];
 (globalThis as { fetch: unknown }).fetch = jest.fn(async (req: Request) => {
   if (new URL(req.url).pathname === '/v1/ingest/batch') {
     const body = (await req.json()) as { items: unknown[] };
     posts.push(body);
     return new Response(JSON.stringify({ created: body.items.length, merged: 0, skipped: 0, rejected: 0 }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+  }
+  if (new URL(req.url).pathname === '/v1/accounts') {
+    const items = accountDigits.map((d, i) => ({ id: `a${i}`, bankName: 'Some Bank', kind: 'savings', maskedNumber: d, nickname: null, createdAt: '2026-10-01T00:00:00Z' }));
+    return new Response(JSON.stringify({ items }), { status: 200, headers: { 'Content-Type': 'application/json' } });
   }
   if (new URL(req.url).pathname === '/v1/ingest/sources') {
     const items = [
@@ -97,7 +103,7 @@ describe('syncInbox', () => {
     const result = await syncInbox(f.deps);
     expect(f.deps.readInbox).toHaveBeenNthCalledWith(1, T0 + 60_000 - 90 * 86_400_000, READ_PAGE);
     expect(f.sent.map((b) => b.length)).toEqual([BATCH_SIZE, BATCH_SIZE, 50]);
-    expect(result).toEqual({ read: 251, found: 250, unrecognised: 0, created: 250, merged: 0, skipped: 0, rejected: 0 });
+    expect(result).toEqual({ read: 251, found: 250, unrecognised: 0, held: 0, created: 250, merged: 0, skipped: 0, rejected: 0 });
     expect(f.watermark()).toBe(T0);
   });
 
@@ -144,7 +150,7 @@ describe('syncInbox', () => {
 
   it('does nothing on an empty inbox', async () => {
     const f = fake([]);
-    expect(await syncInbox(f.deps)).toEqual({ read: 0, found: 0, unrecognised: 0, created: 0, merged: 0, skipped: 0, rejected: 0 });
+    expect(await syncInbox(f.deps)).toEqual({ read: 0, found: 0, unrecognised: 0, held: 0, created: 0, merged: 0, skipped: 0, rejected: 0 });
     expect(f.deps.send).not.toHaveBeenCalled();
   });
 
@@ -315,9 +321,9 @@ describe('DataSourcesScreen', () => {
     expect(store.getState().enabled).toBe(true);
     expect(posts).toHaveLength(1);
     expect(JSON.stringify(posts[0])).not.toMatch(/Not You|OTP/);
-    // Only bank senders are read, from the one list in @et/parsers.
-    const { bankSenderPatterns } = require('@et/parsers') as typeof import('@et/parsers');
-    expect(mockReadInbox).toHaveBeenCalledWith(expect.any(Number), expect.any(Number), bankSenderPatterns());
+    // Only business senders are read (no people, no promotions), from the one pattern in @et/parsers.
+    const { transactionSenderPatterns } = require('@et/parsers') as typeof import('@et/parsers');
+    expect(mockReadInbox).toHaveBeenCalledWith(expect.any(Number), expect.any(Number), transactionSenderPatterns());
     // Debug builds also say how many bank messages were read.
     expect(screen.getByText('2 bank messages · 1 payment · 0 not recognised')).toBeTruthy();
   });
@@ -396,8 +402,12 @@ describe('onBankSms (the headless task)', () => {
     const { useSmsCapture } = require('../src/features/sms') as typeof import('../src/features/sms');
     useSmsCapture.getState().setEnabled(true);
     useSmsCapture.getState().setWatermark(T0 - 1);
-    // First read: not in the inbox yet. Second read: there.
-    mockReadInbox.mockResolvedValueOnce([]).mockResolvedValueOnce([HDFC(500, T0)]).mockResolvedValue([]);
+    // First read: not in the inbox yet. Second read: there. (A catch-up read for banks added
+    // since finds nothing.)
+    const hdfcReads = [[], [HDFC(500, T0)]];
+    mockReadInbox.mockImplementation(async (_since: number, _limit: number, senders: string[]) =>
+      senders.some((p) => new RegExp(p, 'i').test('VM-HDFCBK')) ? (hdfcReads.shift() ?? []) : [],
+    );
     const run = onBankSms();
     await jest.runAllTimersAsync();
     await run;
@@ -453,6 +463,166 @@ describe('SMS capture belongs to one user', () => {
     await runSmsSync();
     expect(posts).toHaveLength(0);
     expect(useSmsCapture.getState()).toMatchObject({ enabled: false, watermarkMs: null, lastSyncMs: null });
+  });
+});
+
+describe('an update that reads more senders', () => {
+  const { useSmsCapture } = require('../src/features/sms') as typeof import('../src/features/sms');
+  const { runSmsSync } = require('../src/features/sms/run') as typeof import('../src/features/sms/run');
+  const SVC: InboxMessage = {
+    sender: 'VH-SVCBNK',
+    body: 'SVC Bank A/c *1234 DEBITED for Rs.11.00 Clr Bal Rs.1,89,764.50. CR UPI/DR/427512345701/KALLAHALL/. Not You? Call 18003132120',
+    receivedAt: T0 - 86_400_000,
+  };
+  const since = () => mockReadInbox.mock.calls.map(([ms]) => ms as number);
+
+  beforeEach(() => {
+    posts.length = 0;
+    mockReadInbox.mockReset();
+    useSmsCapture.getState().reset();
+    useSmsCapture.getState().setEnabled(true);
+    mockReadInbox.mockImplementation(async (ms: number) => inbox.filter((m) => m.receivedAt > ms));
+    inbox = [SVC];
+  });
+  let inbox: InboxMessage[] = [];
+
+  it('reads the last 90 days once when the watermark came from the template-only reader', async () => {
+    // HDFC was read before, with older fingerprints: reading it again could add it twice.
+    inbox = [HDFC(7, T0 - 2 * 86_400_000), SVC];
+    // Synced by a version that read only HDFC, SBI, ICICI and Axis: the watermark is past the SVC message.
+    useSmsCapture.getState().setWatermark(T0);
+    await runSmsSync();
+    expect(since()[0]).toBeLessThan(Date.now() - 89 * 86_400_000);
+    expect(posts).toEqual([{ items: [expect.objectContaining({ bank: 'SVC Bank', amountPaise: 1100, direction: 'debit' })] }]);
+    expect(useSmsCapture.getState().watermarkMs).toBe(T0);
+
+    mockReadInbox.mockClear();
+    await runSmsSync();
+    expect(since()).toEqual([T0]);
+    expect(posts).toHaveLength(1);
+  });
+
+  it('needs no catch-up after a first sync', async () => {
+    await runSmsSync();
+    expect(since()).toHaveLength(1);
+    expect(posts).toHaveLength(1);
+    mockReadInbox.mockClear();
+    await runSmsSync();
+    expect(since()).toEqual([SVC.receivedAt]);
+  });
+});
+
+describe('a sender Altus does not know', () => {
+  const { useSmsCapture } = require('../src/features/sms') as typeof import('../src/features/sms');
+  const { approveSender, runSmsSync } = require('../src/features/sms/run') as typeof import('../src/features/sms/run');
+  const { markCaughtUp } = require('../src/features/sms/store') as typeof import('../src/features/sms/store');
+  const { Platform } = require('react-native') as typeof import('react-native');
+  const NEW = (n: number, last4 = '1234'): InboxMessage => ({
+    sender: 'VM-NEWBNK-S',
+    body: `Your a/c XX${last4} is debited by Rs.${300 + n}.00 on 01-11-26 towards UPI/4275123457${String(n).padStart(2, '0')}/TEA STALL. -New Co-op Bank`,
+    receivedAt: T0 + n,
+  });
+  let inbox: InboxMessage[] = [];
+
+  beforeEach(() => {
+    posts.length = 0;
+    accountDigits = [];
+    inbox = [];
+    mockReadInbox.mockReset();
+    mockReadInbox.mockImplementation(async (ms: number) => inbox.filter((m) => m.receivedAt > ms));
+    useSmsCapture.getState().reset();
+    useSmsCapture.getState().setEnabled(true);
+    useSmsCapture.getState().setWatermark(T0);
+    markCaughtUp();
+  });
+  afterAll(() => {
+    accountDigits = [];
+  });
+
+  it('holds its transactions on the phone until the person says it is their bank', async () => {
+    inbox = [NEW(1), NEW(2)];
+    expect(await runSmsSync()).toMatchObject({ found: 2, held: 2, created: 0 });
+    expect(posts).toHaveLength(0);
+    expect(useSmsCapture.getState().held.NEWBNK).toHaveLength(2);
+    // Read again (Check now): still two, not four.
+    useSmsCapture.getState().setWatermark(T0);
+    await runSmsSync();
+    expect(useSmsCapture.getState().held.NEWBNK).toHaveLength(2);
+
+    await approveSender('NEWBNK');
+    expect(posts).toEqual([{ items: [expect.objectContaining({ amountPaise: 30_100 }), expect.objectContaining({ amountPaise: 30_200 })] }]);
+    expect(useSmsCapture.getState()).toMatchObject({ held: {}, trusted: ['NEWBNK'] });
+
+    // Trusted from now on: the next one goes straight in.
+    inbox = [NEW(3)];
+    useSmsCapture.getState().setWatermark(T0 + 2);
+    expect(await runSmsSync()).toMatchObject({ held: 0, created: 1 });
+  });
+
+  it('keeps them if sending fails, so the person can try again', async () => {
+    inbox = [NEW(1)];
+    await runSmsSync();
+    const fetchMock = globalThis.fetch as jest.Mock;
+    fetchMock.mockImplementationOnce(async () => new Response('{}', { status: 503, headers: { 'Content-Type': 'application/json' } }));
+    await expect(approveSender('NEWBNK')).rejects.toBeTruthy();
+    expect(useSmsCapture.getState().held.NEWBNK).toHaveLength(1);
+    expect(useSmsCapture.getState().trusted).toEqual([]);
+  });
+
+  it('drops them, and everything after, when the person says it is not their bank', async () => {
+    inbox = [NEW(1)];
+    await runSmsSync();
+    useSmsCapture.getState().block('NEWBNK');
+    expect(useSmsCapture.getState().held).toEqual({});
+    inbox = [NEW(1), NEW(2)];
+    expect(await runSmsSync()).toMatchObject({ held: 0, created: 0 });
+    expect(posts).toHaveLength(0);
+    expect(useSmsCapture.getState().held).toEqual({});
+  });
+
+  it('trusts it straight away when it names one of the person’s accounts', async () => {
+    accountDigits = ['1234'];
+    inbox = [NEW(1)];
+    expect(await runSmsSync()).toMatchObject({ held: 0, created: 1 });
+    expect(useSmsCapture.getState().trusted).toEqual(['NEWBNK']);
+    // An account they don't have is still held.
+    useSmsCapture.getState().reset();
+    useSmsCapture.getState().setEnabled(true);
+    useSmsCapture.getState().setWatermark(T0);
+    markCaughtUp();
+    inbox = [NEW(2, '9999')];
+    expect(await runSmsSync()).toMatchObject({ held: 1, created: 0 });
+  });
+
+  it('shows on Data sources, and "Yes, my bank" adds the transactions', async () => {
+    inbox = [NEW(1)];
+    await runSmsSync();
+    posts.length = 0;
+    const os = Platform.OS;
+    Platform.OS = 'android';
+    const { DataSourcesScreen } = require('../src/features/sms') as typeof import('../src/features/sms');
+    const { QueryClient, QueryClientProvider } = require('@tanstack/react-query') as typeof import('@tanstack/react-query');
+    const { NavigationContainer } = require('@react-navigation/native') as typeof import('@react-navigation/native');
+    const { ThemeProvider } = require('../src/theme') as typeof import('../src/theme');
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+    await render(
+      <SafeAreaProvider initialMetrics={{ frame: { x: 0, y: 0, width: 390, height: 844 }, insets: { top: 0, left: 0, right: 0, bottom: 0 } }}>
+        <QueryClientProvider client={client}>
+          <ThemeProvider>
+            <NavigationContainer>
+              <DataSourcesScreen navigation={{ goBack: jest.fn() } as never} route={{ key: 'sources', name: 'DataSources', params: undefined } as never} />
+            </NavigationContainer>
+          </ThemeProvider>
+        </QueryClientProvider>
+      </SafeAreaProvider>,
+    );
+    expect(screen.getByText('NEW SENDERS')).toBeTruthy();
+    expect(screen.getByText('NEWBNK')).toBeTruthy();
+    expect(screen.getByText('1 transaction · latest ₹301.00 debited from ••1234. Is this your bank?')).toBeTruthy();
+    await fireEvent.press(screen.getByRole('button', { name: 'Yes, my bank' }));
+    await waitFor(() => expect(screen.queryByText('NEWBNK')).toBeNull());
+    expect(posts).toHaveLength(1);
+    Platform.OS = os;
   });
 });
 
