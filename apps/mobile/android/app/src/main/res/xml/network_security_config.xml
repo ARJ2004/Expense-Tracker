@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Release builds: HTTPS only, except the EC2 API, which has no domain or certificate yet.
+  Remove the domain-config once the API is served over HTTPS (see docs/deploy-ec2.md).
+  Debug builds use src/debug/res/xml/network_security_config.xml instead.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false" />
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">15.252.181.82</domain>
+    </domain-config>
+</network-security-config>

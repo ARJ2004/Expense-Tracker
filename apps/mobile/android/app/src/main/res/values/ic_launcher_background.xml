@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Altus navy (theme token hero, #012A4A). -->
+    <color name="ic_launcher_background">#012A4A</color>
+</resources>

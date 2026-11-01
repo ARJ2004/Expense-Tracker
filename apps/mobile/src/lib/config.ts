@@ -1,9 +1,10 @@
 /**
- * API base URL. Debug builds talk to the API on this Mac through the Android emulator's
- * host alias; release builds must use HTTPS (cleartext is allowed only in debug).
+ * API base URL: the API on EC2 behind Nginx (`/altus/` → port 4000), for debug and release builds.
+ * It has no domain or certificate yet, so release builds allow plain HTTP to this one IP
+ * (android/app/src/main/res/xml/network_security_config.xml). Switch to HTTPS before a Play release.
+ * For an API running on this Mac, use 'http://10.0.2.2:4000' (emulator).
  */
-export const API_BASE_URL = __DEV__ ? 'http://10.0.2.2:4000' : 'https://api.altus.invalid';
-
+export const API_BASE_URL = 'http://15.252.181.82/altus';
 /**
  * OAuth 2.0 *Web* client ID from Google Cloud Console (the same value as the API's
  * GOOGLE_WEB_CLIENT_ID). Empty until the OAuth clients are created; Google sign-in then

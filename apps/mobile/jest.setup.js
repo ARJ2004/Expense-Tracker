@@ -77,3 +77,7 @@ jest.mock('react-native-mmkv', () => {
   };
   return { createMMKV };
 });
+
+// Tests' fake fetch matches paths like /v1/categories: keep the API at a root URL, wherever the
+// real server lives (config.ts points at a path under Nginx).
+jest.mock('./src/lib/config', () => ({ ...jest.requireActual('./src/lib/config'), API_BASE_URL: 'http://api.test' }));
