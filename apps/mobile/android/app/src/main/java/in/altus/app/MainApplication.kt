@@ -7,6 +7,7 @@ import com.facebook.react.ReactHost
 import com.facebook.react.ReactNativeApplicationEntryPoint.loadReactNative
 import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import `in`.altus.app.sms.SmsInboxPackage
+import `in`.altus.app.splash.LaunchSplashPackage
 
 class MainApplication : Application(), ReactApplication {
 
@@ -17,6 +18,7 @@ class MainApplication : Application(), ReactApplication {
         PackageList(this).packages.apply {
           // The app's own native modules (autolinking only covers node_modules).
           add(SmsInboxPackage())
+          add(LaunchSplashPackage())
         },
     )
   }
