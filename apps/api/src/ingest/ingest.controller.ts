@@ -1,17 +1,32 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiBadRequestResponse, ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags, ApiTooManyRequestsResponse, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { CurrentUser, ErrorResponse, type AuthUser } from '../common';
 import { CaptureService } from './capture.service';
 import { IngestBatchDto, IngestBatchResultDto } from './dto/ingest-batch.dto';
+import { SourceStatsDto } from './dto/source-stats.dto';
+import { SourceStatsService } from './source-stats.service';
 
-/** HTTP edge for transactions the phone captured. Writes go through IngestService.ingestBatch. */
+/**
+ * HTTP edge for transactions the phone captured (writes go through IngestService.ingestBatch),
+ * and what each source has added (the Data sources screen).
+ */
 @ApiTags('ingest')
 @ApiBearerAuth()
 @ApiUnauthorizedResponse({ type: ErrorResponse })
 @Controller('ingest')
 export class IngestController {
-  constructor(private readonly capture: CaptureService) {}
+  constructor(
+    private readonly capture: CaptureService,
+    private readonly sourceStats: SourceStatsService,
+  ) {}
+
+  @Get('sources')
+  @ApiOperation({ operationId: 'sourceStats', summary: 'Transactions and last activity per source (bank SMS, statements, manual)' })
+  @ApiOkResponse({ type: SourceStatsDto })
+  async sources(@CurrentUser() user: AuthUser): Promise<SourceStatsDto> {
+    return { items: await this.sourceStats.forUser(user.id) };
+  }
 
   @Post('batch')
   @HttpCode(HttpStatus.OK)

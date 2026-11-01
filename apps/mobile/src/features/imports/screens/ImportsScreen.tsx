@@ -52,7 +52,7 @@ export function ImportsScreen() {
             fileName="Bank SMS"
             subtitle={smsEnabled ? lastSyncLabel(smsLastSync) : 'Add spends from bank alerts automatically'}
             tag={smsEnabled ? { label: 'On', tone: 'success' } : { label: 'Off', tone: 'neutral' }}
-            onPress={() => navigation.navigate('SmsCapture')}
+            onPress={() => navigation.navigate('DataSources', { explainSms: !smsEnabled })}
           />
         </Card>
       )}

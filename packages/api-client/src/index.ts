@@ -36,6 +36,7 @@ export type UpdateImportRow = components['schemas']['UpdateImportRowDto'];
 export type CapturedTxn = components['schemas']['CapturedTxnDto'];
 export type IngestBatch = components['schemas']['IngestBatchDto'];
 export type IngestBatchResult = components['schemas']['IngestBatchResultDto'];
+export type SourceStat = components['schemas']['SourceStatDto'];
 export type UpdateMe = components['schemas']['UpdateMeDto'];
 export type DashboardSummary = components['schemas']['DashboardSummaryDto'];
 export type CategorySpend = components['schemas']['CategorySpendDto'];

@@ -31,10 +31,7 @@ class SmsInboxModule(context: ReactApplicationContext) : NativeSmsInboxSpec(cont
       return
     }
     val max = limit.toInt().coerceIn(1, MAX_LIMIT)
-    // A pattern Kotlin can't compile is dropped: that bank is skipped, never every sender let in.
-    val banks = (0 until senders.size()).mapNotNull { i ->
-      senders.getString(i)?.let { runCatching { Regex(it, RegexOption.IGNORE_CASE) }.getOrNull() }
-    }
+    val banks = patterns(senders)
     if (banks.isEmpty()) {
       promise.resolve(Arguments.createArray())
       return
@@ -73,6 +70,43 @@ class SmsInboxModule(context: ReactApplicationContext) : NativeSmsInboxSpec(cont
     }
   }
 
+  override fun countInbox(sinceMs: Double, senders: ReadableArray, promise: Promise) {
+    val context = reactApplicationContext
+    if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_SMS) != PackageManager.PERMISSION_GRANTED) {
+      promise.reject("E_PERMISSION", "READ_SMS not granted")
+      return
+    }
+    val banks = patterns(senders)
+    io.execute {
+      try {
+        var count = 0
+        // Only the sender column: counting never loads a message body.
+        context.contentResolver.query(
+          Telephony.Sms.Inbox.CONTENT_URI,
+          arrayOf(Telephony.Sms.ADDRESS),
+          "${Telephony.Sms.DATE} > ?",
+          arrayOf(sinceMs.toLong().toString()),
+          null,
+        )?.use { cursor ->
+          val address = cursor.getColumnIndexOrThrow(Telephony.Sms.ADDRESS)
+          while (cursor.moveToNext()) {
+            val sender = cursor.getString(address) ?: continue
+            if (banks.any { it.containsMatchIn(sender) }) count++
+          }
+        }
+        promise.resolve(count.toDouble())
+      } catch (e: SecurityException) {
+        promise.reject("E_PERMISSION", "READ_SMS not granted")
+      } catch (e: Exception) {
+        promise.reject("E_READ", e.javaClass.simpleName)
+      }
+    }
+  }
+
+  override fun setLiveCapture(enabled: Boolean, senders: ReadableArray) {
+    LiveCapture.save(reactApplicationContext, enabled, (0 until senders.size()).mapNotNull { senders.getString(it) })
+  }
+
   override fun isDeclared(): Boolean {
     val context = reactApplicationContext
     @Suppress("DEPRECATION")
@@ -84,6 +118,12 @@ class SmsInboxModule(context: ReactApplicationContext) : NativeSmsInboxSpec(cont
     io.shutdown()
     super.invalidate()
   }
+
+  /** A pattern Kotlin can't compile is dropped: that bank is skipped, never every sender let in. */
+  private fun patterns(senders: ReadableArray): List<Regex> =
+    (0 until senders.size()).mapNotNull { i ->
+      senders.getString(i)?.let { runCatching { Regex(it, RegexOption.IGNORE_CASE) }.getOrNull() }
+    }
 
   companion object {
     const val NAME = "SmsInbox"

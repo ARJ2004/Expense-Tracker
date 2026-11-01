@@ -2,7 +2,7 @@ import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { BATCH_SIZE, READ_PAGE, sendable, syncInbox, toCaptured, type SyncDeps } from '../src/features/sms/sync';
-import { coverageLabel, syncSummary } from '../src/features/sms/labels';
+import { coverageLabel, progressLabel, syncSummary, transactionsLabel } from '../src/features/sms/labels';
 import type { InboxMessage } from '../src/native/NativeSmsInbox';
 
 const posts: unknown[] = [];
@@ -12,14 +12,29 @@ const posts: unknown[] = [];
     posts.push(body);
     return new Response(JSON.stringify({ created: body.items.length, merged: 0, skipped: 0, rejected: 0 }), { status: 200, headers: { 'Content-Type': 'application/json' } });
   }
+  if (new URL(req.url).pathname === '/v1/ingest/sources') {
+    const items = [
+      { kind: 'sms', transactions: 42, lastAt: '2026-10-18T07:42:10Z' },
+      { kind: 'statement', transactions: 1240, lastAt: null },
+      { kind: 'manual', transactions: 1, lastAt: null },
+    ];
+    return new Response(JSON.stringify({ items }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+  }
   return new Response(JSON.stringify({ error: { code: 'NOT_FOUND', message: 'x' } }), { status: 404, headers: { 'Content-Type': 'application/json' } });
 });
 
 const mockReadInbox = jest.fn();
+const mockCountInbox = jest.fn(async () => 0);
+const mockSetLiveCapture = jest.fn();
 const mockIsDeclared = jest.fn(() => true);
 jest.mock('../src/native/NativeSmsInbox', () => ({
   __esModule: true,
-  default: { readInbox: (...args: unknown[]) => mockReadInbox(...args), isDeclared: () => mockIsDeclared() },
+  default: {
+    readInbox: (...args: unknown[]) => mockReadInbox(...args),
+    countInbox: (...args: unknown[]) => mockCountInbox(...(args as [])),
+    setLiveCapture: (...args: unknown[]) => mockSetLiveCapture(...args),
+    isDeclared: () => mockIsDeclared(),
+  },
 }));
 
 const HDFC = (n: number, at: number): InboxMessage => ({
@@ -113,6 +128,20 @@ describe('syncInbox', () => {
     expect(result.found).toBe(50);
   });
 
+  it('reports progress against the count of bank messages, never past 100%', async () => {
+    const messages = Array.from({ length: READ_PAGE + 20 }, (_, i) => HDFC(i, T0 - 100_000 + i));
+    const f = fake(messages);
+    const onProgress = jest.fn();
+    // The count was taken before 20 more arrived: the total grows instead of overflowing.
+    await syncInbox({ ...f.deps, countInbox: async () => READ_PAGE, onProgress });
+    expect(onProgress.mock.calls).toEqual([
+      [0, READ_PAGE],
+      [READ_PAGE, READ_PAGE],
+      [READ_PAGE + 20, READ_PAGE + 20],
+    ]);
+    expect(progressLabel({ read: 120, total: 1340 })).toBe('Reading 120 of 1,340 bank messages');
+  });
+
   it('does nothing on an empty inbox', async () => {
     const f = fake([]);
     expect(await syncInbox(f.deps)).toEqual({ read: 0, found: 0, unrecognised: 0, created: 0, merged: 0, skipped: 0, rejected: 0 });
@@ -168,6 +197,11 @@ describe('sendable', () => {
 });
 
 describe('syncSummary', () => {
+  it('counts transactions in Indian grouping', () => {
+    expect(transactionsLabel(1)).toBe('1 transaction');
+    expect(transactionsLabel(124000)).toBe('1,24,000 transactions');
+  });
+
   it('says what happened in plain words', () => {
     expect(syncSummary({ found: 0, created: 0, merged: 0, skipped: 0, rejected: 0 })).toBe('No new bank transactions in your SMS.');
     expect(syncSummary({ found: 15, created: 12, merged: 2, skipped: 1, rejected: 0 })).toBe('Added 12 · 3 already in your ledger');
@@ -197,7 +231,7 @@ describe('PermissionExplainer', () => {
   });
 });
 
-describe('SmsCaptureScreen', () => {
+describe('DataSourcesScreen', () => {
   const metrics = { frame: { x: 0, y: 0, width: 390, height: 844 }, insets: { top: 0, left: 0, right: 0, bottom: 0 } };
   const { Platform, PermissionsAndroid } = require('react-native') as typeof import('react-native');
   const os = Platform.OS;
@@ -220,18 +254,23 @@ describe('SmsCaptureScreen', () => {
     expect(smsCaptureAvailable()).toBe(false);
   });
 
-  function mount(permission: 'granted' | 'denied' | 'never_ask_again') {
+  function mount(permission: 'granted' | 'denied' | 'never_ask_again', params: { explainSms?: boolean } = { explainSms: true }) {
     jest.spyOn(PermissionsAndroid, 'check').mockResolvedValue(false);
-    const request = jest.spyOn(PermissionsAndroid, 'request').mockResolvedValue(permission as never);
+    const request = jest
+      .spyOn(PermissionsAndroid, 'requestMultiple')
+      .mockResolvedValue({ [PermissionsAndroid.PERMISSIONS.READ_SMS]: permission, [PermissionsAndroid.PERMISSIONS.RECEIVE_SMS]: permission } as never);
     const { QueryClient, QueryClientProvider } = require('@tanstack/react-query') as typeof import('@tanstack/react-query');
-    const { SmsCaptureScreen, useSmsCapture } = require('../src/features/sms') as typeof import('../src/features/sms');
+    const { DataSourcesScreen, useSmsCapture } = require('../src/features/sms') as typeof import('../src/features/sms');
     const { ThemeProvider } = require('../src/theme') as typeof import('../src/theme');
+    const { NavigationContainer } = require('@react-navigation/native') as typeof import('@react-navigation/native');
     const goBack = jest.fn();
     const ui = (
       <SafeAreaProvider initialMetrics={metrics}>
         <QueryClientProvider client={new QueryClient({ defaultOptions: { mutations: { retry: false } } })}>
           <ThemeProvider>
-            <SmsCaptureScreen navigation={{ goBack } as never} route={{ key: 'sms', name: 'SmsCapture' } as never} />
+            <NavigationContainer>
+              <DataSourcesScreen navigation={{ goBack } as never} route={{ key: 'sources', name: 'DataSources', params } as never} />
+            </NavigationContainer>
           </ThemeProvider>
         </QueryClientProvider>
       </SafeAreaProvider>
@@ -275,16 +314,70 @@ describe('SmsCaptureScreen', () => {
     expect(await screen.findByRole('button', { name: 'Open Android settings' })).toBeTruthy();
   });
 
-  it('turns off and forgets progress', async () => {
+  it('turns off, forgets progress and tells the SMS receiver', async () => {
     mockReadInbox.mockResolvedValue([]);
-    const { ui, store } = mount('granted');
+    const { ui, store } = mount('granted', {});
     store.getState().setEnabled(true);
     store.getState().setWatermark(T0);
+    expect(mockSetLiveCapture).toHaveBeenLastCalledWith(true, expect.any(Array));
     await render(ui);
     await fireEvent.press(screen.getByRole('button', { name: 'Check now' }));
     await waitFor(() => expect(screen.getByText('No new bank transactions in your SMS.')).toBeTruthy());
     await fireEvent.press(screen.getByRole('button', { name: 'Turn off' }));
     expect(store.getState()).toMatchObject({ enabled: false, watermarkMs: null });
-    expect(await screen.findByText('Read bank SMS to add spends for you')).toBeTruthy();
+    expect(mockSetLiveCapture).toHaveBeenLastCalledWith(false, expect.any(Array));
+    expect(await screen.findByRole('button', { name: 'Turn on' })).toBeTruthy();
+  });
+
+  it('lists what each source added, and opens the disclosure from Turn on', async () => {
+    const { ui } = mount('granted', {});
+    await render(ui);
+    expect(await screen.findByText('1,240 transactions')).toBeTruthy();
+    expect(screen.getByText('1 transaction')).toBeTruthy();
+    expect(screen.getByText('Never')).toBeTruthy();
+    await fireEvent.press(screen.getByRole('button', { name: 'Turn on' }));
+    expect(screen.getByText('Read bank SMS to add spends for you')).toBeTruthy();
+  });
+
+  it('shows how far a long first sync has got', async () => {
+    const { ui, store } = mount('granted', {});
+    store.getState().setEnabled(true);
+    store.getState().setProgress({ read: 120, total: 340 });
+    await render(ui);
+    expect(screen.getByText('Reading 120 of 340 bank messages')).toBeTruthy();
+    expect(await screen.findByText('42 transactions')).toBeTruthy();
+  });
+});
+
+describe('onBankSms (the headless task)', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    mockReadInbox.mockReset();
+    (require('../src/features/sms') as typeof import('../src/features/sms')).useSmsCapture.getState().reset();
+  });
+  afterEach(() => jest.useRealTimers());
+
+  const { onBankSms } = require('../src/features/sms/task') as typeof import('../src/features/sms/task');
+  const { secureStore } = require('../src/lib') as typeof import('../src/lib');
+
+  it('does nothing while capture is off', async () => {
+    const run = onBankSms();
+    await jest.runAllTimersAsync();
+    await run;
+    expect(mockReadInbox).not.toHaveBeenCalled();
+  });
+
+  it('retries until the SMS app has written the message to the inbox', async () => {
+    jest.spyOn(secureStore, 'getRefreshToken').mockResolvedValue('refresh');
+    const { useSmsCapture } = require('../src/features/sms') as typeof import('../src/features/sms');
+    useSmsCapture.getState().setEnabled(true);
+    useSmsCapture.getState().setWatermark(T0 - 1);
+    // First read: not in the inbox yet. Second read: there.
+    mockReadInbox.mockResolvedValueOnce([]).mockResolvedValueOnce([HDFC(500, T0)]).mockResolvedValue([]);
+    const run = onBankSms();
+    await jest.runAllTimersAsync();
+    await run;
+    expect(useSmsCapture.getState().watermarkMs).toBe(T0);
+    expect(posts.at(-1)).toEqual({ items: [expect.objectContaining({ amountPaise: 60_000 })] });
   });
 });

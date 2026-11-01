@@ -6,7 +6,7 @@ import { CategorySpendScreen } from '../features/home';
 import { ImportReviewScreen } from '../features/imports';
 import { CategoriesScreen, DeleteAccountScreen, IncomeScreen } from '../features/settings';
 import { useSession } from '../features/auth';
-import { SmsCaptureScreen, useSmsCapture } from '../features/sms';
+import { DataSourcesScreen, useSmsCapture, useSmsForegroundSync } from '../features/sms';
 import { AddTransactionSheet, TransactionDetailScreen } from '../features/transactions';
 import type { MainStackParamList } from '../lib';
 import { RootTabs } from './RootTabs';
@@ -22,6 +22,7 @@ export function MainNavigator() {
   useEffect(() => {
     if (userId) claimSms(userId);
   }, [userId, claimSms]);
+  useSmsForegroundSync();
   return (
     <>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -29,7 +30,7 @@ export function MainNavigator() {
         <Stack.Screen name="TransactionDetail" component={TransactionDetailScreen} />
         <Stack.Screen name="Accounts" component={AccountsScreen} />
         <Stack.Screen name="ImportReview" component={ImportReviewScreen} />
-        <Stack.Screen name="SmsCapture" component={SmsCaptureScreen} />
+        <Stack.Screen name="DataSources" component={DataSourcesScreen} />
         <Stack.Screen name="CategorySpend" component={CategorySpendScreen} />
         <Stack.Screen name="Categories" component={CategoriesScreen} />
         <Stack.Screen name="Income" component={IncomeScreen} />

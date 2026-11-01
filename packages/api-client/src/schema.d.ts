@@ -74,6 +74,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/ingest/sources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Transactions and last activity per source (bank SMS, statements, manual) */
+        get: operations["sourceStats"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/ingest/batch": {
         parameters: {
             query?: never;
@@ -507,6 +524,22 @@ export interface components {
              */
             monthlyIncomePaise?: number;
             incomeFrequency?: components["schemas"]["IncomeFrequency"];
+        };
+        /** @enum {string} */
+        ListedSource: "sms" | "statement" | "manual";
+        SourceStatDto: {
+            kind: components["schemas"]["ListedSource"];
+            /** @description Live transactions with at least one source of this kind */
+            transactions: number;
+            /**
+             * Format: date-time
+             * @description When a source of this kind last reached the ledger
+             */
+            lastAt: string | null;
+        };
+        SourceStatsDto: {
+            /** @description Every listed kind, in that order, zero when unused */
+            items: components["schemas"]["SourceStatDto"][];
         };
         /** @enum {string} */
         DeviceSource: "sms";
@@ -1234,6 +1267,33 @@ export interface operations {
                 };
                 content: {
                     "text/csv": string;
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    sourceStats: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SourceStatsDto"];
                 };
             };
             401: {

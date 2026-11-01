@@ -5,4 +5,19 @@
       build): Play builds leave READ_SMS out until Google approves the SMS permissions declaration.
     -->
     <uses-permission android:name="android.permission.READ_SMS" />
+    <!-- Live capture: a bank SMS arriving wakes a sync of the inbox (SmsReceivedReceiver). -->
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <application>
+        <receiver
+            android:name=".sms.SmsReceivedReceiver"
+            android:exported="true"
+            android:permission="android.permission.BROADCAST_SMS">
+            <intent-filter>
+                <action android:name="android.provider.Telephony.SMS_RECEIVED" />
+            </intent-filter>
+        </receiver>
+        <service android:name=".sms.SmsSyncTaskService" android:exported="false" />
+    </application>
 </manifest>

@@ -24,8 +24,29 @@ export async function checkSmsPermission(): Promise<SmsPermission> {
 export async function requestSmsPermission(): Promise<SmsPermission> {
   if (!smsCaptureAvailable()) return 'unavailable';
   // Already allowed (e.g. in Android settings after "don't ask again"): no prompt needed.
-  if (await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.READ_SMS)) return 'granted';
-  const result = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.READ_SMS);
+  if (await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.READ_SMS)) {
+    await ensureLiveSmsPermission();
+    return 'granted';
+  }
+  // One prompt: both are in Android's SMS group, and RECEIVE_SMS is what lets a new SMS wake a sync.
+  const results = await PermissionsAndroid.requestMultiple([
+    PermissionsAndroid.PERMISSIONS.READ_SMS,
+    PermissionsAndroid.PERMISSIONS.RECEIVE_SMS,
+  ]);
+  const result = results[PermissionsAndroid.PERMISSIONS.READ_SMS];
   if (result === PermissionsAndroid.RESULTS.GRANTED) return 'granted';
   return result === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN ? 'blocked' : 'denied';
+}
+
+/**
+ * Live capture also needs RECEIVE_SMS. With READ_SMS already allowed Android grants it without a
+ * prompt (same permission group), so phones that turned capture on before live capture get it
+ * silently. Without it, capture still works on app open and Check now.
+ */
+export async function ensureLiveSmsPermission(): Promise<void> {
+  if (!smsCaptureAvailable()) return;
+  const receive = PermissionsAndroid.PERMISSIONS.RECEIVE_SMS;
+  if (await PermissionsAndroid.check(receive)) return;
+  if (!(await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.READ_SMS))) return;
+  await PermissionsAndroid.request(receive).catch(() => undefined);
 }

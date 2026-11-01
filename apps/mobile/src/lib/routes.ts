@@ -16,8 +16,8 @@ export type MainStackParamList = {
   Accounts: undefined;
   /** alreadyImportedAt: this exact file was added before (shown as a notice). */
   ImportReview: { id: string; alreadyImportedAt?: string };
-  /** Bank SMS capture: the disclosure while off, status and Check now while on. */
-  SmsCapture: undefined;
+  /** Bank SMS, statements and manual entry; explainSms opens the SMS disclosure straight away. */
+  DataSources: { explainSms?: boolean } | undefined;
   /** Home's "See all": every category with spend in a month ("YYYY-MM"). */
   CategorySpend: { month: string };
   Categories: undefined;

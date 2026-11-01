@@ -258,6 +258,43 @@
         ]
       }
     },
+    "/v1/ingest/sources": {
+      "get": {
+        "operationId": "sourceStats",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceStatsDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Transactions and last activity per source (bank SMS, statements, manual)",
+        "tags": [
+          "ingest"
+        ]
+      }
+    },
     "/v1/ingest/batch": {
       "post": {
         "operationId": "ingestBatch",
@@ -2529,6 +2566,56 @@
             ]
           }
         }
+      },
+      "ListedSource": {
+        "type": "string",
+        "enum": [
+          "sms",
+          "statement",
+          "manual"
+        ]
+      },
+      "SourceStatDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ListedSource"
+              }
+            ]
+          },
+          "transactions": {
+            "type": "integer",
+            "description": "Live transactions with at least one source of this kind"
+          },
+          "lastAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When a source of this kind last reached the ledger"
+          }
+        },
+        "required": [
+          "kind",
+          "transactions",
+          "lastAt"
+        ]
+      },
+      "SourceStatsDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "description": "Every listed kind, in that order, zero when unused",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SourceStatDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
       },
       "DeviceSource": {
         "type": "string",

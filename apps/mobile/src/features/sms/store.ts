@@ -1,5 +1,7 @@
 import { createMMKV } from 'react-native-mmkv';
 import { create } from 'zustand';
+import { bankSenderPatterns } from '@et/parsers';
+import SmsInbox from '../../native/NativeSmsInbox';
 
 /** Device-only SMS capture state. Never synced: the choice and progress belong to this phone. */
 const storage = createMMKV({ id: 'sms-capture' });
@@ -8,12 +10,28 @@ const ENABLED = 'enabled';
 const WATERMARK = 'watermarkMs';
 const LAST_SYNC = 'lastSyncMs';
 
+/** The only senders the native module reads; every other message stays unread in Android. */
+export const BANK_SENDERS = bankSenderPatterns();
+
+/** Tells the native SMS receiver whether to wake a sync (it can't read this store). */
+export function mirrorLiveCapture(enabled: boolean): void {
+  SmsInbox?.setLiveCapture(enabled, BANK_SENDERS);
+}
+
+export interface SyncProgress {
+  read: number;
+  total: number;
+}
+
 interface SmsCaptureState {
   /** The user turned capture on (after the disclosure and the Android permission). */
   enabled: boolean;
   /** Receive time of the newest SMS already handled. */
   watermarkMs: number | null;
   lastSyncMs: number | null;
+  /** A sync reading many messages (the first 90 days): how far it is. Not stored. */
+  progress: SyncProgress | null;
+  setProgress: (progress: SyncProgress | null) => void;
   setEnabled: (enabled: boolean) => void;
   setWatermark: (ms: number) => void;
   setLastSync: (ms: number) => void;
@@ -34,8 +52,11 @@ const read = () => ({
 
 export const useSmsCapture = create<SmsCaptureState>((set, get) => ({
   ...read(),
+  progress: null,
+  setProgress: (progress) => set({ progress }),
   setEnabled: (enabled) => {
     storage.set(ENABLED, enabled);
+    mirrorLiveCapture(enabled);
     set({ enabled });
   },
   setWatermark: (ms) => {
@@ -55,6 +76,7 @@ export const useSmsCapture = create<SmsCaptureState>((set, get) => ({
     storage.remove(ENABLED);
     storage.remove(WATERMARK);
     storage.remove(LAST_SYNC);
-    set({ enabled: false, watermarkMs: null, lastSyncMs: null });
+    mirrorLiveCapture(false);
+    set({ enabled: false, watermarkMs: null, lastSyncMs: null, progress: null });
   },
 }));

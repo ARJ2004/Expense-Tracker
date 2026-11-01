@@ -14,6 +14,10 @@ const MAX_FUTURE_MS = 86_400_000;
 
 export interface SyncDeps {
   readInbox(sinceMs: number, limit: number): Promise<InboxMessage[]>;
+  /** Bank messages after `sinceMs`, for progress; leave out to skip progress. */
+  countInbox?(sinceMs: number): Promise<number>;
+  /** Called after each page: bank messages handled so far, of `total`. */
+  onProgress?(read: number, total: number): void;
   send(items: CapturedTxn[]): Promise<IngestBatchResult>;
   /** Receive time of the newest message already handled; null before the first sync. */
   watermark(): number | null;
@@ -110,6 +114,8 @@ export async function syncInbox(deps: SyncDeps): Promise<SyncResult> {
   const now = deps.now?.() ?? Date.now();
   let since = deps.watermark() ?? now - FIRST_SYNC_DAYS * 86_400_000;
   const total: SyncResult = { read: 0, found: 0, unrecognised: 0, created: 0, merged: 0, skipped: 0, rejected: 0 };
+  const expected = deps.onProgress && deps.countInbox ? await deps.countInbox(since) : null;
+  if (expected !== null) deps.onProgress!(0, expected);
 
   for (;;) {
     const page = await deps.readInbox(since, READ_PAGE);
@@ -139,6 +145,8 @@ export async function syncInbox(deps: SyncDeps): Promise<SyncResult> {
     // The whole page is handled (non-payments included): move past it.
     since = page[page.length - 1]!.receivedAt;
     deps.setWatermark(since);
+    // More can arrive while it runs; the total grows rather than the bar passing 100%.
+    if (expected !== null) deps.onProgress!(total.read, Math.max(expected, total.read));
     if (page.length < READ_PAGE) break;
   }
   return total;

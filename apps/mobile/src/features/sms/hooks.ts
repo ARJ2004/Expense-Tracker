@@ -1,19 +1,25 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import type { CapturedTxn, IngestBatchResult } from '@et/api-client';
-import { bankSenderPatterns } from '@et/parsers';
-import SmsInbox from '../../native/NativeSmsInbox';
-import { api, ApiError, toApiError } from '../../lib';
+import { useEffect } from 'react';
+import { AppState } from 'react-native';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { api, toApiError } from '../../lib';
 import { transactionKeys } from '../transactions';
-import { useSmsCapture } from './store';
-import { syncInbox, type SyncResult } from './sync';
+import { ensureLiveSmsPermission } from './permission';
+import { runSmsSync } from './run';
+import { mirrorLiveCapture, useSmsCapture } from './store';
 
-/** The only senders the native module reads; every other message stays unread in Android. */
-const BANK_SENDERS = bankSenderPatterns();
+/** Data sources: transactions and last activity per source, from the API. */
+export const sourceKeys = { all: ['ingest', 'sources'] as const };
 
-async function sendBatch(items: CapturedTxn[]): Promise<IngestBatchResult> {
-  const { data, error } = await api.POST('/v1/ingest/batch', { body: { items } });
-  if (!data) throw toApiError(error);
-  return data;
+/** App open syncs at most this often (the SMS receiver covers the rest). */
+const FOREGROUND_EVERY_MS = 60_000;
+
+/** Everything a sync can change: the ledger, Home and the per-source counts. */
+function invalidateAfterSync(queryClient: ReturnType<typeof useQueryClient>) {
+  return Promise.all([
+    queryClient.invalidateQueries({ queryKey: transactionKeys.all }),
+    queryClient.invalidateQueries({ queryKey: ['dashboard'] }),
+    queryClient.invalidateQueries({ queryKey: sourceKeys.all }),
+  ]);
 }
 
 /**
@@ -23,31 +29,45 @@ async function sendBatch(items: CapturedTxn[]): Promise<IngestBatchResult> {
 export function useSmsSync() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (): Promise<SyncResult> => {
-      if (!SmsInbox) throw new ApiError('SMS_UNAVAILABLE', 'Reading SMS works on Android only.');
-      const store = useSmsCapture.getState();
-      try {
-        const result = await syncInbox({
-          readInbox: (sinceMs, limit) => SmsInbox!.readInbox(sinceMs, limit, BANK_SENDERS),
-          send: sendBatch,
-          watermark: () => useSmsCapture.getState().watermarkMs,
-          setWatermark: store.setWatermark,
-        });
-        store.setLastSync(Date.now());
-        return result;
-      } catch (e) {
-        if (e instanceof ApiError) throw e;
-        if ((e as { code?: string }).code === 'E_PERMISSION') {
-          store.setEnabled(false);
-          throw new ApiError('SMS_PERMISSION', 'SMS permission was turned off. Allow it again to keep reading bank SMS.');
-        }
-        throw new ApiError('SMS_READ', "Couldn't read your SMS inbox. Try again.");
-      }
+    mutationFn: runSmsSync,
+    onSettled: () => invalidateAfterSync(queryClient),
+  });
+}
+
+/**
+ * While capture is on: keeps the native receiver's copy of the setting current, makes sure it may
+ * receive SMS, and syncs whenever the app comes to the front. Mount once, in the signed-in app.
+ */
+export function useSmsForegroundSync() {
+  const queryClient = useQueryClient();
+  const enabled = useSmsCapture((s) => s.enabled);
+  useEffect(() => {
+    mirrorLiveCapture(enabled);
+    if (!enabled) return;
+    ensureLiveSmsPermission();
+    const sync = () => {
+      const last = useSmsCapture.getState().lastSyncMs ?? 0;
+      if (Date.now() - last < FOREGROUND_EVERY_MS) return;
+      runSmsSync()
+        .then(() => invalidateAfterSync(queryClient))
+        .catch(() => undefined);
+    };
+    sync();
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') sync();
+    });
+    return () => sub.remove();
+  }, [enabled, queryClient]);
+}
+
+/** Transactions and last activity for each source (SMS, statements, manual). */
+export function useSourceStats() {
+  return useQuery({
+    queryKey: sourceKeys.all,
+    queryFn: async () => {
+      const { data, error } = await api.GET('/v1/ingest/sources');
+      if (!data) throw toApiError(error);
+      return data.items;
     },
-    onSettled: () =>
-      Promise.all([
-        queryClient.invalidateQueries({ queryKey: transactionKeys.all }),
-        queryClient.invalidateQueries({ queryKey: ['dashboard'] }),
-      ]),
   });
 }

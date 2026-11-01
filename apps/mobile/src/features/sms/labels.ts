@@ -18,7 +18,21 @@ export function lastSyncLabel(lastSyncMs: number | null, now = new Date()): stri
   return lastSyncMs ? `Last checked ${formatISTRelative(new Date(lastSyncMs), now)}` : 'Not checked yet';
 }
 
-/** "Added 12 · 3 already in your ledger · 1 skipped" after a sync. */
+/** "Today, 9:05 pm", or "Never" for a source that hasn't added anything yet. */
+export function lastActivityLabel(iso: string | null, now = new Date()): string {
+  return iso ? formatISTRelative(new Date(iso), now) : 'Never';
+}
+
+/** "1 transaction", "1,240 transactions". */
+export function transactionsLabel(count: number): string {
+  return `${count.toLocaleString('en-IN')} transaction${count === 1 ? '' : 's'}`;
+}
+
+/** "Reading 120 of 340 bank messages" while a long sync runs. */
+export function progressLabel(p: { read: number; total: number }): string {
+  return `Reading ${p.read.toLocaleString('en-IN')} of ${p.total.toLocaleString('en-IN')} bank messages`;
+}
+
 /**
  * Debug builds only: how many bank messages the templates read. "Not recognised" is a bank
  * format no template knows yet, which the anonymizer turns into a test case to add.
@@ -28,6 +42,7 @@ export function coverageLabel(r: Pick<SyncResult, 'read' | 'found' | 'unrecognis
   return `${n(r.read, 'bank message')} · ${n(r.found, 'payment')} · ${r.unrecognised} not recognised`;
 }
 
+/** "Added 12 · 3 already in your ledger · 1 skipped" after a sync. */
 export function syncSummary(r: Pick<SyncResult, 'created' | 'merged' | 'skipped' | 'found' | 'rejected'>): string {
   if (r.found === 0) return 'No new bank transactions in your SMS.';
   const parts = [`Added ${r.created}`];

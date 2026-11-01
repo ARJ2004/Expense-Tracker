@@ -63,14 +63,12 @@ export function SettingsScreen() {
 
       <SectionLabel label="App" />
       <Card padding="rows">
-        {smsCaptureAvailable() && (
-          <ListRow
-            label="Data sources"
-            value={smsEnabled ? 'SMS on' : 'SMS off'}
-            valueTone={smsEnabled ? 'accent' : 'muted'}
-            onPress={() => navigation.navigate('SmsCapture')}
-          />
-        )}
+        <ListRow
+          label="Data sources"
+          value={smsCaptureAvailable() ? (smsEnabled ? 'SMS on' : 'SMS off') : undefined}
+          valueTone={smsEnabled ? 'accent' : 'muted'}
+          onPress={() => navigation.navigate('DataSources')}
+        />
         <ListRow label="Appearance" value={APPEARANCE_LABELS[appearance]} onPress={() => setAppearanceOpen(true)} />
         <ListRow label="Export data" value={exportLedger.isPending ? 'Exporting…' : 'CSV'} onPress={exportLedger.isPending ? undefined : runExport} last />
       </Card>
