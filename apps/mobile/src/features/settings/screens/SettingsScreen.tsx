@@ -6,6 +6,7 @@ import { errorMessage, usePreferences, type MainStackParamList } from '../../../
 import { radius, useTheme } from '../../../theme';
 import { Card, ListRow, Screen, SectionLabel, Text } from '../../../ui';
 import { useAccounts } from '../../accounts';
+import { useGoals } from '../../goals';
 import { useSession, useSignOut } from '../../auth';
 import { useCategories } from '../../categories';
 import { smsCaptureAvailable, useSmsCapture } from '../../sms';
@@ -21,6 +22,7 @@ export function SettingsScreen() {
   const user = useSession((s) => s.user);
   const signOut = useSignOut();
   const accounts = useAccounts();
+  const goals = useGoals('active');
   const categories = useCategories();
   const health = useHealth();
   const appearance = usePreferences((s) => s.appearance);
@@ -59,7 +61,8 @@ export function SettingsScreen() {
       <Card padding="rows">
         <ListRow label="Accounts" value={accounts.data ? String(accounts.data.length) : undefined} onPress={() => navigation.navigate('Accounts')} />
         <ListRow label="Categories" value={categories.data ? String(categories.data.length) : undefined} onPress={() => navigation.navigate('Categories')} />
-        <ListRow label="Income" value={incomeLabel(user?.monthlyIncomePaise ?? null)} onPress={() => navigation.navigate('Income')} last />
+        <ListRow label="Income" value={incomeLabel(user?.monthlyIncomePaise ?? null)} onPress={() => navigation.navigate('Income')} />
+        <ListRow label="Goals" value={goals.data ? String(goals.data.length) : undefined} onPress={() => navigation.navigate('Goals')} last />
       </Card>
 
       <SectionLabel label="App" />

@@ -5,6 +5,7 @@ import { istMonthKey, monthLabel, shiftMonth } from '@et/domain';
 import { HeroCard } from '../../../components';
 import { errorMessage, type MainStackParamList, type MainTabParamList } from '../../../lib';
 import { Button, Card, EmptyState, Screen, Text } from '../../../ui';
+import { GoalsOnHome } from '../../goals';
 import { RecentTransactions, useOpenAddSheet } from '../../transactions';
 import { MonthSwitcher } from '../components/MonthSwitcher';
 import { WhereItWent } from '../components/WhereItWent';
@@ -17,7 +18,7 @@ function greeting(hour: number): string {
   return 'Good evening';
 }
 
-/** Home (mockup 03): the month's hero card, "Where it went" and Recent; arrows step through months. */
+/** Home (mockup 03): the month's hero card, "Where it went", your goals and Recent; arrows step through months. */
 export function HomeScreen() {
   const now = new Date();
   const current = istMonthKey(now);
@@ -69,6 +70,13 @@ export function HomeScreen() {
           <HeroCard {...heroFigures(data, isCurrent, name)} />
           <WhereItWent items={data.byCategory} monthName={name} onSeeAll={() => navigation.navigate('CategorySpend', { month })} />
         </>
+      )}
+      {isCurrent && (
+        <GoalsOnHome
+          onOpen={(id) => navigation.navigate('GoalDetail', { id })}
+          onSeeAll={() => navigation.navigate('Goals')}
+          onNew={() => navigation.navigate('GoalForm')}
+        />
       )}
       <RecentTransactions onOpen={(id) => navigation.navigate('TransactionDetail', { id })} />
     </Screen>

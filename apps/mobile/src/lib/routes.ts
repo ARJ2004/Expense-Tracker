@@ -23,4 +23,8 @@ export type MainStackParamList = {
   Categories: undefined;
   Income: undefined;
   DeleteAccount: undefined;
+  Goals: undefined;
+  GoalDetail: { id: string };
+  /** New goal, or edit the one with this id. */
+  GoalForm: { id?: string } | undefined;
 };

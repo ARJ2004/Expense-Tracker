@@ -44,6 +44,17 @@ export type MerchantSpend = components['schemas']['MerchantSpendDto'];
 export type DashboardTrend = components['schemas']['DashboardTrendDto'];
 export type TrendBucket = components['schemas']['TrendBucket'];
 export type ImportRowFilter = NonNullable<NonNullable<paths['/v1/imports/{id}/rows']['get']['parameters']['query']>['filter']>;
+export type Goal = components['schemas']['GoalDto'];
+export type GoalDetail = components['schemas']['GoalDetailDto'];
+export type GoalProgress = components['schemas']['GoalProgressDto'];
+export type GoalDay = components['schemas']['GoalDayDto'];
+export type GoalStatus = components['schemas']['GoalStatus'];
+export type GoalDayStatus = components['schemas']['GoalDayStatus'];
+export type GoalContribution = components['schemas']['GoalContributionDto'];
+export type CreateGoal = components['schemas']['CreateGoalDto'];
+export type UpdateGoal = components['schemas']['UpdateGoalDto'];
+export type Contribute = components['schemas']['ContributeDto'];
+export type ContributionResult = components['schemas']['ContributionResultDto'];
 
 /** Creates a typed client for the Expense Tracker API; every path, body and response is checked. */
 export function createApiClient(options: ClientOptions & { baseUrl: string }) {

@@ -180,6 +180,109 @@ export interface paths {
         patch: operations["updateCategory"];
         trace?: never;
     };
+    "/v1/imports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The latest 20 imports, newest first */
+        get: operations["listImports"];
+        put?: never;
+        /** Upload a CSV, XLSX or text PDF statement; it is parsed in the background */
+        post: operations["uploadImport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/imports/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getImport"];
+        put?: never;
+        post?: never;
+        /** Discard an import that was not added */
+        delete: operations["discardImport"];
+        options?: never;
+        head?: never;
+        /** Pick the account; the duplicate check runs again */
+        patch: operations["setImportAccount"];
+        trace?: never;
+    };
+    "/v1/imports/{id}/rows": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listImportRows"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/imports/{id}/rows/{rowNo}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Tick or untick a row, pick its category, or correct it */
+        patch: operations["updateImportRow"];
+        trace?: never;
+    };
+    "/v1/imports/{id}/unlock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Open a password-protected PDF statement and parse it; the password is never stored */
+        post: operations["unlockImport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/imports/{id}/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add the ticked rows to the ledger in one transaction */
+        post: operations["confirmImport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/auth/google": {
         parameters: {
             query?: never;
@@ -319,109 +422,6 @@ export interface paths {
         patch: operations["recategorizeTransaction"];
         trace?: never;
     };
-    "/v1/imports": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** The latest 20 imports, newest first */
-        get: operations["listImports"];
-        put?: never;
-        /** Upload a CSV, XLSX or text PDF statement; it is parsed in the background */
-        post: operations["uploadImport"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/imports/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getImport"];
-        put?: never;
-        post?: never;
-        /** Discard an import that was not added */
-        delete: operations["discardImport"];
-        options?: never;
-        head?: never;
-        /** Pick the account; the duplicate check runs again */
-        patch: operations["setImportAccount"];
-        trace?: never;
-    };
-    "/v1/imports/{id}/rows": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["listImportRows"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/imports/{id}/rows/{rowNo}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Tick or untick a row, pick its category, or correct it */
-        patch: operations["updateImportRow"];
-        trace?: never;
-    };
-    "/v1/imports/{id}/unlock": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Open a password-protected PDF statement and parse it; the password is never stored */
-        post: operations["unlockImport"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/imports/{id}/confirm": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Add the ticked rows to the ledger in one transaction */
-        post: operations["confirmImport"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/v1/dashboard/summary": {
         parameters: {
             query?: never;
@@ -451,6 +451,77 @@ export interface paths {
         put?: never;
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/goals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The caller's savings goals with progress, soonest deadline first */
+        get: operations["listGoals"];
+        put?: never;
+        /** Start saving for something */
+        post: operations["createGoal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/goals/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** A goal with its progress and recent contributions */
+        get: operations["getGoal"];
+        put?: never;
+        post?: never;
+        /** Delete a goal and its contributions */
+        delete: operations["deleteGoal"];
+        options?: never;
+        head?: never;
+        /** Rename, change the target or date, archive or restore */
+        patch: operations["updateGoal"];
+        trace?: never;
+    };
+    "/v1/goals/{id}/contributions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Put money aside for today (or yesterday) */
+        post: operations["contributeToGoal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/goals/{id}/contributions/{contributionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Take back a contribution */
+        delete: operations["removeGoalContribution"];
         options?: never;
         head?: never;
         patch?: never;
@@ -675,6 +746,161 @@ export interface components {
             icon?: components["schemas"]["CategoryIcon"];
             color?: components["schemas"]["CategoryColor"];
         };
+        /** @enum {string} */
+        ImportStatus: "parsing" | "review" | "imported" | "failed";
+        TransactionAccountDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example HDFC Bank */
+            bankName: string;
+            /** @example 1234 */
+            maskedNumber: string | null;
+        };
+        ImportDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example Acct_Statement_Oct2026.xlsx */
+            fileName: string;
+            status: components["schemas"]["ImportStatus"];
+            /**
+             * @description Bank named in the file, if any
+             * @example HDFC Bank
+             */
+            bankDetected: string | null;
+            /** @description Null until detected or picked */
+            account: components["schemas"]["TransactionAccountDto"] | null;
+            /**
+             * Format: date
+             * @example 2026-10-01
+             */
+            periodFrom: string | null;
+            /**
+             * Format: date
+             * @example 2026-10-31
+             */
+            periodTo: string | null;
+            /** @example 160 */
+            rowCount: number;
+            /**
+             * @description Rows not in the ledger yet
+             * @example 142
+             */
+            newCount: number;
+            /**
+             * @description Rows already in the ledger (merged on confirm, never added twice)
+             * @example 18
+             */
+            duplicateCount: number;
+            /**
+             * @description Possible duplicates and balance mismatches to look at
+             * @example 2
+             */
+            flaggedCount: number;
+            /**
+             * @description New debit rows no rule could categorize
+             * @example 6
+             */
+            needsCategoryCount: number;
+            /**
+             * @description Rows that will be added: ticked and new
+             * @example 0
+             */
+            selectedCount: number;
+            /** @example 0 */
+            importedCount: number;
+            /** @example 0 */
+            mergedCount: number;
+            /**
+             * @description Why parsing failed: IMPORT_UNREADABLE, IMPORT_NO_ROWS, IMPORT_TOO_MANY_ROWS, IMPORT_PDF_SCANNED, IMPORT_PASSWORD_PROTECTED (unlock it with the password) or IMPORT_FAILED
+             * @example IMPORT_NO_ROWS
+             */
+            error: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            confirmedAt: string | null;
+        };
+        UploadResultDto: {
+            import: components["schemas"]["ImportDto"];
+            /**
+             * Format: date-time
+             * @description Set when this exact file was imported before
+             */
+            alreadyImportedAt?: string;
+        };
+        ImportListDto: {
+            items: components["schemas"]["ImportDto"][];
+        };
+        TransactionCategoryDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example Food & Dining */
+            name: string;
+            icon: components["schemas"]["CategoryIcon"];
+            color: components["schemas"]["CategoryColor"];
+        };
+        /** @enum {string} */
+        CategorySource: "rule" | "user" | "default";
+        /** @enum {string} */
+        ImportRowStatus: "new" | "duplicate" | "possible_duplicate";
+        /** @enum {string} */
+        ImportRowAction: "import" | "skip";
+        ImportRowDto: {
+            /** @example 12 */
+            rowNo: number;
+            /**
+             * Format: date
+             * @example 2026-10-31
+             */
+            occurredOn: string;
+            /** @example 48600 */
+            amountPaise: number;
+            direction: components["schemas"]["Direction"];
+            /** @example UPI-SWIGGY LIMITED-SWIGGYUPI@AXISBANK-... */
+            narration: string;
+            /** @example Swiggy Limited */
+            merchantName: string | null;
+            referenceNo: string | null;
+            balancePaise: number | null;
+            category: components["schemas"]["TransactionCategoryDto"] | null;
+            categorySource: components["schemas"]["CategorySource"];
+            status: components["schemas"]["ImportRowStatus"];
+            /**
+             * Format: uuid
+             * @description The ledger transaction it matches
+             */
+            duplicateOf: string | null;
+            /** @description The running balance doesn't add up at this row */
+            balanceMismatch: boolean;
+            action: components["schemas"]["ImportRowAction"];
+            edited: boolean;
+        };
+        ImportRowListDto: {
+            items: components["schemas"]["ImportRowDto"][];
+        };
+        UpdateImportRowDto: {
+            /** @enum {string} */
+            action?: "import" | "skip";
+            /** Format: uuid */
+            categoryId?: string;
+            /** @example 48600 */
+            amountPaise?: number;
+            /**
+             * Format: date
+             * @example 2026-10-31
+             */
+            occurredOn?: string;
+            /** @example Swiggy */
+            merchantName?: string | null;
+        };
+        UpdateImportDto: {
+            /** Format: uuid */
+            accountId: string;
+        };
+        UnlockImportDto: {
+            /** @description The statement PDF's password. Used once to open the file; never stored or logged. */
+            password: string;
+        };
         GoogleSignInDto: {
             /** @description Google ID token from the app */
             idToken: string;
@@ -728,24 +954,6 @@ export interface components {
         };
         /** @enum {string} */
         TxnType: "expense" | "income" | "refund" | "transfer" | "atm_withdrawal" | "cash_deposit";
-        TransactionCategoryDto: {
-            /** Format: uuid */
-            id: string;
-            /** @example Food & Dining */
-            name: string;
-            icon: components["schemas"]["CategoryIcon"];
-            color: components["schemas"]["CategoryColor"];
-        };
-        TransactionAccountDto: {
-            /** Format: uuid */
-            id: string;
-            /** @example HDFC Bank */
-            bankName: string;
-            /** @example 1234 */
-            maskedNumber: string | null;
-        };
-        /** @enum {string} */
-        CategorySource: "rule" | "user" | "default";
         /** @enum {string} */
         SourceKind: "manual" | "sms" | "notification" | "statement";
         TransactionSourceDto: {
@@ -855,143 +1063,6 @@ export interface components {
             /** @description Other transactions from the same merchant that moved too */
             updatedCount: number;
         };
-        /** @enum {string} */
-        ImportStatus: "parsing" | "review" | "imported" | "failed";
-        ImportDto: {
-            /** Format: uuid */
-            id: string;
-            /** @example Acct_Statement_Oct2026.xlsx */
-            fileName: string;
-            status: components["schemas"]["ImportStatus"];
-            /**
-             * @description Bank named in the file, if any
-             * @example HDFC Bank
-             */
-            bankDetected: string | null;
-            /** @description Null until detected or picked */
-            account: components["schemas"]["TransactionAccountDto"] | null;
-            /**
-             * Format: date
-             * @example 2026-10-01
-             */
-            periodFrom: string | null;
-            /**
-             * Format: date
-             * @example 2026-10-31
-             */
-            periodTo: string | null;
-            /** @example 160 */
-            rowCount: number;
-            /**
-             * @description Rows not in the ledger yet
-             * @example 142
-             */
-            newCount: number;
-            /**
-             * @description Rows already in the ledger (merged on confirm, never added twice)
-             * @example 18
-             */
-            duplicateCount: number;
-            /**
-             * @description Possible duplicates and balance mismatches to look at
-             * @example 2
-             */
-            flaggedCount: number;
-            /**
-             * @description New debit rows no rule could categorize
-             * @example 6
-             */
-            needsCategoryCount: number;
-            /**
-             * @description Rows that will be added: ticked and new
-             * @example 0
-             */
-            selectedCount: number;
-            /** @example 0 */
-            importedCount: number;
-            /** @example 0 */
-            mergedCount: number;
-            /**
-             * @description Why parsing failed: IMPORT_UNREADABLE, IMPORT_NO_ROWS, IMPORT_TOO_MANY_ROWS, IMPORT_PDF_SCANNED, IMPORT_PASSWORD_PROTECTED (unlock it with the password) or IMPORT_FAILED
-             * @example IMPORT_NO_ROWS
-             */
-            error: string | null;
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: date-time */
-            confirmedAt: string | null;
-        };
-        UploadResultDto: {
-            import: components["schemas"]["ImportDto"];
-            /**
-             * Format: date-time
-             * @description Set when this exact file was imported before
-             */
-            alreadyImportedAt?: string;
-        };
-        ImportListDto: {
-            items: components["schemas"]["ImportDto"][];
-        };
-        /** @enum {string} */
-        ImportRowStatus: "new" | "duplicate" | "possible_duplicate";
-        /** @enum {string} */
-        ImportRowAction: "import" | "skip";
-        ImportRowDto: {
-            /** @example 12 */
-            rowNo: number;
-            /**
-             * Format: date
-             * @example 2026-10-31
-             */
-            occurredOn: string;
-            /** @example 48600 */
-            amountPaise: number;
-            direction: components["schemas"]["Direction"];
-            /** @example UPI-SWIGGY LIMITED-SWIGGYUPI@AXISBANK-... */
-            narration: string;
-            /** @example Swiggy Limited */
-            merchantName: string | null;
-            referenceNo: string | null;
-            balancePaise: number | null;
-            category: components["schemas"]["TransactionCategoryDto"] | null;
-            categorySource: components["schemas"]["CategorySource"];
-            status: components["schemas"]["ImportRowStatus"];
-            /**
-             * Format: uuid
-             * @description The ledger transaction it matches
-             */
-            duplicateOf: string | null;
-            /** @description The running balance doesn't add up at this row */
-            balanceMismatch: boolean;
-            action: components["schemas"]["ImportRowAction"];
-            edited: boolean;
-        };
-        ImportRowListDto: {
-            items: components["schemas"]["ImportRowDto"][];
-        };
-        UpdateImportRowDto: {
-            /** @enum {string} */
-            action?: "import" | "skip";
-            /** Format: uuid */
-            categoryId?: string;
-            /** @example 48600 */
-            amountPaise?: number;
-            /**
-             * Format: date
-             * @example 2026-10-31
-             */
-            occurredOn?: string;
-            /** @example Swiggy */
-            merchantName?: string | null;
-        };
-        UpdateImportDto: {
-            /** Format: uuid */
-            accountId: string;
-        };
-        UnlockImportDto: {
-            /** @description The statement PDF's password. Used once to open the file; never stored or logged. */
-            password: string;
-        };
         CategorySpendDto: {
             category: components["schemas"]["TransactionCategoryDto"];
             /**
@@ -1074,6 +1145,145 @@ export interface components {
         DashboardTrendDto: {
             bucket: components["schemas"]["TrendBucket"];
             points: components["schemas"]["TrendPointDto"][];
+        };
+        /** @enum {string} */
+        GoalStatus: "active" | "reached" | "archived";
+        /** @enum {string} */
+        GoalDayStatus: "met" | "covered" | "missed" | "pending" | "none";
+        GoalDayDto: {
+            /** @example 2026-11-01 */
+            day: string;
+            status: components["schemas"]["GoalDayStatus"];
+        };
+        GoalProgressDto: {
+            savedPaise: number;
+            remainingPaise: number;
+            /** @description Target ÷ saving days, rounded up to a whole rupee */
+            dailyTargetPaise: number;
+            /** @description What to save today to stay on plan */
+            suggestedTodayPaise: number;
+            savedTodayPaise: number;
+            daysLeft: number;
+            /** @description "12 days closer" */
+            daysCloser: number;
+            /** @description "78 to go" */
+            daysToGo: number;
+            /** @description Days ahead (positive) or behind (negative) of plan */
+            scheduleDelta: number;
+            streak: number;
+            bestStreak: number;
+            reached: boolean;
+            overdue: boolean;
+            /**
+             * @example [
+             *       "saved-25",
+             *       "streak-3"
+             *     ]
+             */
+            milestones: string[];
+            last14: components["schemas"]["GoalDayDto"][];
+        };
+        GoalDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example New phone */
+            name: string;
+            /** @example 📱 */
+            emoji: string | null;
+            /** @example 5000000 */
+            targetPaise: number;
+            /** @example 2026-11-01 */
+            startDay: string;
+            /** @example 2027-01-30 */
+            targetDay: string;
+            status: components["schemas"]["GoalStatus"];
+            /** Format: date-time */
+            reachedAt: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            progress: components["schemas"]["GoalProgressDto"];
+        };
+        GoalListDto: {
+            items: components["schemas"]["GoalDto"][];
+        };
+        CreateGoalDto: {
+            /** @example New phone */
+            name: string;
+            /** @example 📱 */
+            emoji?: string;
+            /**
+             * @description Integer paise
+             * @example 5000000
+             */
+            targetPaise: number;
+            /** @example 2027-01-30 */
+            targetDay: string;
+        };
+        GoalContributionDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example 2026-11-01 */
+            day: string;
+            /** @example 55600 */
+            amountPaise: number;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        GoalDetailDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example New phone */
+            name: string;
+            /** @example 📱 */
+            emoji: string | null;
+            /** @example 5000000 */
+            targetPaise: number;
+            /** @example 2026-11-01 */
+            startDay: string;
+            /** @example 2027-01-30 */
+            targetDay: string;
+            status: components["schemas"]["GoalStatus"];
+            /** Format: date-time */
+            reachedAt: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            progress: components["schemas"]["GoalProgressDto"];
+            /** @description Newest first, the last 90 */
+            contributions: components["schemas"]["GoalContributionDto"][];
+        };
+        UpdateGoalDto: {
+            /** @example New phone */
+            name?: string;
+            /** @example 📱 */
+            emoji?: string | null;
+            /** @example 5000000 */
+            targetPaise?: number;
+            /** @example 2027-01-30 */
+            targetDay?: string;
+            /** @enum {string} */
+            status?: "active" | "archived";
+        };
+        ContributeDto: {
+            /**
+             * @description Integer paise
+             * @example 55600
+             */
+            amountPaise: number;
+            /**
+             * @description Defaults to today
+             * @enum {string}
+             */
+            day?: "today" | "yesterday";
+        };
+        ContributionResultDto: {
+            goal: components["schemas"]["GoalDto"];
+            /**
+             * @description Milestones this contribution reached, to celebrate
+             * @example [
+             *       "saved-50"
+             *     ]
+             */
+            newMilestones: string[];
         };
     };
     responses: never;
@@ -1710,6 +1920,421 @@ export interface operations {
             };
         };
     };
+    listImports: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportListDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    uploadImport: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                    /** Format: uuid */
+                    accountId?: string;
+                };
+            };
+        };
+        responses: {
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UploadResultDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description FILE_TOO_LARGE (over 10 MB) */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description IMPORT_UNSUPPORTED_FORMAT */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getImport: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    discardImport: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description IMPORT_ALREADY_CONFIRMED */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    setImportAccount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateImportDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description IMPORT_NOT_IN_REVIEW */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    listImportRows: {
+        parameters: {
+            query?: {
+                filter?: "all" | "new" | "duplicates" | "flagged" | "needs_category";
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportRowListDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    updateImportRow: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                rowNo: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateImportRowDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportRowDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description IMPORT_NOT_IN_REVIEW */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    unlockImport: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UnlockImportDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description IMPORT_NOT_LOCKED */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description IMPORT_WRONG_PASSWORD */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    confirmImport: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description IMPORT_NOT_IN_REVIEW or ACCOUNT_REQUIRED */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     signInWithGoogle: {
         parameters: {
             query?: never;
@@ -2198,421 +2823,6 @@ export interface operations {
             };
         };
     };
-    listImports: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ImportListDto"];
-                };
-            };
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    uploadImport: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "multipart/form-data": {
-                    /** Format: binary */
-                    file: string;
-                    /** Format: uuid */
-                    accountId?: string;
-                };
-            };
-        };
-        responses: {
-            202: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["UploadResultDto"];
-                };
-            };
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description FILE_TOO_LARGE (over 10 MB) */
-            413: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description IMPORT_UNSUPPORTED_FORMAT */
-            415: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    getImport: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ImportDto"];
-                };
-            };
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    discardImport: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description IMPORT_ALREADY_CONFIRMED */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    setImportAccount: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateImportDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ImportDto"];
-                };
-            };
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description IMPORT_NOT_IN_REVIEW */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    listImportRows: {
-        parameters: {
-            query?: {
-                filter?: "all" | "new" | "duplicates" | "flagged" | "needs_category";
-            };
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ImportRowListDto"];
-                };
-            };
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    updateImportRow: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-                rowNo: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateImportRowDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ImportRowDto"];
-                };
-            };
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description IMPORT_NOT_IN_REVIEW */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    unlockImport: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UnlockImportDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ImportDto"];
-                };
-            };
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description IMPORT_NOT_LOCKED */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description IMPORT_WRONG_PASSWORD */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    confirmImport: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ImportDto"];
-                };
-            };
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description IMPORT_NOT_IN_REVIEW or ACCOUNT_REQUIRED */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
     getDashboardSummary: {
         parameters: {
             query?: {
@@ -2683,6 +2893,300 @@ export interface operations {
                 };
             };
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    listGoals: {
+        parameters: {
+            query?: {
+                status?: "active" | "reached" | "archived";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GoalListDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    createGoal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateGoalDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GoalDto"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description GOAL_LIMIT */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getGoal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GoalDetailDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    deleteGoal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    updateGoal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateGoalDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GoalDto"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    contributeToGoal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContributeDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContributionResultDto"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description GOAL_ARCHIVED or GOAL_REACHED */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    removeGoalContribution: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                contributionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GoalDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

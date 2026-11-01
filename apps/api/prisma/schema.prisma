@@ -106,6 +106,7 @@ model User {
   merchantRules      MerchantRule[]
   corrections        CategoryCorrection[]
   statementImports   StatementImport[]
+  goals              Goal[]
 
   @@map("users")
 }
@@ -338,4 +339,48 @@ model ImportRow {
 
   @@unique([importId, rowNo])
   @@map("import_rows")
+}
+
+enum GoalStatus {
+  active
+  reached
+  archived
+}
+
+/// Something the user is saving for. Owned by the goals module; progress is worked out from its
+/// contributions (@et/domain goalProgress), never stored. Deleted with the user (cascade).
+model Goal {
+  id          String     @id @default(uuid(7)) @db.Uuid
+  userId      String     @map("user_id") @db.Uuid
+  name        String     @db.VarChar(60)
+  emoji       String?    @db.VarChar(16)
+  targetPaise BigInt     @map("target_paise")
+  /// IST calendar day the goal was set.
+  startDay    DateTime   @map("start_day") @db.Date
+  /// IST calendar day it is wanted by.
+  targetDay   DateTime   @map("target_day") @db.Date
+  status      GoalStatus @default(active)
+  reachedAt   DateTime?  @map("reached_at") @db.Timestamptz
+  createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime   @updatedAt @map("updated_at") @db.Timestamptz
+
+  user          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contributions GoalContribution[]
+
+  @@index([userId, status])
+  @@map("goals")
+}
+
+/// Money the user put aside for a goal on one IST day. Not a ledger transaction.
+model GoalContribution {
+  id          String   @id @default(uuid(7)) @db.Uuid
+  goalId      String   @map("goal_id") @db.Uuid
+  day         DateTime @db.Date
+  amountPaise BigInt   @map("amount_paise")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  goal Goal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  @@index([goalId, day])
+  @@map("goal_contributions")
 }
