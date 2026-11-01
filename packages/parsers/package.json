@@ -10,7 +10,8 @@
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src",
-    "test": "jest --passWithNoTests"
+    "test": "jest --passWithNoTests",
+    "sms:anonymize": "tsc -p tsconfig.build.json && node scripts/anonymize-sms.cjs"
   },
   "dependencies": {
     "@et/domain": "workspace:*"

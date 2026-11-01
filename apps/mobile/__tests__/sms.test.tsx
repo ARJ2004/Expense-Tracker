@@ -2,7 +2,7 @@ import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { BATCH_SIZE, READ_PAGE, sendable, syncInbox, toCaptured, type SyncDeps } from '../src/features/sms/sync';
-import { syncSummary } from '../src/features/sms/labels';
+import { coverageLabel, syncSummary } from '../src/features/sms/labels';
 import type { InboxMessage } from '../src/native/NativeSmsInbox';
 
 const posts: unknown[] = [];
@@ -82,8 +82,15 @@ describe('syncInbox', () => {
     const result = await syncInbox(f.deps);
     expect(f.deps.readInbox).toHaveBeenNthCalledWith(1, T0 + 60_000 - 90 * 86_400_000, READ_PAGE);
     expect(f.sent.map((b) => b.length)).toEqual([BATCH_SIZE, BATCH_SIZE, 50]);
-    expect(result).toEqual({ read: 251, found: 250, created: 250, merged: 0, skipped: 0, rejected: 0 });
+    expect(result).toEqual({ read: 251, found: 250, unrecognised: 0, created: 250, merged: 0, skipped: 0, rejected: 0 });
     expect(f.watermark()).toBe(T0);
+  });
+
+  it('counts bank messages no template reads, but not OTPs or offers', async () => {
+    const unknown = { sender: 'VM-HDFCBK', body: 'Your HDFC Bank NetBanking profile was updated on 18-10-26.', receivedAt: T0 - 5 };
+    const f = fake([HDFC(1, T0 - 10), { ...OTP, receivedAt: T0 - 7 }, unknown]);
+    expect(await syncInbox(f.deps)).toMatchObject({ read: 3, found: 1, unrecognised: 1 });
+    expect(coverageLabel({ read: 3, found: 1, unrecognised: 1 })).toBe('3 bank messages · 1 payment · 1 not recognised');
   });
 
   it('pages through a large inbox', async () => {
@@ -108,7 +115,7 @@ describe('syncInbox', () => {
 
   it('does nothing on an empty inbox', async () => {
     const f = fake([]);
-    expect(await syncInbox(f.deps)).toEqual({ read: 0, found: 0, created: 0, merged: 0, skipped: 0, rejected: 0 });
+    expect(await syncInbox(f.deps)).toEqual({ read: 0, found: 0, unrecognised: 0, created: 0, merged: 0, skipped: 0, rejected: 0 });
     expect(f.deps.send).not.toHaveBeenCalled();
   });
 
@@ -245,6 +252,11 @@ describe('SmsCaptureScreen', () => {
     expect(store.getState().enabled).toBe(true);
     expect(posts).toHaveLength(1);
     expect(JSON.stringify(posts[0])).not.toMatch(/Not You|OTP/);
+    // Only bank senders are read, from the one list in @et/parsers.
+    const { bankSenderPatterns } = require('@et/parsers') as typeof import('@et/parsers');
+    expect(mockReadInbox).toHaveBeenCalledWith(expect.any(Number), expect.any(Number), bankSenderPatterns());
+    // Debug builds also say how many bank messages were read.
+    expect(screen.getByText('2 bank messages · 1 payment · 0 not recognised')).toBeTruthy();
   });
 
   it('stays off when the user says no, and points to Android settings after "don\'t ask again"', async () => {

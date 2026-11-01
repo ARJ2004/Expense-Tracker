@@ -10,14 +10,15 @@ export interface InboxMessage {
 
 /**
  * Codegen spec for the Android SmsInbox module (android/.../sms/SmsInboxModule.kt). The module
- * only reads: it filters by bank-style senders on the device and never writes or sends SMS.
+ * only reads: it keeps bank senders only, on the device, and never writes or sends SMS.
  */
 export interface Spec extends TurboModule {
   /**
-   * Inbox messages received after `sinceMs`, oldest first, at most `limit`, from senders that look
-   * like bank headers ("XX-NAME"). Rejects with E_PERMISSION without READ_SMS.
+   * Inbox messages received after `sinceMs`, oldest first, at most `limit`, from senders matching
+   * one of `senders` (regex sources from @et/parsers' bankSenderPatterns, case-insensitive). Any
+   * other message is skipped before its text is read. Rejects with E_PERMISSION without READ_SMS.
    */
-  readInbox(sinceMs: number, limit: number): Promise<InboxMessage[]>;
+  readInbox(sinceMs: number, limit: number, senders: string[]): Promise<InboxMessage[]>;
   /** True when this build declares READ_SMS (debug and sideloaded builds; not Play builds yet). */
   isDeclared(): boolean;
 }

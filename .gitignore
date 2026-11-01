@@ -14,3 +14,6 @@ apps/mobile/android/local.properties
 apps/mobile/ios/Pods/
 *.keystore
 !debug.keystore
+
+# Raw SMS exports for the anonymizer: never committed
+packages/parsers/fixtures/sms/raw/

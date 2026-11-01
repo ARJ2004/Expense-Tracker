@@ -5,7 +5,7 @@ import { PermissionExplainer } from '../../../components';
 import { errorMessage, type MainStackParamList } from '../../../lib';
 import { Button, Card, EmptyState, ListRow, Screen, Text, TopBar } from '../../../ui';
 import { useSmsSync } from '../hooks';
-import { DISCLOSURE, lastSyncLabel, syncSummary } from '../labels';
+import { coverageLabel, DISCLOSURE, lastSyncLabel, syncSummary } from '../labels';
 import { requestSmsPermission, smsCaptureAvailable } from '../permission';
 import { useSmsCapture } from '../store';
 
@@ -88,6 +88,11 @@ export function SmsCaptureScreen({ navigation }: Props) {
         {sync.isSuccess && (
           <Text variant="secondary" accessibilityLiveRegion="polite">
             {syncSummary(sync.data)}
+          </Text>
+        )}
+        {__DEV__ && sync.isSuccess && (
+          <Text variant="secondary" tone="muted">
+            {coverageLabel(sync.data)}
           </Text>
         )}
         {sync.isError && (

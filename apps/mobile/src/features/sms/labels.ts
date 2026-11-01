@@ -19,6 +19,15 @@ export function lastSyncLabel(lastSyncMs: number | null, now = new Date()): stri
 }
 
 /** "Added 12 · 3 already in your ledger · 1 skipped" after a sync. */
+/**
+ * Debug builds only: how many bank messages the templates read. "Not recognised" is a bank
+ * format no template knows yet, which the anonymizer turns into a test case to add.
+ */
+export function coverageLabel(r: Pick<SyncResult, 'read' | 'found' | 'unrecognised'>): string {
+  const n = (count: number, word: string) => `${count} ${word}${count === 1 ? '' : 's'}`;
+  return `${n(r.read, 'bank message')} · ${n(r.found, 'payment')} · ${r.unrecognised} not recognised`;
+}
+
 export function syncSummary(r: Pick<SyncResult, 'created' | 'merged' | 'skipped' | 'found' | 'rejected'>): string {
   if (r.found === 0) return 'No new bank transactions in your SMS.';
   const parts = [`Added ${r.created}`];

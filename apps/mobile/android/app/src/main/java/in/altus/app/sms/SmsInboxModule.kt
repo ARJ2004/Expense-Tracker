@@ -7,14 +7,16 @@ import androidx.core.content.ContextCompat
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.module.annotations.ReactModule
 import `in`.altus.app.specs.NativeSmsInboxSpec
 import java.util.concurrent.Executors
 
 /**
  * Reads bank alerts from the SMS inbox for on-device parsing. Read only: never sends, writes or
- * deletes a message, and never logs message text. Personal messages are skipped here by sender:
- * banks send from alphanumeric headers like "VM-HDFCBK", people from phone numbers.
+ * deletes a message, and never logs message text. Only senders matching the bank patterns the
+ * app passes in (one list, kept in @et/parsers) are read; for any other message, personal or
+ * business, the body is never loaded.
  */
 @ReactModule(name = SmsInboxModule.NAME)
 class SmsInboxModule(context: ReactApplicationContext) : NativeSmsInboxSpec(context) {
@@ -22,13 +24,21 @@ class SmsInboxModule(context: ReactApplicationContext) : NativeSmsInboxSpec(cont
 
   override fun getName() = NAME
 
-  override fun readInbox(sinceMs: Double, limit: Double, promise: Promise) {
+  override fun readInbox(sinceMs: Double, limit: Double, senders: ReadableArray, promise: Promise) {
     val context = reactApplicationContext
     if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_SMS) != PackageManager.PERMISSION_GRANTED) {
       promise.reject("E_PERMISSION", "READ_SMS not granted")
       return
     }
     val max = limit.toInt().coerceIn(1, MAX_LIMIT)
+    // A pattern Kotlin can't compile is dropped: that bank is skipped, never every sender let in.
+    val banks = (0 until senders.size()).mapNotNull { i ->
+      senders.getString(i)?.let { runCatching { Regex(it, RegexOption.IGNORE_CASE) }.getOrNull() }
+    }
+    if (banks.isEmpty()) {
+      promise.resolve(Arguments.createArray())
+      return
+    }
     io.execute {
       try {
         val out = Arguments.createArray()
@@ -44,7 +54,8 @@ class SmsInboxModule(context: ReactApplicationContext) : NativeSmsInboxSpec(cont
           val date = cursor.getColumnIndexOrThrow(Telephony.Sms.DATE)
           while (cursor.moveToNext() && out.size() < max) {
             val sender = cursor.getString(address) ?: continue
-            if (!BANK_SENDER.matches(sender)) continue
+            // containsMatchIn, as JavaScript's RegExp.test: the patterns carry their own anchors.
+            if (banks.none { it.containsMatchIn(sender) }) continue
             val item = Arguments.createMap()
             item.putString("sender", sender)
             item.putString("body", cursor.getString(body) ?: "")
@@ -77,7 +88,5 @@ class SmsInboxModule(context: ReactApplicationContext) : NativeSmsInboxSpec(cont
   companion object {
     const val NAME = "SmsInbox"
     private const val MAX_LIMIT = 500
-    /** "VM-HDFCBK", "AD-SBIINB-S", "JD-ATMSBI": a 2-letter operator prefix and an alphanumeric header. */
-    private val BANK_SENDER = Regex("^[A-Za-z]{2}-[A-Za-z0-9]{3,9}(-[A-Za-z])?$")
   }
 }

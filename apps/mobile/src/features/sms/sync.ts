@@ -1,5 +1,5 @@
 import { MAX_AMOUNT_PAISE } from '@et/domain';
-import { parseSms, smsMessageKey } from '@et/parsers';
+import { isNotAPayment, parseSms, smsMessageKey } from '@et/parsers';
 import type { CapturedTxn, IngestBatchResult } from '@et/api-client';
 import type { InboxMessage } from '../../native/NativeSmsInbox';
 
@@ -26,6 +26,8 @@ export interface SyncResult extends IngestBatchResult {
   read: number;
   /** Of those, transactions found (the rest were OTPs, offers, balance alerts). */
   found: number;
+  /** Bank messages neither parsed nor known non-payments: a format no template reads yet. */
+  unrecognised: number;
 }
 
 /**
@@ -107,7 +109,7 @@ export function toCaptured(message: InboxMessage): CapturedTxn | null {
 export async function syncInbox(deps: SyncDeps): Promise<SyncResult> {
   const now = deps.now?.() ?? Date.now();
   let since = deps.watermark() ?? now - FIRST_SYNC_DAYS * 86_400_000;
-  const total: SyncResult = { read: 0, found: 0, created: 0, merged: 0, skipped: 0, rejected: 0 };
+  const total: SyncResult = { read: 0, found: 0, unrecognised: 0, created: 0, merged: 0, skipped: 0, rejected: 0 };
 
   for (;;) {
     const page = await deps.readInbox(since, READ_PAGE);
@@ -116,7 +118,10 @@ export async function syncInbox(deps: SyncDeps): Promise<SyncResult> {
     const pending: { item: CapturedTxn; receivedAt: number }[] = [];
     for (const m of page) {
       const parsed = toCaptured(m);
-      if (!parsed) continue;
+      if (!parsed) {
+        if (!isNotAPayment(m.body)) total.unrecognised++;
+        continue;
+      }
       total.found++;
       const item = sendable(parsed, now);
       if (item) pending.push({ item, receivedAt: m.receivedAt });

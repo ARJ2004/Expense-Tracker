@@ -1,16 +1,26 @@
 import type { NormalizedTxn } from '@et/domain';
 import { isNotAPayment } from './helpers';
 import type { SmsTemplate } from './template';
+import { AxisSmsTemplate } from './templates/axis.sms';
 import { HdfcSmsTemplate } from './templates/hdfc.sms';
 import { IciciSmsTemplate } from './templates/icici.sms';
 import { SbiSmsTemplate } from './templates/sbi.sms';
 
 export type { SmsTemplate } from './template';
-export { HdfcSmsTemplate, IciciSmsTemplate, SbiSmsTemplate };
+export { AxisSmsTemplate, HdfcSmsTemplate, IciciSmsTemplate, SbiSmsTemplate };
 export { isNotAPayment, smsAmount } from './helpers';
 
 /** Adding a bank = one template file + one entry here. Shared code never branches on the bank. */
-export const smsTemplates: readonly SmsTemplate[] = [new HdfcSmsTemplate(), new SbiSmsTemplate(), new IciciSmsTemplate()];
+export const smsTemplates: readonly SmsTemplate[] = [new HdfcSmsTemplate(), new SbiSmsTemplate(), new IciciSmsTemplate(), new AxisSmsTemplate()];
+
+/**
+ * Every bank's sender pattern as regex source, for the Android module to filter the inbox with:
+ * a message from any other sender never leaves the phone's SMS store. Patterns use only syntax
+ * that JavaScript and Kotlin read alike, and match case-insensitively.
+ */
+export function bankSenderPatterns(): string[] {
+  return smsTemplates.map((t) => t.sender.source);
+}
 
 /** True when some template claims this sender; only those messages are ever read further. */
 export function isBankSender(sender: string): boolean {

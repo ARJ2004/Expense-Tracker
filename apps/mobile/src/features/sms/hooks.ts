@@ -1,10 +1,14 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { CapturedTxn, IngestBatchResult } from '@et/api-client';
+import { bankSenderPatterns } from '@et/parsers';
 import SmsInbox from '../../native/NativeSmsInbox';
 import { api, ApiError, toApiError } from '../../lib';
 import { transactionKeys } from '../transactions';
 import { useSmsCapture } from './store';
 import { syncInbox, type SyncResult } from './sync';
+
+/** The only senders the native module reads; every other message stays unread in Android. */
+const BANK_SENDERS = bankSenderPatterns();
 
 async function sendBatch(items: CapturedTxn[]): Promise<IngestBatchResult> {
   const { data, error } = await api.POST('/v1/ingest/batch', { body: { items } });
@@ -24,7 +28,7 @@ export function useSmsSync() {
       const store = useSmsCapture.getState();
       try {
         const result = await syncInbox({
-          readInbox: (sinceMs, limit) => SmsInbox!.readInbox(sinceMs, limit),
+          readInbox: (sinceMs, limit) => SmsInbox!.readInbox(sinceMs, limit, BANK_SENDERS),
           send: sendBatch,
           watermark: () => useSmsCapture.getState().watermarkMs,
           setWatermark: store.setWatermark,

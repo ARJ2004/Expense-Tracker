@@ -169,6 +169,76 @@
       "receivedAt": "2026-10-21T04:00:00Z",
       "body": "Your SIP of Rs.5,000.00 from A/c XX1234 is scheduled for 05-11-26. Keep sufficient balance.",
       "expected": null
+    },
+    {
+      "name": "axis upi debit",
+      "sender": "AX-AXISBK",
+      "receivedAt": "2026-10-18T07:42:10Z",
+      "body": "INR 486.00 debited\nA/c no. XX1234\n18-10-26, 13:12:10\nUPI/P2M/427512345611/SWIGGY LIMITED\nNot you? SMS BLOCKUPI Cust ID to 919951860002\nAxis Bank",
+      "expected": { "template": "axis", "amountPaise": 48600, "direction": "debit", "occurredAt": "2026-10-18T07:42:10.000Z", "timePrecision": "minute", "accountHint": { "bank": "Axis Bank", "last4": "1234" }, "counterparty": "Swiggy Limited", "referenceNo": "427512345611", "narration": "UPI" }
+    },
+    {
+      "name": "axis neft salary credit",
+      "sender": "VM-AXISBK",
+      "receivedAt": "2026-10-01T04:32:11Z",
+      "body": "INR 78,000.00 credited\nA/c no. XX1234\n01-10-26, 10:02:11 IST\nNEFT/AXISN26274123456/ACME SOFTWARE PVT LTD\n- Axis Bank",
+      "expected": { "template": "axis", "amountPaise": 7800000, "direction": "credit", "accountHint": { "bank": "Axis Bank", "last4": "1234" }, "counterparty": "Acme Software Pvt Ltd", "narration": "CREDIT" }
+    },
+    {
+      "name": "axis older debit layout",
+      "sender": "AX-AXISBK",
+      "receivedAt": "2026-10-21T15:10:00Z",
+      "body": "Debit INR 612.00\nAxis Bank A/c XX1234\n21-10-26 20:40:00\nUPI/P2M/429412345613/ZOMATO LTD\nNot you? SMS BLOCKUPI Cust ID to 919951860002\nAxis Bank",
+      "expected": { "template": "axis", "amountPaise": 61200, "direction": "debit", "accountHint": { "bank": "Axis Bank", "last4": "1234" }, "counterparty": "Zomato Ltd", "referenceNo": "429412345613" }
+    },
+    {
+      "name": "axis imps rent",
+      "sender": "VM-AXISBK",
+      "receivedAt": "2026-10-15T05:00:00Z",
+      "body": "INR 25,000.00 debited\nA/c no. XX1234\n15-10-26, 10:30:00\nIMPS/P2A/428812345612/RAVI KUMAR\nNot you? SMS BLOCK Cust ID to 919951860002\nAxis Bank",
+      "expected": { "template": "axis", "amountPaise": 2500000, "direction": "debit", "counterparty": "Ravi Kumar", "referenceNo": "428812345612", "narration": "IMPS" }
+    },
+    {
+      "name": "axis atm",
+      "sender": "AX-AXISBK",
+      "receivedAt": "2026-10-07T06:20:00Z",
+      "body": "INR 2,000.00 debited\nA/c no. XX1234\n07-10-26, 11:50:00\nATM-CASH/AXIS/BLR/MG ROAD\nNot you? SMS BLOCK Cust ID to 919951860002\nAxis Bank",
+      "expected": { "template": "axis", "amountPaise": 200000, "direction": "debit", "counterparty": "ATM withdrawal", "narration": "ATM WITHDRAWAL" }
+    },
+    {
+      "name": "axis upi refund credit",
+      "sender": "AX-AXISBK",
+      "receivedAt": "2026-10-25T09:00:00Z",
+      "body": "INR 1,500.00 credited\nA/c no. XX1234\n25-10-26, 14:30:00 IST\nUPI/P2A/429812345614/AMAZON REFUND\n- Axis Bank",
+      "expected": { "template": "axis", "amountPaise": 150000, "direction": "credit", "referenceNo": "429812345614", "narration": "REFUND" }
+    },
+    {
+      "name": "axis credit card spend",
+      "sender": "VM-AXISBK",
+      "receivedAt": "2026-10-12T08:35:11Z",
+      "body": "Spent\nCard no. XX5678\nINR 1,299.00\n12-10-26 14:05:11\nAMAZON PAY IN\nAvl Lmt INR 48,701.00\nSMS BLOCK 5678 to 919951860002, if not you - Axis Bank",
+      "expected": { "template": "axis", "amountPaise": 129900, "direction": "debit", "accountHint": { "bank": "Axis Bank", "last4": "5678", "kind": "credit_card" }, "counterparty": "Amazon Pay In", "narration": "CARD" }
+    },
+    {
+      "name": "axis debit card spend",
+      "sender": "AX-AXISBK",
+      "receivedAt": "2026-10-28T14:00:00Z",
+      "body": "INR 640.00 spent on Axis Bank Debit Card no. XX5678 at PVR INOX on 28-10-26. Avl Bal INR 41,262.50. Not you? SMS BLOCK 5678 to 919951860002",
+      "expected": { "template": "axis", "amountPaise": 64000, "direction": "debit", "accountHint": { "bank": "Axis Bank", "kind": "savings" }, "counterparty": "PVR Inox", "narration": "CARD" }
+    },
+    {
+      "name": "axis otp is ignored",
+      "sender": "AX-AXISBK",
+      "receivedAt": "2026-10-09T10:00:00Z",
+      "body": "OTP for transaction of INR 2,499.00 on Axis Bank Card XX5678 at FLIPKART is 482913. Valid for 5 mins. Do not share it with anyone - Axis Bank",
+      "expected": null
+    },
+    {
+      "name": "axis card due reminder is ignored",
+      "sender": "VM-AXISBK",
+      "receivedAt": "2026-10-20T04:00:00Z",
+      "body": "Your Axis Bank Credit Card XX5678 statement is generated. Total amount due INR 12,430.00, minimum amount due INR 620.00, due date 08-11-26.",
+      "expected": null
     }
   ]
 }
