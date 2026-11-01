@@ -1,56 +1,36 @@
 import type { Prisma } from '@prisma/client';
-import { PURGE_STEPS } from './purge-order';
+import { PURGE_ORDER, purgeOwnedData, type PurgeOwners } from './purge-order';
 
-/**
- * Records which table each step touches by driving the steps with a proxy tx whose every
- * delegate's deleteMany logs the table name.
- */
-function runAndRecordTables(): string[] {
-  const touched: string[] = [];
-  const tx = new Proxy(
-    {},
-    {
-      get: (_t, table: string) => ({
-        deleteMany: () => {
-          touched.push(table);
-          return Promise.resolve({ count: 0 });
-        },
-      }),
+/** Records the order the owners were asked to purge in, and that each got the same tx and user. */
+async function runAndRecordOwners(): Promise<string[]> {
+  const called: string[] = [];
+  const tx = {} as Prisma.TransactionClient;
+  const owner = (name: string) => ({
+    purgeUser: (userId: string, got: Prisma.TransactionClient) => {
+      expect(userId).toBe('user-1');
+      expect(got).toBe(tx);
+      called.push(name);
+      return Promise.resolve();
     },
-  ) as unknown as Prisma.TransactionClient;
-
-  for (const step of PURGE_STEPS) void step(tx, 'user-1');
-  return touched;
+  });
+  const owners: PurgeOwners = { imports: owner('imports'), ledger: owner('ledger'), categories: owner('categories'), accounts: owner('accounts') };
+  await purgeOwnedData(owners, tx, 'user-1');
+  return called;
 }
 
 describe('purge-order', () => {
-  const tables = runAndRecordTables();
-
-  it('deletes transactions before accounts (the RESTRICT foreign key)', () => {
-    expect(tables.indexOf('transaction')).toBeLessThan(tables.indexOf('account'));
+  it('purges the ledger before accounts (the RESTRICT foreign key)', async () => {
+    const owners = await runAndRecordOwners();
+    expect(owners.indexOf('ledger')).toBeLessThan(owners.indexOf('accounts'));
   });
 
-  it('deletes transaction sources and import rows before their parents', () => {
-    expect(tables.indexOf('transactionSource')).toBeLessThan(tables.indexOf('transaction'));
-    expect(tables.indexOf('importRow')).toBeLessThan(tables.indexOf('statementImport'));
+  it('purges imports before the ledger and categories they point at', async () => {
+    const owners = await runAndRecordOwners();
+    expect(owners.indexOf('imports')).toBeLessThan(owners.indexOf('ledger'));
+    expect(owners.indexOf('imports')).toBeLessThan(owners.indexOf('categories'));
   });
 
-  it('deletes the user row last', () => {
-    expect(tables[tables.length - 1]).toBe('user');
-  });
-
-  it('covers every owned table exactly once', () => {
-    expect(tables).toEqual([
-      'transactionSource',
-      'importRow',
-      'statementImport',
-      'transaction',
-      'merchantRule',
-      'categoryCorrection',
-      'category',
-      'account',
-      'refreshToken',
-      'user',
-    ]);
+  it('asks every owning module exactly once, in PURGE_ORDER', async () => {
+    expect(await runAndRecordOwners()).toEqual([...PURGE_ORDER]);
   });
 });

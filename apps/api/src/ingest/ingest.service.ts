@@ -443,13 +443,25 @@ export class IngestService {
   /**
    * A custom category is being deleted: file its transactions under Other (the fallback for a debit
    * or a credit alike once the user's own category is gone). Runs in the caller's transaction, so
-   * the move commits with the delete.
+   * the move commits with the delete. Returns the moved ids; the caller announces them with
+   * announceRecategorized once that transaction commits.
    */
-  async moveOutOfCategory(userId: string, categoryId: string, tx: Db): Promise<void> {
+  async moveOutOfCategory(userId: string, categoryId: string, tx: Db): Promise<string[]> {
     const rows = await tx.transaction.findMany({ where: { userId, categoryId }, select: { id: true } });
-    if (rows.length === 0) return;
+    if (rows.length === 0) return [];
     await tx.transaction.updateMany({ where: { userId, categoryId }, data: { categoryId: OTHER_CATEGORY_ID, categorySource: 'default' } });
-    this.events.emit(TRANSACTIONS_RECATEGORIZED, { userId, transactionIds: rows.map((r) => r.id) } satisfies TransactionsRecategorizedEvent);
+    return rows.map((r) => r.id);
+  }
+
+  /** Emits TRANSACTIONS_RECATEGORIZED for rows moved inside a transaction that has now committed. */
+  announceRecategorized(userId: string, transactionIds: string[]): void {
+    this.events.emit(TRANSACTIONS_RECATEGORIZED, { userId, transactionIds } satisfies TransactionsRecategorizedEvent);
+  }
+
+  /** Deletes the user's transactions and their sources (account deletion). Runs in the purge's transaction. */
+  async purgeUser(userId: string, tx: Db): Promise<void> {
+    await tx.transactionSource.deleteMany({ where: { userId } });
+    await tx.transaction.deleteMany({ where: { userId } });
   }
 
   /** Live transactions that any dedup rule could match: same amounts, within rule 4's window. */

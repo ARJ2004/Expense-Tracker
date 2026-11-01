@@ -12,5 +12,6 @@ import { ImportsService } from './imports.service';
   imports: [AccountsModule, CategoriesModule, IngestModule],
   controllers: [ImportsController],
   providers: [ImportsService, ImportQueue, ImportParserJob],
+  exports: [ImportsService],
 })
 export class ImportsModule {}

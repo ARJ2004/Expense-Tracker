@@ -48,13 +48,26 @@ export class CategoriesService {
     }
   }
 
+  /**
+   * Deletes the user's merchant rules, correction log and custom categories (account deletion).
+   * System categories are shared and stay. Runs in the purge's transaction, after ingest's purge.
+   */
+  async purgeUser(userId: string, tx: Prisma.TransactionClient): Promise<void> {
+    await tx.merchantRule.deleteMany({ where: { userId } });
+    await tx.categoryCorrection.deleteMany({ where: { userId } });
+    await tx.category.deleteMany({ where: { userId } });
+  }
+
   /** Deletes a custom category; in the same transaction its transactions move to Other (see CATEGORY_DELETED). */
   async remove(userId: string, id: string): Promise<void> {
     await this.ownCustom(userId, id);
+    const committed: (() => void)[] = [];
     await this.prisma.$transaction(async (tx) => {
-      await this.events.emitAsync(CATEGORY_DELETED, { userId, categoryId: id, tx } satisfies CategoryDeletedEvent);
+      const event: CategoryDeletedEvent = { userId, categoryId: id, tx, afterCommit: (fn) => committed.push(fn) };
+      await this.events.emitAsync(CATEGORY_DELETED, event);
       await tx.category.delete({ where: { id } });
     });
+    for (const fn of committed) fn();
   }
 
   /** The category if the user may file a transaction under it (system or their own), else 404. */
