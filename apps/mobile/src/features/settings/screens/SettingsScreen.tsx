@@ -6,6 +6,7 @@ import { errorMessage, usePreferences, type MainStackParamList } from '../../../
 import { radius, useTheme } from '../../../theme';
 import { Card, ListRow, Screen, SectionLabel, Text } from '../../../ui';
 import { useAccounts } from '../../accounts';
+import { useGoals } from '../../goals';
 import { useSession, useSignOut } from '../../auth';
 import { useCategories } from '../../categories';
 import { smsCaptureAvailable, useSmsCapture } from '../../sms';
@@ -21,10 +22,12 @@ export function SettingsScreen() {
   const user = useSession((s) => s.user);
   const signOut = useSignOut();
   const accounts = useAccounts();
+  const goals = useGoals('active');
   const categories = useCategories();
   const health = useHealth();
   const appearance = usePreferences((s) => s.appearance);
   const smsEnabled = useSmsCapture((s) => s.enabled);
+  const toReview = useSmsCapture((s) => Object.keys(s.held).length);
   const exportLedger = useExportLedger();
   const [appearanceOpen, setAppearanceOpen] = useState(false);
 
@@ -58,15 +61,16 @@ export function SettingsScreen() {
       <Card padding="rows">
         <ListRow label="Accounts" value={accounts.data ? String(accounts.data.length) : undefined} onPress={() => navigation.navigate('Accounts')} />
         <ListRow label="Categories" value={categories.data ? String(categories.data.length) : undefined} onPress={() => navigation.navigate('Categories')} />
-        <ListRow label="Income" value={incomeLabel(user?.monthlyIncomePaise ?? null)} onPress={() => navigation.navigate('Income')} last />
+        <ListRow label="Income" value={incomeLabel(user?.monthlyIncomePaise ?? null)} onPress={() => navigation.navigate('Income')} />
+        <ListRow label="Goals" value={goals.data ? String(goals.data.length) : undefined} onPress={() => navigation.navigate('Goals')} last />
       </Card>
 
       <SectionLabel label="App" />
       <Card padding="rows">
         <ListRow
           label="Data sources"
-          value={smsCaptureAvailable() ? (smsEnabled ? 'SMS on' : 'SMS off') : undefined}
-          valueTone={smsEnabled ? 'accent' : 'muted'}
+          value={smsCaptureAvailable() ? (smsEnabled ? (toReview > 0 ? `${toReview} to review` : 'SMS on') : 'SMS off') : undefined}
+          valueTone={smsEnabled ? (toReview > 0 ? 'spend' : 'accent') : 'muted'}
           onPress={() => navigation.navigate('DataSources')}
         />
         <ListRow label="Appearance" value={APPEARANCE_LABELS[appearance]} onPress={() => setAppearanceOpen(true)} />

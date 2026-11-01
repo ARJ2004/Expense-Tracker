@@ -50,6 +50,11 @@ export class AccountsService {
     }
   }
 
+  /** Deletes all the user's accounts (account deletion). Their transactions must already be gone (RESTRICT FK). */
+  async purgeUser(userId: string, tx: Prisma.TransactionClient): Promise<void> {
+    await tx.account.deleteMany({ where: { userId } });
+  }
+
   /** The account if it belongs to the user, else 404 (never reveals another user's rows). */
   async assertOwned(userId: string, id: string): Promise<AccountDto> {
     const account = await this.prisma.account.findFirst({ where: { id, userId } });

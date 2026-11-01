@@ -3,7 +3,7 @@ import { AppState } from 'react-native';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, invalidateLedger, ledgerRoots, toApiError } from '../../lib';
 import { ensureLiveSmsPermission } from './permission';
-import { runSmsSync } from './run';
+import { approveSender, runSmsSync } from './run';
 import { mirrorLiveCapture, useSmsCapture } from './store';
 
 /** Data sources: transactions and last activity per source, from the API. */
@@ -50,6 +50,15 @@ export function useSmsForegroundSync() {
     });
     return () => sub.remove();
   }, [enabled, queryClient]);
+}
+
+/** "Yes, my bank" on a new sender: sends what it held and trusts it from now on. */
+export function useApproveSender() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: approveSender,
+    onSettled: () => invalidateLedger(queryClient),
+  });
 }
 
 /** Transactions and last activity for each source (SMS, statements, manual). */

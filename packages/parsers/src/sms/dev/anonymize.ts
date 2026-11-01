@@ -1,4 +1,4 @@
-import { isBankSender, isNotAPayment, parseSms } from '../index';
+import { isTransactionSender, isNotAPayment, parseSms } from '../index';
 
 /**
  * Dev-only: turns bank SMS exported from a real phone into draft test cases with the personal
@@ -71,7 +71,7 @@ export function anonymize(messages: readonly RawSms[]): DraftCase[] {
 
   const drafts: DraftCase[] = [];
   for (const m of messages) {
-    if (!isBankSender(m.sender)) continue;
+    if (!isTransactionSender(m.sender)) continue;
     const receivedAt = new Date(m.date);
     let body = m.body;
 

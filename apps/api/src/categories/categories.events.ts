@@ -12,4 +12,6 @@ export interface CategoryDeletedEvent {
   categoryId: string;
   /** The open transaction the delete runs in; listeners write through it. */
   tx: Prisma.TransactionClient;
+  /** Runs `fn` once the delete has committed (never if it rolls back): for a listener's own events. */
+  afterCommit(fn: () => void): void;
 }

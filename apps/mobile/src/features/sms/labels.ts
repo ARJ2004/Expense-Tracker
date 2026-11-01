@@ -1,11 +1,12 @@
-import { formatISTRelative } from '@et/domain';
+import { formatINR, formatISTRelative } from '@et/domain';
+import type { HeldTxn } from './store';
 import type { SyncResult } from './sync';
 
 /** Copy for the disclosure, kept in one place so it matches the Play Console declaration. */
 export const DISCLOSURE = {
   title: 'Read bank SMS to add spends for you',
   points: [
-    'Altus reads SMS from banks (like HDFC Bank, SBI and ICICI Bank) to find debits and credits.',
+    'Altus reads SMS from banks and payment services to find debits and credits. A sender it doesn’t know waits for your OK.',
     'Each message is read on this phone. Only the amount, date, merchant, bank and last 4 digits are sent to your ledger.',
     'A payment that is also in your bank statement shows once, not twice.',
     'You can turn this off any time in Settings.',
@@ -43,11 +44,21 @@ export function coverageLabel(r: Pick<SyncResult, 'read' | 'found' | 'unrecognis
 }
 
 /** "Added 12 · 3 already in your ledger · 1 skipped" after a sync. */
-export function syncSummary(r: Pick<SyncResult, 'created' | 'merged' | 'skipped' | 'found' | 'rejected'>): string {
+export function syncSummary(r: Pick<SyncResult, 'created' | 'merged' | 'skipped' | 'found' | 'rejected'> & { held?: number }): string {
   if (r.found === 0) return 'No new bank transactions in your SMS.';
   const parts = [`Added ${r.created}`];
   const known = r.merged + r.skipped;
   if (known > 0) parts.push(`${known} already in your ledger`);
+  if (r.held) parts.push(`${r.held} waiting for your OK`);
   if (r.rejected > 0) parts.push(`${r.rejected} skipped (date looked wrong)`);
   return parts.join(' · ');
+}
+
+/** "3 transactions · latest ₹1,200.00 debited from ••1234" for a sender waiting to be confirmed. */
+export function heldLabel(held: readonly HeldTxn[]): string {
+  const latest = held.reduce<HeldTxn | undefined>((a, b) => (!a || b.receivedAt > a.receivedAt ? b : a), undefined);
+  if (!latest) return transactionsLabel(0);
+  const { amountPaise, direction, last4 } = latest.item;
+  const where = last4 ? ` ${direction === 'debit' ? 'from' : 'to'} ••${last4}` : '';
+  return `${transactionsLabel(held.length)} · latest ${formatINR(amountPaise)} ${direction === 'debit' ? 'debited' : 'credited'}${where}`;
 }

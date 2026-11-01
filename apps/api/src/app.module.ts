@@ -9,6 +9,7 @@ import { AuthModule } from './auth';
 import { CategoriesModule } from './categories';
 import { CommonModule } from './common';
 import { DashboardModule } from './dashboard';
+import { GoalsModule } from './goals';
 import { validateConfig } from './config/app-config';
 import { HealthModule } from './health/health.module';
 import { ImportsModule } from './imports';
@@ -41,6 +42,7 @@ import { tunables } from './config/tunables';
     TransactionsModule,
     ImportsModule,
     DashboardModule,
+    GoalsModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

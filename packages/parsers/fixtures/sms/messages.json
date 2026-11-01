@@ -120,7 +120,7 @@
     { "name": "declined", "sender": "VM-HDFCBK", "receivedAt": "2026-10-18T07:40:00Z", "body": "Txn of Rs.1,299.00 on HDFC Bank Card 5678 at AMAZON PAY INDIA has been declined due to insufficient limit.", "expected": null },
     { "name": "card bill due", "sender": "VK-SBICRD", "receivedAt": "2026-10-18T07:40:00Z", "body": "Rs.12,450.00 is due on your SBI Credit Card ending 5678 on 05/11/26. Min amount due Rs.623.00. Pay now.", "expected": null },
     { "name": "personal sender", "sender": "+919876543210", "receivedAt": "2026-10-18T07:40:00Z", "body": "Sent Rs.486.00 From HDFC Bank A/C *1234 To SWIGGY On 18/10/26 Ref 427512345601", "expected": null },
-    { "name": "unknown bank", "sender": "VM-KOTAKB", "receivedAt": "2026-10-18T07:40:00Z", "body": "Rs.486.00 debited from your Kotak Bank A/c XX1234 to SWIGGY on 18-10-26.", "expected": null },
+    { "name": "bank with no template is read by its wording", "sender": "VM-KOTAKB", "receivedAt": "2026-10-18T07:40:00Z", "body": "Rs.486.00 debited from your Kotak Bank A/c XX1234 to SWIGGY on 18-10-26.", "expected": { "template": "generic", "amountPaise": 48600, "direction": "debit", "accountHint": { "bank": "Kotak Mahindra Bank", "last4": "1234" }, "counterparty": "Swiggy" } },
     {
       "name": "hdfc debit card spend leaves the account unknown",
       "sender": "AD-HDFCBK-S",
@@ -238,6 +238,34 @@
       "sender": "VM-AXISBK",
       "receivedAt": "2026-10-20T04:00:00Z",
       "body": "Your Axis Bank Credit Card XX5678 statement is generated. Total amount due INR 12,430.00, minimum amount due INR 620.00, due date 08-11-26.",
+      "expected": null
+    },
+    {
+      "name": "svc upi debit",
+      "sender": "VM-SVCBNK",
+      "receivedAt": "2026-11-01T09:12:40Z",
+      "body": "SVC Bank A/c *1234 DEBITED for Rs.11.00 Clr Bal Rs.1,89,764.50. CR UPI/DR/427512345701/KALLAHALL/. Not You? SMS STOPUPI to 9820620454 /Call 18003132120",
+      "expected": {"template": "generic", "amountPaise": 1100, "direction": "debit", "occurredAt": "2026-11-01T09:12:40.000Z", "timePrecision": "minute", "accountHint": {"bank": "SVC Bank", "last4": "1234"}, "counterparty": "Kallahall", "referenceNo": "427512345701", "narration": "UPI"}
+    },
+    {
+      "name": "svc upi credit",
+      "sender": "AD-SVCBNK-S",
+      "receivedAt": "2026-11-01T11:30:00Z",
+      "body": "SVC Bank A/c *1234 CREDITED for Rs.5,000.00 Clr Bal Rs.1,94,764.50. DR UPI/CR/427512345702/RAVI KUMAR/. Not You? SMS STOPUPI to 9820620454 /Call 18003132120",
+      "expected": {"template": "generic", "amountPaise": 500000, "direction": "credit", "accountHint": {"bank": "SVC Bank", "last4": "1234"}, "counterparty": "Ravi Kumar", "referenceNo": "427512345702", "narration": "CREDIT"}
+    },
+    {
+      "name": "svc debit without detail",
+      "sender": "VM-SVCBNK",
+      "receivedAt": "2026-11-01T12:00:00Z",
+      "body": "SVC Bank A/c *1234 DEBITED for Rs.250.00 Clr Bal Rs.1,94,514.50. Not You? Call 18003132120",
+      "expected": {"template": "generic", "amountPaise": 25000, "direction": "debit", "accountHint": {"bank": "SVC Bank", "last4": "1234"}, "narration": "DEBIT"}
+    },
+    {
+      "name": "svc otp is ignored",
+      "sender": "VM-SVCBNK",
+      "receivedAt": "2026-11-01T12:05:00Z",
+      "body": "123456 is your OTP for UPI transaction of Rs.11.00 from SVC Bank A/c *1234. Do not share it with anyone.",
       "expected": null
     }
   ]

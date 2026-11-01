@@ -64,6 +64,12 @@ export class ImportsService {
     };
   }
 
+  /** Deletes the user's statement imports and their rows (account deletion). Runs in the purge's transaction. */
+  async purgeUser(userId: string, tx: Prisma.TransactionClient): Promise<void> {
+    await tx.importRow.deleteMany({ where: { import: { userId } } });
+    await tx.statementImport.deleteMany({ where: { userId } });
+  }
+
   async list(userId: string): Promise<ImportDto[]> {
     const rows = await this.prisma.statementImport.findMany({
       where: { userId },

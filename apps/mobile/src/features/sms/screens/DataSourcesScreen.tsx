@@ -6,6 +6,7 @@ import type { SourceStat } from '@et/api-client';
 import { PermissionExplainer } from '../../../components';
 import { errorMessage, type MainStackParamList, type MainTabParamList } from '../../../lib';
 import { Button, Card, ListRow, ProgressBar, Screen, SectionLabel, Text, TopBar } from '../../../ui';
+import { NewSenderCard } from '../components/NewSenderCard';
 import { useSmsSync, useSourceStats } from '../hooks';
 import { coverageLabel, DISCLOSURE, lastActivityLabel, lastSyncLabel, progressLabel, syncSummary, transactionsLabel } from '../labels';
 import { requestSmsPermission, smsCaptureAvailable } from '../permission';
@@ -24,6 +25,7 @@ export function DataSourcesScreen({ navigation, route }: Props) {
   const progress = useSmsCapture((s) => s.progress);
   const setEnabled = useSmsCapture((s) => s.setEnabled);
   const reset = useSmsCapture((s) => s.reset);
+  const held = useSmsCapture((s) => s.held);
   const tabs = useNavigation<NavigationProp<{ Tabs: { screen: keyof MainTabParamList } }>>();
   const stats = useSourceStats();
   const sync = useSmsSync();
@@ -128,6 +130,10 @@ export function DataSourcesScreen({ navigation, route }: Props) {
             <ListRow label="Transactions" value={count('sms')} />
             <ListRow label="Turn off" tone="danger" onPress={turnOff} last />
           </Card>
+          {Object.keys(held).length > 0 && <SectionLabel label="New senders" />}
+          {Object.entries(held).map(([code, txns]) => (
+            <NewSenderCard key={code} code={code} held={txns} />
+          ))}
         </>
       ) : (
         <Card>

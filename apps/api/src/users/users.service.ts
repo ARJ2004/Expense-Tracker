@@ -1,11 +1,15 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Prisma, type User } from '@prisma/client';
+import { AccountsService } from '../accounts';
+import { CategoriesService } from '../categories';
 import { AppError, PrismaService } from '../common';
+import { ImportsService } from '../imports';
+import { IngestService } from '../ingest';
 import type { CompleteOnboardingDto } from './dto/complete-onboarding.dto';
 import type { MeDto } from './dto/me.dto';
 import type { UpdateMeDto } from './dto/update-me.dto';
-import { PURGE_STEPS } from './domain/purge-order';
+import { purgeOwnedData, type PurgeOwners } from './domain/purge-order';
 import {
   USER_DELETED,
   USER_SIGNED_UP,
@@ -26,6 +30,10 @@ export class UsersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly events: EventEmitter2,
+    private readonly imports: ImportsService,
+    private readonly ingest: IngestService,
+    private readonly categories: CategoriesService,
+    private readonly accounts: AccountsService,
   ) {}
 
   /** Finds the user by Google `sub` (never by email) and refreshes their email and name, or creates them. */
@@ -90,15 +98,16 @@ export class UsersService {
   }
 
   /**
-   * Permanently removes the user and every row they own, in one transaction, child tables first
-   * so the transactions → accounts RESTRICT foreign key never blocks the purge. Idempotent: a
-   * user already gone deletes nothing and still succeeds. Emits USER_DELETED after the commit.
+   * Permanently removes the user and every row they own, in one transaction. Each owning module
+   * deletes its own tables, in PURGE_ORDER, so the transactions → accounts RESTRICT foreign key
+   * never blocks the purge; then the users row goes (refresh_tokens cascade from it). Idempotent:
+   * a user already gone deletes nothing and still succeeds. Emits USER_DELETED after the commit.
    */
   async deleteAccount(userId: string): Promise<void> {
+    const owners: PurgeOwners = { imports: this.imports, ledger: this.ingest, categories: this.categories, accounts: this.accounts };
     await this.prisma.$transaction(async (tx) => {
-      for (const step of PURGE_STEPS) {
-        await step(tx, userId);
-      }
+      await purgeOwnedData(owners, tx, userId);
+      await tx.user.deleteMany({ where: { id: userId } });
     });
     this.events.emit(USER_DELETED, { userId } satisfies UserDeletedEvent);
   }
