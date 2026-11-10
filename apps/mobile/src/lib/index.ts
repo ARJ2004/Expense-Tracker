@@ -9,3 +9,4 @@ export { newUuid } from './ids';
 export { useDebouncedValue } from './useDebouncedValue';
 export type { MainStackParamList, MainTabParamList } from './routes';
 export { usePreferences, type Appearance } from './preferences';
+export { onBeforeSignOut, runBeforeSignOut } from './sign-out-hooks';

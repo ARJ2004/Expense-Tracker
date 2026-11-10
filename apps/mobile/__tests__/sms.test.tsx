@@ -631,13 +631,24 @@ describe('ledger cache refresh', () => {
   const { transactionKeys } = require('../src/features/transactions') as typeof import('../src/features/transactions');
   const { QueryClient } = require('@tanstack/react-query') as typeof import('@tanstack/react-query');
 
-  it('refreshes lists, open details, Home and source counts, and nothing else', async () => {
+  it('refreshes lists, open details, Home, source counts, budgets and the inbox, and nothing else', async () => {
     const qc = new QueryClient();
-    const keys = [transactionKeys.list({} as never), transactionKeys.detail('t1'), ['dashboard', 'summary', '2026-11'], ['ingest', 'sources'], ['categories'], ['imports'], ['health']];
+    const keys = [
+      transactionKeys.list({} as never),
+      transactionKeys.detail('t1'),
+      ['dashboard', 'summary', '2026-11'],
+      ['ingest', 'sources'],
+      ['budgets', 'current'],
+      ['notifications', 'inbox'],
+      ['categories'],
+      ['imports'],
+      ['health'],
+      ['rewards'],
+    ];
     keys.forEach((k) => qc.setQueryData(k, 1));
     await invalidateLedger(qc);
     const stale = keys.filter((k) => qc.getQueryState(k)?.isInvalidated).map((k) => k[0]);
-    expect(stale).toEqual(['transactions', 'transactions', 'dashboard', 'ingest']);
-    expect(Object.keys(ledgerRoots)).toEqual(['transactions', 'dashboard', 'sources']);
+    expect(stale).toEqual(['transactions', 'transactions', 'dashboard', 'ingest', 'budgets', 'notifications']);
+    expect(Object.keys(ledgerRoots)).toEqual(['transactions', 'dashboard', 'sources', 'budgets', 'notifications']);
   });
 });

@@ -527,6 +527,161 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/budgets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** A month's budgets with spend, pace and (this month) the daily allowance */
+        get: operations["getBudgets"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/budgets/{categoryId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set or change a category's monthly budget */
+        put: operations["setBudget"];
+        post?: never;
+        /** Remove a category's budget */
+        delete: operations["deleteBudget"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/rewards": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The under-budget streak, the last 14 closed days and every badge */
+        get: operations["getRewards"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The in-app inbox: the latest 50, newest first, and the unread count */
+        get: operations["listNotifications"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/notifications/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark every notification read */
+        post: operations["markNotificationsRead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/notifications/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Every notification type and whether it is on */
+        get: operations["getNotificationSettings"];
+        /** Switch notification types off (the rest are on) */
+        put: operations["updateNotificationSettings"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/notifications/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** A test push to the caller's phones, ignoring quiet hours and the daily cap */
+        post: operations["sendTestNotification"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/devices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Register this phone's push token (after sign-in and when it changes) */
+        post: operations["registerDevice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/devices/unregister": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Stop pushes to this phone (sign-out) */
+        post: operations["unregisterDevice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1284,6 +1439,219 @@ export interface components {
              *     ]
              */
             newMilestones: string[];
+        };
+        /**
+         * @description warning from 80%, over once spend passes the budget; a fixed budget paid in full is ok
+         * @enum {string}
+         */
+        BudgetState: "ok" | "warning" | "over";
+        BudgetDto: {
+            category: components["schemas"]["TransactionCategoryDto"];
+            /** @example 800000 */
+            amountPaise: number;
+            isFixed: boolean;
+            /**
+             * @description Spend in the category this month, refunds taken off
+             * @example 652000
+             */
+            spentPaise: number;
+            /**
+             * @description Whole percent of the budget used, rounded down
+             * @example 81
+             */
+            usedPercent: number;
+            /** @description warning from 80%, over once spend passes the budget; a fixed budget paid in full is ok */
+            state: components["schemas"]["BudgetState"];
+            /**
+             * @description Month-end spend at this pace; null in the first days or for past months
+             * @example 980000
+             */
+            projectedPaise: number | null;
+            /**
+             * @description How far over the budget the pace points; 0 when on track
+             * @example 180000
+             */
+            overshootPaise: number;
+        };
+        /**
+         * @description income: from the monthly income; budgets: the sum of budgets, when there is no income
+         * @enum {string}
+         */
+        AllowanceBasis: "income" | "budgets";
+        AllowanceDto: {
+            /**
+             * Format: date
+             * @example 2026-11-11
+             */
+            day: string;
+            /**
+             * @description What can be spent today and still end the month on plan
+             * @example 64000
+             */
+            allowancePaise: number;
+            /**
+             * @description Today's spend outside fixed categories
+             * @example 12000
+             */
+            spentTodayPaise: number;
+            /**
+             * @description allowance − spent today; negative when over
+             * @example 52000
+             */
+            leftTodayPaise: number;
+            /**
+             * @description Days left in the month, today included
+             * @example 20
+             */
+            daysLeft: number;
+            /** @description income: from the monthly income; budgets: the sum of budgets, when there is no income */
+            basis: components["schemas"]["AllowanceBasis"];
+            /**
+             * @description Fixed budgets held back this month
+             * @example 1500000
+             */
+            fixedReservePaise: number;
+            /**
+             * @description What active goals ask to be put aside this month
+             * @example 1668000
+             */
+            goalReservePaise: number;
+        };
+        BudgetOverviewDto: {
+            /** @example 2026-11 */
+            month: string;
+            /** @description Fixed budgets last, then by most used */
+            items: components["schemas"]["BudgetDto"][];
+            /** @example 4000000 */
+            totalBudgetPaise: number;
+            /**
+             * @description Spend in budgeted categories this month
+             * @example 2210000
+             */
+            totalSpentPaise: number;
+            /**
+             * @description Spend this month in categories with no budget
+             * @example 340000
+             */
+            unbudgetedSpentPaise: number;
+            /** @description Only for the current month, and only with an income or at least one budget */
+            allowance: components["schemas"]["AllowanceDto"] | null;
+        };
+        SetBudgetDto: {
+            /**
+             * @description Monthly limit in integer paise
+             * @example 800000
+             */
+            amountPaise: number;
+            /**
+             * @description Rent, EMIs: money that goes anyway, held back in full from the daily allowance
+             * @default false
+             */
+            isFixed: boolean;
+        };
+        StreakDto: {
+            /**
+             * @description Days in a row within the daily allowance, ending yesterday
+             * @example 6
+             */
+            current: number;
+            /** @example 11 */
+            best: number;
+        };
+        DayOutcomeDto: {
+            /**
+             * Format: date
+             * @example 2026-11-10
+             */
+            day: string;
+            /** @example 64000 */
+            allowancePaise: number;
+            /** @example 41000 */
+            spentPaise: number;
+            underBudget: boolean;
+        };
+        /** @enum {string} */
+        BadgeCode: "first_budget" | "first_goal" | "goal_reached" | "no_spend_day" | "streak_3" | "streak_7" | "streak_14" | "streak_30" | "month_under_budget";
+        BadgeDto: {
+            code: components["schemas"]["BadgeCode"];
+            /** @example 🔥 */
+            emoji: string;
+            /** @example 3-day streak */
+            title: string;
+            /** @example 3 days in a row within your allowance */
+            description: string;
+            /**
+             * Format: date-time
+             * @description Null while locked
+             */
+            unlockedAt: string | null;
+        };
+        RewardsDto: {
+            streak: components["schemas"]["StreakDto"];
+            /** @description The last 14 closed days, oldest first (missing days are absent) */
+            last14: components["schemas"]["DayOutcomeDto"][];
+            /** @description Every badge, unlocked or not, in display order */
+            badges: components["schemas"]["BadgeDto"][];
+        };
+        /** @enum {string} */
+        NotificationType: "morning_allowance" | "daily_summary" | "weekly_recap" | "big_spend" | "over_allowance" | "budget_threshold" | "streak_milestone" | "streak_at_risk" | "goal_milestone" | "badge_unlocked";
+        NotificationDto: {
+            /** Format: uuid */
+            id: string;
+            type: components["schemas"]["NotificationType"];
+            /** @example You can spend ₹640 today */
+            title: string;
+            body: string;
+            /**
+             * @description Where a tap goes
+             * @example {
+             *       "screen": "Budgets"
+             *     }
+             */
+            data: {
+                [key: string]: string;
+            };
+            /** Format: date-time */
+            createdAt: string;
+            read: boolean;
+        };
+        NotificationListDto: {
+            /** @example 2 */
+            unreadCount: number;
+            /** @description Newest first, at most 50 */
+            items: components["schemas"]["NotificationDto"][];
+        };
+        /** @enum {string} */
+        NotificationGroup: "daily" | "alerts" | "rewards";
+        NotificationSettingDto: {
+            type: components["schemas"]["NotificationType"];
+            group: components["schemas"]["NotificationGroup"];
+            /** @example Morning allowance */
+            label: string;
+            /** @example 9 am: what you can spend today */
+            description: string;
+            enabled: boolean;
+        };
+        NotificationSettingsDto: {
+            /** @description False until push (Firebase) is set up on the server; the inbox works either way */
+            pushEnabled: boolean;
+            items: components["schemas"]["NotificationSettingDto"][];
+        };
+        UpdateNotificationSettingsDto: {
+            /** @description Types switched off; every other type is on */
+            disabledTypes: components["schemas"]["NotificationType"][];
+        };
+        RegisterDeviceDto: {
+            /** @description The FCM registration token */
+            token: string;
+            /**
+             * @example android
+             * @enum {string}
+             */
+            platform: "android";
+        };
+        UnregisterDeviceDto: {
+            token: string;
         };
     };
     responses: never;
@@ -3187,6 +3555,386 @@ export interface operations {
                 };
             };
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getBudgets: {
+        parameters: {
+            query?: {
+                /** @description IST calendar month; defaults to the current one */
+                month?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BudgetOverviewDto"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    setBudget: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                categoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetBudgetDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BudgetDto"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description BUDGET_LIMIT */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    deleteBudget: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                categoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getRewards: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RewardsDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    listNotifications: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationListDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    markNotificationsRead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getNotificationSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationSettingsDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    updateNotificationSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateNotificationSettingsDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationSettingsDto"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    sendTestNotification: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example sent */
+                        result: string;
+                    };
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    registerDevice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegisterDeviceDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    unregisterDevice: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UnregisterDeviceDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            401: {
                 headers: {
                     [name: string]: unknown;
                 };

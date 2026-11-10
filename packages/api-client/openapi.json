@@ -2825,6 +2825,539 @@
           "goals"
         ]
       }
+    },
+    "/v1/budgets": {
+      "get": {
+        "operationId": "getBudgets",
+        "parameters": [
+          {
+            "name": "month",
+            "required": false,
+            "in": "query",
+            "description": "IST calendar month; defaults to the current one",
+            "schema": {
+              "example": "2026-11",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BudgetOverviewDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "A month's budgets with spend, pace and (this month) the daily allowance",
+        "tags": [
+          "budgets"
+        ]
+      }
+    },
+    "/v1/budgets/{categoryId}": {
+      "put": {
+        "operationId": "setBudget",
+        "parameters": [
+          {
+            "name": "categoryId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetBudgetDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BudgetDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "BUDGET_LIMIT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Set or change a category's monthly budget",
+        "tags": [
+          "budgets"
+        ]
+      },
+      "delete": {
+        "operationId": "deleteBudget",
+        "parameters": [
+          {
+            "name": "categoryId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remove a category's budget",
+        "tags": [
+          "budgets"
+        ]
+      }
+    },
+    "/v1/rewards": {
+      "get": {
+        "operationId": "getRewards",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RewardsDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "The under-budget streak, the last 14 closed days and every badge",
+        "tags": [
+          "rewards"
+        ]
+      }
+    },
+    "/v1/notifications": {
+      "get": {
+        "operationId": "listNotifications",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationListDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "The in-app inbox: the latest 50, newest first, and the unread count",
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/v1/notifications/read": {
+      "post": {
+        "operationId": "markNotificationsRead",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mark every notification read",
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/v1/notifications/settings": {
+      "get": {
+        "operationId": "getNotificationSettings",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationSettingsDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Every notification type and whether it is on",
+        "tags": [
+          "notifications"
+        ]
+      },
+      "put": {
+        "operationId": "updateNotificationSettings",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateNotificationSettingsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationSettingsDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Switch notification types off (the rest are on)",
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/v1/notifications/test": {
+      "post": {
+        "operationId": "sendTestNotification",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "string",
+                      "example": "sent"
+                    }
+                  },
+                  "required": [
+                    "result"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "A test push to the caller's phones, ignoring quiet hours and the daily cap",
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/v1/devices": {
+      "post": {
+        "operationId": "registerDevice",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterDeviceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Register this phone's push token (after sign-in and when it changes)",
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/v1/devices/unregister": {
+      "post": {
+        "operationId": "unregisterDevice",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnregisterDeviceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Stop pushes to this phone (sign-out)",
+        "tags": [
+          "notifications"
+        ]
+      }
     }
   },
   "info": {
@@ -4913,6 +5446,518 @@
         "required": [
           "goal",
           "newMilestones"
+        ]
+      },
+      "BudgetState": {
+        "type": "string",
+        "enum": [
+          "ok",
+          "warning",
+          "over"
+        ],
+        "description": "warning from 80%, over once spend passes the budget; a fixed budget paid in full is ok"
+      },
+      "BudgetDto": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "$ref": "#/components/schemas/TransactionCategoryDto"
+          },
+          "amountPaise": {
+            "type": "number",
+            "example": 800000
+          },
+          "isFixed": {
+            "type": "boolean"
+          },
+          "spentPaise": {
+            "type": "number",
+            "example": 652000,
+            "description": "Spend in the category this month, refunds taken off"
+          },
+          "usedPercent": {
+            "type": "number",
+            "example": 81,
+            "description": "Whole percent of the budget used, rounded down"
+          },
+          "state": {
+            "description": "warning from 80%, over once spend passes the budget; a fixed budget paid in full is ok",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BudgetState"
+              }
+            ]
+          },
+          "projectedPaise": {
+            "type": "number",
+            "nullable": true,
+            "example": 980000,
+            "description": "Month-end spend at this pace; null in the first days or for past months"
+          },
+          "overshootPaise": {
+            "type": "number",
+            "example": 180000,
+            "description": "How far over the budget the pace points; 0 when on track"
+          }
+        },
+        "required": [
+          "category",
+          "amountPaise",
+          "isFixed",
+          "spentPaise",
+          "usedPercent",
+          "state",
+          "projectedPaise",
+          "overshootPaise"
+        ]
+      },
+      "AllowanceBasis": {
+        "type": "string",
+        "enum": [
+          "income",
+          "budgets"
+        ],
+        "description": "income: from the monthly income; budgets: the sum of budgets, when there is no income"
+      },
+      "AllowanceDto": {
+        "type": "object",
+        "properties": {
+          "day": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-11-11"
+          },
+          "allowancePaise": {
+            "type": "number",
+            "example": 64000,
+            "description": "What can be spent today and still end the month on plan"
+          },
+          "spentTodayPaise": {
+            "type": "number",
+            "example": 12000,
+            "description": "Today's spend outside fixed categories"
+          },
+          "leftTodayPaise": {
+            "type": "number",
+            "example": 52000,
+            "description": "allowance − spent today; negative when over"
+          },
+          "daysLeft": {
+            "type": "number",
+            "example": 20,
+            "description": "Days left in the month, today included"
+          },
+          "basis": {
+            "description": "income: from the monthly income; budgets: the sum of budgets, when there is no income",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AllowanceBasis"
+              }
+            ]
+          },
+          "fixedReservePaise": {
+            "type": "number",
+            "example": 1500000,
+            "description": "Fixed budgets held back this month"
+          },
+          "goalReservePaise": {
+            "type": "number",
+            "example": 1668000,
+            "description": "What active goals ask to be put aside this month"
+          }
+        },
+        "required": [
+          "day",
+          "allowancePaise",
+          "spentTodayPaise",
+          "leftTodayPaise",
+          "daysLeft",
+          "basis",
+          "fixedReservePaise",
+          "goalReservePaise"
+        ]
+      },
+      "BudgetOverviewDto": {
+        "type": "object",
+        "properties": {
+          "month": {
+            "type": "string",
+            "example": "2026-11"
+          },
+          "items": {
+            "description": "Fixed budgets last, then by most used",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BudgetDto"
+            }
+          },
+          "totalBudgetPaise": {
+            "type": "number",
+            "example": 4000000
+          },
+          "totalSpentPaise": {
+            "type": "number",
+            "example": 2210000,
+            "description": "Spend in budgeted categories this month"
+          },
+          "unbudgetedSpentPaise": {
+            "type": "number",
+            "example": 340000,
+            "description": "Spend this month in categories with no budget"
+          },
+          "allowance": {
+            "nullable": true,
+            "description": "Only for the current month, and only with an income or at least one budget",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AllowanceDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "month",
+          "items",
+          "totalBudgetPaise",
+          "totalSpentPaise",
+          "unbudgetedSpentPaise",
+          "allowance"
+        ]
+      },
+      "SetBudgetDto": {
+        "type": "object",
+        "properties": {
+          "amountPaise": {
+            "type": "number",
+            "example": 800000,
+            "description": "Monthly limit in integer paise"
+          },
+          "isFixed": {
+            "type": "boolean",
+            "description": "Rent, EMIs: money that goes anyway, held back in full from the daily allowance",
+            "default": false
+          }
+        },
+        "required": [
+          "amountPaise"
+        ]
+      },
+      "StreakDto": {
+        "type": "object",
+        "properties": {
+          "current": {
+            "type": "number",
+            "example": 6,
+            "description": "Days in a row within the daily allowance, ending yesterday"
+          },
+          "best": {
+            "type": "number",
+            "example": 11
+          }
+        },
+        "required": [
+          "current",
+          "best"
+        ]
+      },
+      "DayOutcomeDto": {
+        "type": "object",
+        "properties": {
+          "day": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-11-10"
+          },
+          "allowancePaise": {
+            "type": "number",
+            "example": 64000
+          },
+          "spentPaise": {
+            "type": "number",
+            "example": 41000
+          },
+          "underBudget": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "day",
+          "allowancePaise",
+          "spentPaise",
+          "underBudget"
+        ]
+      },
+      "BadgeCode": {
+        "type": "string",
+        "enum": [
+          "first_budget",
+          "first_goal",
+          "goal_reached",
+          "no_spend_day",
+          "streak_3",
+          "streak_7",
+          "streak_14",
+          "streak_30",
+          "month_under_budget"
+        ]
+      },
+      "BadgeDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BadgeCode"
+              }
+            ]
+          },
+          "emoji": {
+            "type": "string",
+            "example": "🔥"
+          },
+          "title": {
+            "type": "string",
+            "example": "3-day streak"
+          },
+          "description": {
+            "type": "string",
+            "example": "3 days in a row within your allowance"
+          },
+          "unlockedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Null while locked"
+          }
+        },
+        "required": [
+          "code",
+          "emoji",
+          "title",
+          "description",
+          "unlockedAt"
+        ]
+      },
+      "RewardsDto": {
+        "type": "object",
+        "properties": {
+          "streak": {
+            "$ref": "#/components/schemas/StreakDto"
+          },
+          "last14": {
+            "description": "The last 14 closed days, oldest first (missing days are absent)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DayOutcomeDto"
+            }
+          },
+          "badges": {
+            "description": "Every badge, unlocked or not, in display order",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BadgeDto"
+            }
+          }
+        },
+        "required": [
+          "streak",
+          "last14",
+          "badges"
+        ]
+      },
+      "NotificationType": {
+        "type": "string",
+        "enum": [
+          "morning_allowance",
+          "daily_summary",
+          "weekly_recap",
+          "big_spend",
+          "over_allowance",
+          "budget_threshold",
+          "streak_milestone",
+          "streak_at_risk",
+          "goal_milestone",
+          "badge_unlocked"
+        ]
+      },
+      "NotificationDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/NotificationType"
+              }
+            ]
+          },
+          "title": {
+            "type": "string",
+            "example": "You can spend ₹640 today"
+          },
+          "body": {
+            "type": "string"
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "example": {
+              "screen": "Budgets"
+            },
+            "description": "Where a tap goes"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "read": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "title",
+          "body",
+          "data",
+          "createdAt",
+          "read"
+        ]
+      },
+      "NotificationListDto": {
+        "type": "object",
+        "properties": {
+          "unreadCount": {
+            "type": "number",
+            "example": 2
+          },
+          "items": {
+            "description": "Newest first, at most 50",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NotificationDto"
+            }
+          }
+        },
+        "required": [
+          "unreadCount",
+          "items"
+        ]
+      },
+      "NotificationGroup": {
+        "type": "string",
+        "enum": [
+          "daily",
+          "alerts",
+          "rewards"
+        ]
+      },
+      "NotificationSettingDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/NotificationType"
+              }
+            ]
+          },
+          "group": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/NotificationGroup"
+              }
+            ]
+          },
+          "label": {
+            "type": "string",
+            "example": "Morning allowance"
+          },
+          "description": {
+            "type": "string",
+            "example": "9 am: what you can spend today"
+          },
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "type",
+          "group",
+          "label",
+          "description",
+          "enabled"
+        ]
+      },
+      "NotificationSettingsDto": {
+        "type": "object",
+        "properties": {
+          "pushEnabled": {
+            "type": "boolean",
+            "description": "False until push (Firebase) is set up on the server; the inbox works either way"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NotificationSettingDto"
+            }
+          }
+        },
+        "required": [
+          "pushEnabled",
+          "items"
+        ]
+      },
+      "UpdateNotificationSettingsDto": {
+        "type": "object",
+        "properties": {
+          "disabledTypes": {
+            "type": "array",
+            "description": "Types switched off; every other type is on",
+            "items": {
+              "$ref": "#/components/schemas/NotificationType"
+            }
+          }
+        },
+        "required": [
+          "disabledTypes"
+        ]
+      },
+      "RegisterDeviceDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "The FCM registration token"
+          },
+          "platform": {
+            "type": "string",
+            "enum": [
+              "android"
+            ],
+            "example": "android"
+          }
+        },
+        "required": [
+          "token",
+          "platform"
+        ]
+      },
+      "UnregisterDeviceDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "token"
         ]
       }
     }

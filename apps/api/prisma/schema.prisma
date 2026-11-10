@@ -10,6 +10,8 @@
 //   merchant_rules, category_corrections → categories
 //   statement_imports, import_rows → imports
 //   refresh_tokens → auth
+//   goals, goal_contributions → goals · budgets → budgets
+//   day_outcomes, badges → rewards · devices, notification_settings, notifications → notifications
 
 generator client {
   provider = "prisma-client-js"
@@ -98,15 +100,21 @@ model User {
   createdAt          DateTime         @default(now()) @map("created_at") @db.Timestamptz
   updatedAt          DateTime         @updatedAt @map("updated_at") @db.Timestamptz
 
-  accounts           Account[]
-  categories         Category[]
-  transactions       Transaction[]
-  transactionSources TransactionSource[]
-  refreshTokens      RefreshToken[]
-  merchantRules      MerchantRule[]
-  corrections        CategoryCorrection[]
-  statementImports   StatementImport[]
-  goals              Goal[]
+  accounts             Account[]
+  categories           Category[]
+  transactions         Transaction[]
+  transactionSources   TransactionSource[]
+  refreshTokens        RefreshToken[]
+  merchantRules        MerchantRule[]
+  corrections          CategoryCorrection[]
+  statementImports     StatementImport[]
+  goals                Goal[]
+  budgets              Budget[]
+  dayOutcomes          DayOutcome[]
+  badges               Badge[]
+  devices              Device[]
+  notificationSettings NotificationSettings?
+  notifications        Notification[]
 
   @@map("users")
 }
@@ -149,6 +157,7 @@ model Category {
   transactions  Transaction[]
   merchantRules MerchantRule[]
   importRows    ImportRow[]
+  budgets       Budget[]
 
   @@unique([userId, name])
   @@map("categories")
@@ -383,4 +392,100 @@ model GoalContribution {
 
   @@index([goalId, day])
   @@map("goal_contributions")
+}
+
+/// A monthly limit for one expense category, carried over month to month until changed. "Fixed"
+/// budgets (rent, EMIs) are held back in full by the daily allowance. Owned by the budgets module.
+model Budget {
+  id          String   @id @default(uuid(7)) @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  categoryId  String   @map("category_id") @db.Uuid
+  amountPaise BigInt   @map("amount_paise")
+  isFixed     Boolean  @default(false) @map("is_fixed")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, categoryId])
+  @@map("budgets")
+}
+
+/// One closed IST day: the allowance it had and what was spent (outside fixed categories).
+/// Written once, just after midnight IST, so the streak never changes with later budget edits.
+/// Owned by the rewards module.
+model DayOutcome {
+  userId         String   @map("user_id") @db.Uuid
+  day            DateTime @db.Date
+  allowancePaise BigInt   @map("allowance_paise")
+  spentPaise     BigInt   @map("spent_paise")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, day])
+  @@map("day_outcomes")
+}
+
+/// A badge the user unlocked (code from BADGE_CODES in @et/domain). Owned by the rewards module.
+model Badge {
+  userId     String   @map("user_id") @db.Uuid
+  code       String   @db.VarChar(40)
+  unlockedAt DateTime @default(now()) @map("unlocked_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, code])
+  @@map("badges")
+}
+
+/// A phone that can receive pushes. The FCM token is a secret-ish address: never logged.
+/// Owned by the notifications module.
+model Device {
+  id         String   @id @default(uuid(7)) @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  token      String   @unique
+  platform   String   @db.VarChar(16)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+  lastSeenAt DateTime @default(now()) @map("last_seen_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("devices")
+}
+
+/// Which notification types the user switched off. No row = everything on.
+model NotificationSettings {
+  userId        String   @id @map("user_id") @db.Uuid
+  disabledTypes String[] @default([]) @map("disabled_types")
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notification_settings")
+}
+
+/// Every notification decided on, sent or held back (quiet hours, daily cap, no device). Also the
+/// in-app inbox. dedup_key stops the same alert going out twice.
+model Notification {
+  id        String    @id @default(uuid(7)) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  type      String    @db.VarChar(40)
+  dedupKey  String    @map("dedup_key")
+  title     String
+  body      String
+  /// Where tapping it goes, e.g. { "screen": "Budgets" }.
+  data      Json?
+  /// sent | held (quiet hours or the daily cap) | no_device | failed
+  status    String    @db.VarChar(16)
+  readAt    DateTime? @map("read_at") @db.Timestamptz
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, dedupKey])
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("notifications")
 }

@@ -6,6 +6,7 @@ export { AmountText, type AmountTextProps } from './AmountText';
 export { CategoryBar, type CategoryBarProps } from './CategoryBar';
 export { CategoryIcon, type CategoryIconProps } from './CategoryIcon';
 export { CategoryPicker, type CategoryPickerProps } from './CategoryPicker';
+export { DayDots, type DayDot, type DayDotLook } from './DayDots';
 export { DayHeader, type DayHeaderProps } from './DayHeader';
 export { applyKey, isPositiveAmount, type KeypadKey } from './keypad';
 export { HeroCard, type HeroCardProps, type HeroStat } from './HeroCard';

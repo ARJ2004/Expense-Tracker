@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { AuthResponse, Me } from '@et/api-client';
-import { api, queryClient, refreshSession, secureStore, sessionTokens } from '../../lib';
+import { api, queryClient, refreshSession, runBeforeSignOut, secureStore, sessionTokens } from '../../lib';
 import { signOutOfGoogle } from './google';
 
 export type SessionStatus = 'booting' | 'offline' | 'signedOut' | 'signedIn';
@@ -41,6 +41,7 @@ export const useSession = create<SessionState>((set) => ({
   setUser: (user) => set({ user }),
 
   signOut: async () => {
+    await runBeforeSignOut();
     const refreshToken = await secureStore.getRefreshToken();
     // Best effort: signing out must work offline too.
     if (refreshToken) await api.POST('/v1/auth/logout', { body: { refreshToken } }).catch(() => undefined);

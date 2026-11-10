@@ -81,3 +81,14 @@ jest.mock('react-native-mmkv', () => {
 // Tests' fake fetch matches paths like /v1/categories: keep the API at a root URL, wherever the
 // real server lives (config.ts points at a path under Nginx).
 jest.mock('./src/lib/config', () => ({ ...jest.requireActual('./src/lib/config'), API_BASE_URL: 'http://api.test' }));
+
+/* Firebase isn't configured under Jest: no default app, so push stays off and only the inbox works. */
+jest.mock('@react-native-firebase/app', () => ({ getApps: () => [] }));
+jest.mock('@react-native-firebase/messaging', () => ({
+  getMessaging: jest.fn(),
+  getToken: jest.fn(async () => 'test-token'),
+  getInitialNotification: jest.fn(async () => null),
+  onMessage: jest.fn(() => () => undefined),
+  onNotificationOpenedApp: jest.fn(() => () => undefined),
+  onTokenRefresh: jest.fn(() => () => undefined),
+}));
