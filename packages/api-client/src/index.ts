@@ -55,6 +55,22 @@ export type CreateGoal = components['schemas']['CreateGoalDto'];
 export type UpdateGoal = components['schemas']['UpdateGoalDto'];
 export type Contribute = components['schemas']['ContributeDto'];
 export type ContributionResult = components['schemas']['ContributionResultDto'];
+export type BudgetOverview = components['schemas']['BudgetOverviewDto'];
+export type Budget = components['schemas']['BudgetDto'];
+export type BudgetState = components['schemas']['BudgetState'];
+export type Allowance = components['schemas']['AllowanceDto'];
+export type SetBudget = components['schemas']['SetBudgetDto'];
+export type Rewards = components['schemas']['RewardsDto'];
+export type Badge = components['schemas']['BadgeDto'];
+export type BadgeCode = components['schemas']['BadgeCode'];
+export type SpendStreak = components['schemas']['StreakDto'];
+export type DayOutcome = components['schemas']['DayOutcomeDto'];
+export type AppNotification = components['schemas']['NotificationDto'];
+export type NotificationList = components['schemas']['NotificationListDto'];
+export type NotificationType = components['schemas']['NotificationType'];
+export type NotificationGroup = components['schemas']['NotificationGroup'];
+export type NotificationSetting = components['schemas']['NotificationSettingDto'];
+export type NotificationSettings = components['schemas']['NotificationSettingsDto'];
 
 /** Creates a typed client for the Expense Tracker API; every path, body and response is checked. */
 export function createApiClient(options: ClientOptions & { baseUrl: string }) {

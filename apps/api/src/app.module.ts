@@ -6,6 +6,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { LoggerModule } from 'nestjs-pino';
 import { AccountsModule } from './accounts';
 import { AuthModule } from './auth';
+import { BudgetsModule } from './budgets';
 import { CategoriesModule } from './categories';
 import { CommonModule } from './common';
 import { DashboardModule } from './dashboard';
@@ -13,6 +14,8 @@ import { GoalsModule } from './goals';
 import { validateConfig } from './config/app-config';
 import { HealthModule } from './health/health.module';
 import { ImportsModule } from './imports';
+import { NotificationsModule } from './notifications';
+import { RewardsModule } from './rewards';
 import { TransactionsModule } from './transactions';
 import { UsersModule } from './users';
 import { tunables } from './config/tunables';
@@ -43,6 +46,9 @@ import { tunables } from './config/tunables';
     ImportsModule,
     DashboardModule,
     GoalsModule,
+    BudgetsModule,
+    RewardsModule,
+    NotificationsModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

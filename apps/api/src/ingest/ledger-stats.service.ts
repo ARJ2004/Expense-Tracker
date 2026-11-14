@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { istMonthRange } from '@et/domain';
+import { istDayRange, istMonthRange } from '@et/domain';
 import { PrismaService } from '../common';
 
 /**
@@ -122,6 +122,32 @@ export class LedgerStatsService {
       GROUP BY b.start
       ORDER BY b.start`;
     return rows.map((r) => ({ start: r.start.toISOString().slice(0, 10), spendPaise: Math.max(0, Number(r.spend)), incomePaise: Number(r.income) }));
+  }
+
+  /**
+   * Spend per category id between two IST days (both included), refunds taken off. Budgets use
+   * it for the month so far and for single days; categories netting to zero or less are left out.
+   */
+  async spendByCategoryInDays(userId: string, fromDay: string, toDay: string): Promise<Map<string, number>> {
+    if (fromDay > toDay) return new Map();
+    const start = istDayRange(fromDay).start;
+    const end = istDayRange(toDay).end;
+    const rows = await this.prisma.$queryRaw<{ id: string; spend: bigint }[]>`
+      SELECT t.category_id AS id, SUM(${SIGNED_SPEND}) AS spend
+      FROM transactions t
+      WHERE ${live(userId, start, end)} AND t.category_id IS NOT NULL AND (${SPEND_DEBIT} OR ${REFUND})
+      GROUP BY t.category_id
+      HAVING SUM(${SIGNED_SPEND}) > 0`;
+    return new Map(rows.map((r) => [r.id, Number(r.spend)]));
+  }
+
+  /** The median spend debit between two IST days: "your usual size" for big-spend alerts. */
+  async typicalDebit(userId: string, fromDay: string, toDay: string): Promise<{ medianPaise: number; count: number }> {
+    const [row] = await this.prisma.$queryRaw<{ median: number | null; n: bigint }[]>`
+      SELECT percentile_cont(0.5) WITHIN GROUP (ORDER BY t.amount_paise)::float8 AS median, count(*) AS n
+      FROM transactions t
+      WHERE ${live(userId, istDayRange(fromDay).start, istDayRange(toDay).end)} AND ${SPEND_DEBIT}`;
+    return { medianPaise: Math.round(row?.median ?? 0), count: Number(row?.n ?? 0) };
   }
 
   async hasAnyTransactions(userId: string): Promise<boolean> {

@@ -1,7 +1,7 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import type { Goal, GoalContribution, Prisma } from '@prisma/client';
-import { addDays, daysBetween, GOAL_LIMITS, goalProgress, istDateKey, newMilestones, type GoalContributionDay } from '@et/domain';
+import { addDays, daysBetween, GOAL_LIMITS, goalMonthReserve, goalProgress, istDateKey, newMilestones, type GoalContributionDay } from '@et/domain';
 import { AppError, PrismaService } from '../common';
 import type {
   ContributeDto,
@@ -13,7 +13,7 @@ import type {
   GoalStatusName,
   UpdateGoalDto,
 } from './dto/goal.dto';
-import { GOAL_REACHED, type GoalReachedEvent } from './goals.events';
+import { GOAL_CREATED, GOAL_MILESTONES, GOAL_REACHED, type GoalCreatedEvent, type GoalMilestonesEvent, type GoalReachedEvent } from './goals.events';
 
 type GoalWithDays = Goal & { contributions: Pick<GoalContribution, 'day' | 'amountPaise'>[] };
 
@@ -46,6 +46,19 @@ export class GoalsService {
     return goals.map((g) => toDto(g, today));
   }
 
+  /**
+   * What active goals ask to be put aside in an IST month (each goal's daily amount for its saving
+   * days in the month). Budgets hold this back from the daily allowance.
+   */
+  async monthReserve(userId: string, month: string): Promise<number> {
+    const goals = await this.prisma.goal.findMany({ where: { userId, status: 'active' }, include: { contributions: DAYS_ONLY } });
+    const today = this.today();
+    return goals.reduce((sum, g) => {
+      const p = goalProgress(plan(g), days(g), today);
+      return sum + goalMonthReserve({ dailyTargetPaise: p.dailyTargetPaise, remainingPaise: p.remainingPaise, startDay: asDay(g.startDay), targetDay: asDay(g.targetDay) }, month);
+    }, 0);
+  }
+
   async get(userId: string, id: string): Promise<GoalDetailDto> {
     const goal = await this.owned(userId, id);
     const recent = await this.prisma.goalContribution.findMany({ where: { goalId: id }, orderBy: [{ day: 'desc' }, { createdAt: 'desc' }], take: 90 });
@@ -63,6 +76,7 @@ export class GoalsService {
       data: { userId, name: dto.name, emoji: dto.emoji ?? null, targetPaise: BigInt(dto.targetPaise), startDay: asDate(today), targetDay: asDate(dto.targetDay) },
       include: { contributions: DAYS_ONLY },
     });
+    this.events.emit(GOAL_CREATED, { userId, goalId: goal.id } satisfies GoalCreatedEvent);
     return toDto(goal, today);
   }
 
@@ -117,7 +131,11 @@ export class GoalsService {
       });
       return { goal: toDto(updated, today), newMilestones: newMilestones(before.milestones, after.milestones), reachedNow: after.reached };
     });
-    if (result.reachedNow) this.events.emit(GOAL_REACHED, { userId, goalId: id } satisfies GoalReachedEvent);
+    const { name, emoji } = result.goal;
+    if (result.newMilestones.length > 0) {
+      this.events.emit(GOAL_MILESTONES, { userId, goalId: id, name, emoji, milestones: result.newMilestones } satisfies GoalMilestonesEvent);
+    }
+    if (result.reachedNow) this.events.emit(GOAL_REACHED, { userId, goalId: id, name } satisfies GoalReachedEvent);
     return { goal: result.goal, newMilestones: result.newMilestones };
   }
 

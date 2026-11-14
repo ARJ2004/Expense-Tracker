@@ -9,9 +9,13 @@ export const ledgerRoots = {
   transactions: ['transactions'] as const,
   dashboard: ['dashboard'] as const,
   sources: ['ingest', 'sources'] as const,
+  /** Budgets' spend and the daily allowance. */
+  budgets: ['budgets'] as const,
+  /** A new spend can raise an alert in the inbox. */
+  notifications: ['notifications'] as const,
 };
 
-/** After any ledger write (add, edit, delete, import, SMS sync): lists, details, Home and source counts. */
+/** After any ledger write (add, edit, delete, import, SMS sync): lists, details, Home, budgets, alerts and source counts. */
 export function invalidateLedger(queryClient: QueryClient): Promise<unknown> {
   return Promise.all(Object.values(ledgerRoots).map((queryKey) => queryClient.invalidateQueries({ queryKey })));
 }

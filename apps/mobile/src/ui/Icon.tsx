@@ -13,6 +13,7 @@ const paths = {
   search: ['m20 20-3.5-3.5'],
   filter: ['M4 6h16M7 12h10M10 18h4'],
   close: ['M6 6l12 12M18 6 6 18'],
+  bell: ['M6 10a6 6 0 0 1 12 0c0 5 2 7 2 7H4s2-2 2-7', 'M10 20a2 2 0 0 0 4 0'],
   edit: ['M4 20h4L19 9l-4-4L4 16z', 'M14 6l4 4'],
   trash: ['M4 7h16', 'M9 7V4h6v3', 'M6 7l1 13h10l1-13'],
   backspace: ['M9 5h11v14H9l-6-7z', 'M12.5 9.5l5 5M17.5 9.5l-5 5'],

@@ -52,6 +52,14 @@ export class AppConfig {
   @Transform(({ value }) => value === true || value === 'true')
   @IsBoolean()
   DEV_AUTH_ENABLED = false;
+
+  /**
+   * The Firebase service-account key JSON, base64-encoded, for push. Optional: without it
+   * notifications still land in the in-app inbox, they just don't buzz the phone.
+   */
+  @IsOptional()
+  @IsString()
+  FIREBASE_SERVICE_ACCOUNT_BASE64?: string;
 }
 
 export function validateConfig(raw: Record<string, unknown>): AppConfig {

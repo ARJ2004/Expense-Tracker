@@ -6,7 +6,9 @@ import { errorMessage, usePreferences, type MainStackParamList } from '../../../
 import { radius, useTheme } from '../../../theme';
 import { Card, ListRow, Screen, SectionLabel, Text } from '../../../ui';
 import { useAccounts } from '../../accounts';
+import { useBudgets } from '../../budgets';
 import { useGoals } from '../../goals';
+import { useNotifications } from '../../notifications';
 import { useSession, useSignOut } from '../../auth';
 import { useCategories } from '../../categories';
 import { smsCaptureAvailable, useSmsCapture } from '../../sms';
@@ -15,7 +17,7 @@ import { useExportLedger, useHealth } from '../hooks';
 import { incomeLabel, initials } from '../labels';
 import appInfo from '../../../../app.json';
 
-/** Settings (mockup 10): profile, Money (accounts, categories, income), App (sources, look, export), sign out and delete. */
+/** Settings (mockup 10): profile, Money (accounts, categories, income, budgets, goals), App (sources, notifications, look, export), sign out and delete. */
 export function SettingsScreen() {
   const { colors } = useTheme();
   const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
@@ -23,6 +25,8 @@ export function SettingsScreen() {
   const signOut = useSignOut();
   const accounts = useAccounts();
   const goals = useGoals('active');
+  const budgets = useBudgets();
+  const inbox = useNotifications();
   const categories = useCategories();
   const health = useHealth();
   const appearance = usePreferences((s) => s.appearance);
@@ -62,7 +66,9 @@ export function SettingsScreen() {
         <ListRow label="Accounts" value={accounts.data ? String(accounts.data.length) : undefined} onPress={() => navigation.navigate('Accounts')} />
         <ListRow label="Categories" value={categories.data ? String(categories.data.length) : undefined} onPress={() => navigation.navigate('Categories')} />
         <ListRow label="Income" value={incomeLabel(user?.monthlyIncomePaise ?? null)} onPress={() => navigation.navigate('Income')} />
-        <ListRow label="Goals" value={goals.data ? String(goals.data.length) : undefined} onPress={() => navigation.navigate('Goals')} last />
+        <ListRow label="Budgets" value={budgets.data ? String(budgets.data.items.length) : undefined} onPress={() => navigation.navigate('Budgets')} />
+        <ListRow label="Goals" value={goals.data ? String(goals.data.length) : undefined} onPress={() => navigation.navigate('Goals')} />
+        <ListRow label="Streak and badges" onPress={() => navigation.navigate('Rewards')} last />
       </Card>
 
       <SectionLabel label="App" />
@@ -72,6 +78,12 @@ export function SettingsScreen() {
           value={smsCaptureAvailable() ? (smsEnabled ? (toReview > 0 ? `${toReview} to review` : 'SMS on') : 'SMS off') : undefined}
           valueTone={smsEnabled ? (toReview > 0 ? 'spend' : 'accent') : 'muted'}
           onPress={() => navigation.navigate('DataSources')}
+        />
+        <ListRow
+          label="Notifications"
+          value={inbox.data?.unreadCount ? `${inbox.data.unreadCount} new` : undefined}
+          valueTone="accent"
+          onPress={() => navigation.navigate('NotificationSettings')}
         />
         <ListRow label="Appearance" value={APPEARANCE_LABELS[appearance]} onPress={() => setAppearanceOpen(true)} />
         <ListRow label="Export data" value={exportLedger.isPending ? 'Exporting…' : 'CSV'} onPress={exportLedger.isPending ? undefined : runExport} last />

@@ -67,6 +67,12 @@ export class UsersService {
     return toMe(user);
   }
 
+  /** Users who have a monthly income set: they have a daily allowance even without budgets. */
+  async idsWithIncome(): Promise<string[]> {
+    const rows = await this.prisma.user.findMany({ where: { monthlyIncomePaise: { gt: 0 } }, select: { id: true } });
+    return rows.map((r) => r.id);
+  }
+
   /** Saves the income answers and marks onboarding finished; only once per user. */
   async completeOnboarding(userId: string, dto: CompleteOnboardingDto): Promise<MeDto> {
     const { count } = await this.prisma.user.updateMany({

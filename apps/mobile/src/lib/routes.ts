@@ -27,4 +27,9 @@ export type MainStackParamList = {
   GoalDetail: { id: string };
   /** New goal, or edit the one with this id. */
   GoalForm: { id?: string } | undefined;
+  Budgets: undefined;
+  /** Streak and badges. */
+  Rewards: undefined;
+  Notifications: undefined;
+  NotificationSettings: undefined;
 };

@@ -1,6 +1,11 @@
 apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
+// Firebase config is per environment and kept out of git. Without it the app builds and runs;
+// push just stays off (notifications still reach the in-app inbox).
+if (file("google-services.json").exists()) {
+    apply plugin: "com.google.gms.google-services"
+}
 
 /**
  * This is the configuration block to customize your React Native Android app.

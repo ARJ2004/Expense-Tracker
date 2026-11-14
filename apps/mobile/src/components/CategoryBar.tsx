@@ -18,13 +18,19 @@ export interface CategoryBarProps {
   /** Small muted line under the name, e.g. "23 payments". */
   meta?: string;
   onPress?: () => void;
+  /** Against a budget: warning (80%+) and over (100%+) recolour the bar and the amount. */
+  state?: 'ok' | 'warning' | 'over';
 }
 
-/** "Where it went" row: name and amount over a thin bar sized against the largest category. */
-export function CategoryBar({ name, paise, ratio, color, icon, meta, onPress }: CategoryBarProps) {
+/**
+ * "Where it went" row: name and amount over a thin bar sized against the largest category. On the
+ * Budgets screen the bar is spend ÷ budget, and `state` marks a category near or over its budget.
+ */
+export function CategoryBar({ name, paise, ratio, color, icon, meta, onPress, state = 'ok' }: CategoryBarProps) {
   const { colors } = useTheme();
   const width = `${Math.round(Math.min(1, Math.max(0, ratio)) * 100)}%` as const;
   const amount = formatINR(wholeRupees(paise), { symbol: false, decimals: 'auto' });
+  const barColor = state === 'over' ? colors.spend : state === 'warning' ? colors.warningOn : color;
   const body = (
     <View style={styles.wrap}>
       <View style={styles.row}>
@@ -39,10 +45,12 @@ export function CategoryBar({ name, paise, ratio, color, icon, meta, onPress }: 
             </Text>
           )}
         </View>
-        <Text variant="mono">{amount}</Text>
+        <Text variant="mono" tone={state === 'over' ? 'spend' : 'default'}>
+          {amount}
+        </Text>
       </View>
       <View style={[styles.track, { backgroundColor: colors.track }]}>
-        <View style={[styles.fill, { width, backgroundColor: color }]} />
+        <View style={[styles.fill, { width, backgroundColor: barColor }]} />
       </View>
     </View>
   );
