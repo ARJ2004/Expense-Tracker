@@ -41,6 +41,9 @@ export interface ColorTokens {
   warningOn: string;
   errorSoft: string;
   errorOn: string;
+  /** Third avatar tone (teal), so members next to each other look different. */
+  tealSoft: string;
+  tealOn: string;
   scrim: string;
   /** Brand mark: teal back peak (the front peak is highlight). */
   brandTeal: string;
@@ -85,6 +88,8 @@ export const altusLight: ColorTokens = {
   warningOn: '#8A5A12',
   errorSoft: '#FBEAEA',
   errorOn: '#A3261C',
+  tealSoft: '#DDF1F4',
+  tealOn: '#0F6674',
   scrim: 'rgba(1,42,74,0.45)',
   brandTeal: '#17A2B8',
   googleBlue: '#4285F4',
@@ -127,6 +132,8 @@ export const altusDark: ColorTokens = {
   warningOn: '#F0BE73',
   errorSoft: '#3A1A1D',
   errorOn: '#FF8A80',
+  tealSoft: '#0B3640',
+  tealOn: '#7FD3E0',
   scrim: 'rgba(0,0,0,0.6)',
   brandTeal: '#17A2B8',
   googleBlue: '#4285F4',

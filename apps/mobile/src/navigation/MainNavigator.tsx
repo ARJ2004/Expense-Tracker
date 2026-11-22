@@ -4,6 +4,7 @@ import { useNavigation, type NavigationProp } from '@react-navigation/native';
 import { AccountsScreen } from '../features/accounts';
 import { BudgetsScreen } from '../features/budgets';
 import { GoalDetailScreen, GoalFormScreen, GoalsScreen } from '../features/goals';
+import { GroupDetailScreen, GroupExpenseFormScreen, GroupFormScreen, GroupsScreen } from '../features/groups';
 import { CategorySpendScreen } from '../features/home';
 import { ImportReviewScreen } from '../features/imports';
 import { NotificationSettingsScreen, NotificationsScreen, openNotificationTarget, usePushRegistration } from '../features/notifications';
@@ -40,6 +41,10 @@ export function MainNavigator() {
         <Stack.Screen name="Goals" component={GoalsScreen} />
         <Stack.Screen name="GoalDetail" component={GoalDetailScreen} />
         <Stack.Screen name="GoalForm" component={GoalFormScreen} />
+        <Stack.Screen name="Groups" component={GroupsScreen} />
+        <Stack.Screen name="GroupDetail" component={GroupDetailScreen} />
+        <Stack.Screen name="GroupForm" component={GroupFormScreen} />
+        <Stack.Screen name="GroupExpenseForm" component={GroupExpenseFormScreen} />
         <Stack.Screen name="Budgets" component={BudgetsScreen} />
         <Stack.Screen name="Rewards" component={RewardsScreen} />
         <Stack.Screen name="Notifications" component={NotificationsScreen} />

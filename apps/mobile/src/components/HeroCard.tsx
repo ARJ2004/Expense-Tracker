@@ -17,6 +17,8 @@ export interface HeroCardProps {
   label: string;
   /** The big amount. */
   paise: number;
+  /** Words instead of the amount, e.g. "All settled up". */
+  headline?: string;
   /** Pill on the right of the label, e.g. "56% used". */
   pill?: string;
   /** 0 to 1; omit to hide the bar. */
@@ -26,7 +28,7 @@ export interface HeroCardProps {
 }
 
 /** Navy hero card from the Home mockup: label and pill, big mono amount, bar, two small figures. */
-export function HeroCard({ label, paise, pill, progress, stats = [] }: HeroCardProps) {
+export function HeroCard({ label, paise, headline, pill, progress, stats = [] }: HeroCardProps) {
   const { colors } = useTheme();
   return (
     <HeroSurface>
@@ -40,9 +42,15 @@ export function HeroCard({ label, paise, pill, progress, stats = [] }: HeroCardP
           </Text>
         )}
       </View>
-      <Text variant="hero" style={{ color: colors.heroText }} accessibilityLabel={`${label} ₹${formatINR(paise, { symbol: false })}`}>
-        {formatINR(wholeRupees(paise), { decimals: 'auto' })}
-      </Text>
+      {headline ? (
+        <Text variant="title" style={{ color: colors.heroText }}>
+          {headline}
+        </Text>
+      ) : (
+        <Text variant="hero" style={{ color: colors.heroText }} accessibilityLabel={`${label} ₹${formatINR(paise, { symbol: false })}`}>
+          {formatINR(wholeRupees(paise), { decimals: 'auto' })}
+        </Text>
+      )}
       {progress !== undefined && <ProgressBar value={progress} surface="hero" accessibilityLabel={pill ?? label} />}
       {stats.length > 0 && (
         <View style={styles.stats}>
