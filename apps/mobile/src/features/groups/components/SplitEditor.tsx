@@ -129,5 +129,5 @@ const styles = StyleSheet.create({
   amount: { fontFamily: fonts.monoSemibold, fontSize: 15 },
   input: { width: 116, height: 40, borderRadius: radius.pill, borderWidth: 1, flexDirection: 'row', alignItems: 'center', paddingHorizontal: space.sm, gap: 4 },
   symbol: { fontFamily: fonts.monoMedium },
-  field: { flex: 1, fontFamily: fonts.monoSemibold, fontSize: 15, padding: 0, textAlign: 'right' },
+  field: { flex: 1, minWidth: 0, fontFamily: fonts.monoSemibold, fontSize: 15, padding: 0, textAlign: 'right' },
 });
