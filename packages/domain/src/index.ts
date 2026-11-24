@@ -11,3 +11,4 @@ export * from './capture';
 export * from './goals';
 export * from './budgets';
 export * from './rewards';
+export * from './groups';

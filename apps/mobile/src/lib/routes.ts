@@ -27,6 +27,12 @@ export type MainStackParamList = {
   GoalDetail: { id: string };
   /** New goal, or edit the one with this id. */
   GoalForm: { id?: string } | undefined;
+  Groups: undefined;
+  GroupDetail: { id: string };
+  /** New group, or edit the one with this id. */
+  GroupForm: { id?: string } | undefined;
+  /** Add an expense to a group, or edit the one with expenseId. */
+  GroupExpenseForm: { groupId: string; expenseId?: string };
   Budgets: undefined;
   /** Streak and badges. */
   Rewards: undefined;

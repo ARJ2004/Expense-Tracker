@@ -8,6 +8,7 @@ import { Card, ListRow, Screen, SectionLabel, Text } from '../../../ui';
 import { useAccounts } from '../../accounts';
 import { useBudgets } from '../../budgets';
 import { useGoals } from '../../goals';
+import { useGroups } from '../../groups';
 import { useNotifications } from '../../notifications';
 import { useSession, useSignOut } from '../../auth';
 import { useCategories } from '../../categories';
@@ -17,7 +18,7 @@ import { useExportLedger, useHealth } from '../hooks';
 import { incomeLabel, initials } from '../labels';
 import appInfo from '../../../../app.json';
 
-/** Settings (mockup 10): profile, Money (accounts, categories, income, budgets, goals), App (sources, notifications, look, export), sign out and delete. */
+/** Settings (mockup 10): profile, Money (accounts, categories, income, budgets, goals, groups), App (sources, notifications, look, export), sign out and delete. */
 export function SettingsScreen() {
   const { colors } = useTheme();
   const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
@@ -25,6 +26,7 @@ export function SettingsScreen() {
   const signOut = useSignOut();
   const accounts = useAccounts();
   const goals = useGoals('active');
+  const groups = useGroups();
   const budgets = useBudgets();
   const inbox = useNotifications();
   const categories = useCategories();
@@ -68,6 +70,7 @@ export function SettingsScreen() {
         <ListRow label="Income" value={incomeLabel(user?.monthlyIncomePaise ?? null)} onPress={() => navigation.navigate('Income')} />
         <ListRow label="Budgets" value={budgets.data ? String(budgets.data.items.length) : undefined} onPress={() => navigation.navigate('Budgets')} />
         <ListRow label="Goals" value={goals.data ? String(goals.data.length) : undefined} onPress={() => navigation.navigate('Goals')} />
+        <ListRow label="Groups" value={groups.data ? String(groups.data.length) : undefined} onPress={() => navigation.navigate('Groups')} />
         <ListRow label="Streak and badges" onPress={() => navigation.navigate('Rewards')} last />
       </Card>
 

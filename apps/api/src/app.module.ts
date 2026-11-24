@@ -11,6 +11,7 @@ import { CategoriesModule } from './categories';
 import { CommonModule } from './common';
 import { DashboardModule } from './dashboard';
 import { GoalsModule } from './goals';
+import { GroupsModule } from './groups';
 import { validateConfig } from './config/app-config';
 import { HealthModule } from './health/health.module';
 import { ImportsModule } from './imports';
@@ -46,6 +47,7 @@ import { tunables } from './config/tunables';
     ImportsModule,
     DashboardModule,
     GoalsModule,
+    GroupsModule,
     BudgetsModule,
     RewardsModule,
     NotificationsModule,

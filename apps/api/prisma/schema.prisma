@@ -115,6 +115,7 @@ model User {
   devices              Device[]
   notificationSettings NotificationSettings?
   notifications        Notification[]
+  groups               Group[]
 
   @@map("users")
 }
@@ -488,4 +489,106 @@ model Notification {
   @@unique([userId, dedupKey])
   @@index([userId, createdAt(sort: Desc)])
   @@map("notifications")
+}
+
+enum GroupSplitMode {
+  equal
+  exact
+}
+
+/// People the user splits costs with. Members are names, not users: only the owner ever sees the
+/// group. Owned by the groups module; deleted with the user (cascade). Expenses here are not
+/// ledger transactions.
+model Group {
+  id         String    @id @default(uuid(7)) @db.Uuid
+  userId     String    @map("user_id") @db.Uuid
+  name       String    @db.VarChar(40)
+  emoji      String?   @db.VarChar(16)
+  archivedAt DateTime? @map("archived_at") @db.Timestamptz
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt  DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  user     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  members  GroupMember[]
+  expenses GroupExpense[]
+  payments GroupPayment[]
+
+  @@index([userId, archivedAt])
+  @@map("groups")
+}
+
+/// A name in a group. The owner is the one member with is_self ("You").
+model GroupMember {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  groupId   String   @map("group_id") @db.Uuid
+  name      String   @db.VarChar(30)
+  /// memberNameKey(name) from @et/domain: unique in the group, ignoring case and spaces.
+  nameKey   String   @map("name_key") @db.VarChar(30)
+  isSelf    Boolean  @default(false) @map("is_self")
+  /// Member order; equal splits give leftover paise to the first members.
+  position  Int
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  group        Group               @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  paid         GroupExpense[]      @relation("payer")
+  shares       GroupExpenseShare[]
+  paymentsSent GroupPayment[]      @relation("paymentFrom")
+  paymentsGot  GroupPayment[]      @relation("paymentTo")
+
+  @@unique([groupId, nameKey])
+  @@index([groupId, position])
+  @@map("group_members")
+}
+
+/// One cost paid by one member and shared by some members. Member foreign keys cascade so the whole
+/// group can be deleted in one statement; GroupsService refuses to remove a member still in use.
+model GroupExpense {
+  id          String         @id @default(uuid(7)) @db.Uuid
+  groupId     String         @map("group_id") @db.Uuid
+  description String         @db.VarChar(60)
+  amountPaise BigInt         @map("amount_paise")
+  paidById    String         @map("paid_by_id") @db.Uuid
+  splitMode   GroupSplitMode @map("split_mode")
+  /// IST calendar day.
+  day         DateTime       @db.Date
+  createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime       @updatedAt @map("updated_at") @db.Timestamptz
+
+  group  Group               @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  paidBy GroupMember         @relation("payer", fields: [paidById], references: [id], onDelete: Cascade)
+  shares GroupExpenseShare[]
+
+  @@index([groupId, day(sort: Desc), id(sort: Desc)])
+  @@map("group_expenses")
+}
+
+model GroupExpenseShare {
+  expenseId  String @map("expense_id") @db.Uuid
+  memberId   String @map("member_id") @db.Uuid
+  sharePaise BigInt @map("share_paise")
+
+  expense GroupExpense @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  member  GroupMember  @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@id([expenseId, memberId])
+  @@index([memberId])
+  @@map("group_expense_shares")
+}
+
+/// A settle-up: one member paid another back. Records it only; no money moves.
+model GroupPayment {
+  id          String   @id @default(uuid(7)) @db.Uuid
+  groupId     String   @map("group_id") @db.Uuid
+  fromId      String   @map("from_id") @db.Uuid
+  toId        String   @map("to_id") @db.Uuid
+  amountPaise BigInt   @map("amount_paise")
+  day         DateTime @db.Date
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  group Group       @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  from  GroupMember @relation("paymentFrom", fields: [fromId], references: [id], onDelete: Cascade)
+  to    GroupMember @relation("paymentTo", fields: [toId], references: [id], onDelete: Cascade)
+
+  @@index([groupId, day(sort: Desc), id(sort: Desc)])
+  @@map("group_payments")
 }
