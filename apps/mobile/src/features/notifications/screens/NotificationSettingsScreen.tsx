@@ -10,7 +10,7 @@ import { usePushStatus } from '../push';
 
 type Props = NativeStackScreenProps<MainStackParamList, 'NotificationSettings'>;
 
-const GROUPS: NotificationGroup[] = ['daily', 'alerts', 'rewards'];
+const GROUPS: NotificationGroup[] = ['daily', 'alerts', 'rewards', 'groups'];
 
 /** Every notification type with a switch, grouped; quiet hours and the daily cap explained; a test push. */
 export function NotificationSettingsScreen({ navigation }: Props) {

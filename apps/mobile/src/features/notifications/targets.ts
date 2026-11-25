@@ -15,6 +15,10 @@ export function openNotificationTarget(navigation: Pick<NavigationProp<MainStack
       return data.id ? navigation.navigate('GoalDetail', { id: data.id }) : navigation.navigate('Goals');
     case 'Transaction':
       return data.id ? navigation.navigate('TransactionDetail', { id: data.id }) : undefined;
+    case 'Group':
+      return data.id ? navigation.navigate('GroupDetail', { id: data.id }) : navigation.navigate('Groups');
+    case 'Groups':
+      return navigation.navigate('Groups');
     case 'Home':
       return navigation.navigate('Tabs');
     default:

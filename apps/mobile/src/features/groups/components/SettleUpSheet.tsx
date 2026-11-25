@@ -4,7 +4,7 @@ import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import type { GroupDetail } from '@et/api-client';
 import { istDateKey, toPaise } from '@et/domain';
 import { AmountEntry, AmountKeypad, isPositiveAmount } from '../../../components';
-import { errorMessage } from '../../../lib';
+import { errorMessage, newUuid } from '../../../lib';
 import { space } from '../../../theme';
 import { BottomSheet, Button, ChipGroup, ListRow, Text } from '../../../ui';
 import { useRecordPayment } from '../hooks';
@@ -39,6 +39,8 @@ export function SettleUpSheet({ group, draft, onClose }: SettleUpSheetProps) {
   const [toId, setToId] = useState('');
   const [amount, setAmount] = useState('');
   const [day, setDay] = useState(today);
+  // One id per opened sheet, kept across retries, so a payment is recorded once.
+  const [clientRequestId, setClientRequestId] = useState(newUuid);
 
   useEffect(() => {
     if (!draft) return;
@@ -46,6 +48,7 @@ export function SettleUpSheet({ group, draft, onClose }: SettleUpSheetProps) {
     setToId(draft.toId);
     setAmount(typedRupees(draft.amountPaise));
     setDay(istDateKey(new Date()));
+    setClientRequestId(newUuid());
     record.reset();
     // Only when a new draft opens the sheet.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -67,7 +70,7 @@ export function SettleUpSheet({ group, draft, onClose }: SettleUpSheetProps) {
       },
     });
 
-  const save = () => record.mutate({ fromId, toId, amountPaise: toPaise(amount), day }, { onSuccess: onClose });
+  const save = () => record.mutate({ fromId, toId, amountPaise: toPaise(amount), day, clientRequestId }, { onSuccess: onClose });
 
   return (
     <BottomSheet visible={draft !== null} onClose={onClose} title="Record a payment" height="tall">

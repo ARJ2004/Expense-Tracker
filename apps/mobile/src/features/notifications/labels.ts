@@ -5,6 +5,7 @@ export const GROUP_LABELS: Record<NotificationGroup, string> = {
   daily: 'Daily',
   alerts: 'Spending alerts',
   rewards: 'Streaks and goals',
+  groups: 'Groups',
 };
 
 export const when = (iso: string) => formatISTRelative(new Date(iso));

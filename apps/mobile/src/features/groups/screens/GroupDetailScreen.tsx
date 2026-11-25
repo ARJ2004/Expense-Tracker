@@ -6,6 +6,7 @@ import { istDateKey } from '@et/domain';
 import { HeroCard } from '../../../components';
 import { errorMessage, type MainStackParamList } from '../../../lib';
 import { Button, Card, IconButton, SectionLabel, Screen, Text, TopBar } from '../../../ui';
+import { InviteCard } from '../components/InviteCard';
 import { PersonRow } from '../components/PersonRow';
 import { SettleUpSheet, type SettleUpDraft } from '../components/SettleUpSheet';
 import { useDeletePayment, useGroup, useGroupActivity } from '../hooks';
@@ -21,7 +22,7 @@ const signed = (paise: number) => (paise > 0 ? `+${rupees(paise).slice(1)}` : pa
  */
 export function GroupDetailScreen({ navigation, route }: Props) {
   const { id } = route.params;
-  const group = useGroup(id);
+  const group = useGroup(id, { live: true });
   const [settle, setSettle] = useState<SettleUpDraft | null>(null);
   const g = group.data;
 
@@ -63,11 +64,6 @@ export function GroupDetailScreen({ navigation, route }: Props) {
       <Text variant="secondary" tone="muted">
         Group expenses aren’t added to your spending.
       </Text>
-      {g.members.length === 1 && (
-        <Text variant="secondary" tone="muted">
-          Add people with the edit button to split costs with them.
-        </Text>
-      )}
 
       <SectionLabel label="Balances" />
       <Card padding="rows">
@@ -80,6 +76,7 @@ export function GroupDetailScreen({ navigation, route }: Props) {
               name={memberName(m)}
               tone={memberTone(g.members, b.memberId)}
               title={memberName(m)}
+              subtitle={m?.isOwner ? 'Owner' : m?.joined ? (m.isSelf ? undefined : 'Joined') : 'Not joined yet'}
               caption={words.words}
               amount={b.netPaise === 0 ? undefined : signed(b.netPaise)}
               amountTone={words.tone}
@@ -88,6 +85,8 @@ export function GroupDetailScreen({ navigation, route }: Props) {
           );
         })}
       </Card>
+
+      <InviteCard group={g} />
 
       <SectionLabel label="Settle up" />
       {g.transfers.length > 0 ? (
@@ -121,6 +120,7 @@ export function GroupDetailScreen({ navigation, route }: Props) {
       {self && others && <Button variant="text" label="Record a payment" onPress={() => setSettle({ fromId: others.id, toId: self.id, amountPaise: 0 })} />}
 
       <Activity group={g} onEdit={(expenseId) => navigation.navigate('GroupExpenseForm', { groupId: id, expenseId })} />
+      <Button variant="text" label="See who changed what" onPress={() => navigation.navigate('GroupHistory', { id })} />
 
       <SettleUpSheet group={g} draft={settle} onClose={() => setSettle(null)} />
     </Screen>
@@ -128,7 +128,7 @@ export function GroupDetailScreen({ navigation, route }: Props) {
 }
 
 function Activity({ group, onEdit }: { group: GroupDetail; onEdit: (expenseId: string) => void }) {
-  const activity = useGroupActivity(group.id);
+  const activity = useGroupActivity(group.id, { live: true });
   const removePayment = useDeletePayment(group.id);
   const today = istDateKey(new Date());
   const items = activity.data?.pages.flatMap((p) => p.items) ?? [];

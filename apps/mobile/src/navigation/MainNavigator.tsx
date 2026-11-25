@@ -1,10 +1,18 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useNavigation, type NavigationProp } from '@react-navigation/native';
 import { AccountsScreen } from '../features/accounts';
 import { BudgetsScreen } from '../features/budgets';
 import { GoalDetailScreen, GoalFormScreen, GoalsScreen } from '../features/goals';
-import { GroupDetailScreen, GroupExpenseFormScreen, GroupFormScreen, GroupsScreen } from '../features/groups';
+import {
+  GroupDetailScreen,
+  GroupExpenseFormScreen,
+  GroupFormScreen,
+  GroupHistoryScreen,
+  GroupsScreen,
+  JoinGroupScreen,
+  useOpenPendingJoin,
+} from '../features/groups';
 import { CategorySpendScreen } from '../features/home';
 import { ImportReviewScreen } from '../features/imports';
 import { NotificationSettingsScreen, NotificationsScreen, openNotificationTarget, usePushRegistration } from '../features/notifications';
@@ -22,6 +30,9 @@ export function MainNavigator() {
   const navigation = useNavigation<NavigationProp<{ Main: { screen: keyof MainStackParamList; params?: object } }>>();
   // SMS capture on this phone belongs to one user; the sms store claims it at sign-in.
   useSmsForegroundSync();
+  // A join link that arrived before sign-in (or while the app was closed) opens here.
+  const openJoin = useCallback((code: string) => navigation.navigate('Main', { screen: 'JoinGroup', params: { code } }), [navigation]);
+  useOpenPendingJoin(openJoin);
   // A tapped push opens its screen inside this stack.
   usePushRegistration((data) =>
     openNotificationTarget({ navigate: ((screen: keyof MainStackParamList, params?: object) => navigation.navigate('Main', { screen, params })) as never }, data),
@@ -45,6 +56,8 @@ export function MainNavigator() {
         <Stack.Screen name="GroupDetail" component={GroupDetailScreen} />
         <Stack.Screen name="GroupForm" component={GroupFormScreen} />
         <Stack.Screen name="GroupExpenseForm" component={GroupExpenseFormScreen} />
+        <Stack.Screen name="GroupHistory" component={GroupHistoryScreen} />
+        <Stack.Screen name="JoinGroup" component={JoinGroupScreen} />
         <Stack.Screen name="Budgets" component={BudgetsScreen} />
         <Stack.Screen name="Rewards" component={RewardsScreen} />
         <Stack.Screen name="Notifications" component={NotificationsScreen} />

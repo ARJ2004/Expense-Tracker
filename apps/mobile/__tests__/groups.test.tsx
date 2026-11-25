@@ -5,10 +5,10 @@ import { istDateKey } from '@et/domain';
 
 const TODAY = istDateKey(new Date());
 const members = [
-  { id: 'you', name: 'You', isSelf: true },
-  { id: 'ravi', name: 'Ravi', isSelf: false },
-  { id: 'priya', name: 'Priya', isSelf: false },
-  { id: 'arjun', name: 'Arjun', isSelf: false },
+  { id: 'you', name: 'Asha', isSelf: true, joined: true, isOwner: true },
+  { id: 'ravi', name: 'Ravi', isSelf: false, joined: false, isOwner: false },
+  { id: 'priya', name: 'Priya', isSelf: false, joined: false, isOwner: false },
+  { id: 'arjun', name: 'Arjun', isSelf: false, joined: false, isOwner: false },
 ];
 
 /** Goa trip as the API returns it: Priya paid ₹3,600 for four, You paid ₹1,200 for You and Ravi. */
@@ -31,6 +31,9 @@ function goa(over: Record<string, unknown> = {}) {
       { fromId: 'you', toId: 'priya', amountPaise: 300_00 },
     ],
     settled: false,
+    rev: 7,
+    myMemberId: 'you',
+    isOwner: true,
     totalSpentPaise: 4800_00,
     mySharePaise: 1500_00,
     myNetPaise: -300_00,
@@ -61,6 +64,7 @@ const requests: Array<{ method: string; path: string; body?: unknown }> = [];
   if (path === '/v1/groups' && req.method === 'POST') return json(201, goa({ id: 'g2' }));
   if (path === '/v1/groups/g1' && req.method === 'GET') return json(200, detail);
   if (path === '/v1/groups/g1/activity') return json(200, { items: [dinner], nextCursor: null });
+  if (path === '/v1/groups/g1/invite' && req.method === 'GET') return json(200, { active: false });
   if (path === '/v1/groups/g1/expenses') return json(201, { ...dinner, id: 'e2', ...(body as object) });
   if (path === '/v1/groups/g1/payments') return json(201, { kind: 'payment', id: 'p1', ...(body as object) });
   return json(404, { error: { code: 'NOT_FOUND', message: path } });
@@ -142,10 +146,11 @@ describe('GroupsScreen', () => {
 });
 
 describe('GroupFormScreen', () => {
-  it('creates a group with the names added, You first and always included', async () => {
+  it('creates a group with the names added, me first as the owner', async () => {
     const n = nav();
     await render(wrap(<GroupFormScreen navigation={n as never} route={{ key: 'k', name: 'GroupForm' } as never} />));
-    expect(screen.getByText('Always included')).toBeTruthy();
+    expect(screen.getByText('Me (you)')).toBeTruthy();
+    expect(screen.getByText('Owner')).toBeTruthy();
     await fireEvent.changeText(screen.getByLabelText('Group name'), 'Goa trip');
     for (const name of ['Ravi', 'Priya']) {
       await fireEvent.changeText(screen.getByLabelText('Add a member'), name);
@@ -153,7 +158,7 @@ describe('GroupFormScreen', () => {
     }
     await fireEvent.press(screen.getByRole('button', { name: 'Create group' }));
     await waitFor(() => expect(n.replace).toHaveBeenCalledWith('GroupDetail', { id: 'g2' }));
-    expect(requests.find((r) => r.method === 'POST')?.body).toEqual({ name: 'Goa trip', members: ['Ravi', 'Priya'], emoji: '🏖️' });
+    expect(requests.find((r) => r.method === 'POST')?.body).toEqual({ name: 'Goa trip', myName: 'Me', members: ['Ravi', 'Priya'], emoji: '🏖️' });
   });
 });
 
@@ -175,7 +180,7 @@ describe('GroupDetailScreen', () => {
     expect(await screen.findByText('Ravi owes Priya ₹1,500 in this group')).toBeTruthy();
     await fireEvent.press(screen.getByRole('button', { name: 'Record payment' }));
     await waitFor(() => expect(requests.some((r) => r.path === '/v1/groups/g1/payments')).toBe(true));
-    expect(requests.find((r) => r.path === '/v1/groups/g1/payments')?.body).toEqual({ fromId: 'ravi', toId: 'priya', amountPaise: 1500_00, day: TODAY });
+    expect(requests.find((r) => r.path === '/v1/groups/g1/payments')?.body).toEqual({ fromId: 'ravi', toId: 'priya', amountPaise: 1500_00, day: TODAY, clientRequestId: expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/) });
   });
 
   it('says when everyone is settled up', async () => {
@@ -211,6 +216,7 @@ describe('GroupExpenseFormScreen', () => {
       paidById: 'you',
       splitMode: 'equal',
       memberIds: ['you', 'ravi', 'priya'],
+      clientRequestId: expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/),
     });
   });
 

@@ -33,6 +33,10 @@ export type MainStackParamList = {
   GroupForm: { id?: string } | undefined;
   /** Add an expense to a group, or edit the one with expenseId. */
   GroupExpenseForm: { groupId: string; expenseId?: string };
+  /** Who did what in a group. */
+  GroupHistory: { id: string };
+  /** Opened from a join link or a typed code. */
+  JoinGroup: { code: string };
   Budgets: undefined;
   /** Streak and badges. */
   Rewards: undefined;

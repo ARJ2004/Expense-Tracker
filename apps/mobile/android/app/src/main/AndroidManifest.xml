@@ -26,6 +26,22 @@
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
+        <!-- Group join links from the web page's "Open in Altus" button: altus://j/<code> -->
+        <intent-filter>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.DEFAULT" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="altus" android:host="j" />
+        </intent-filter>
+        <!-- Join links themselves. Plain http on an IP can't be verified as an App Link, so Android
+             offers Altus but may open the browser first; the page there opens the app. Switch to
+             https + autoVerify with assetlinks.json once there is a domain. -->
+        <intent-filter>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.DEFAULT" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="http" android:host="15.252.181.82" android:pathPrefix="/altus/j/" />
+        </intent-filter>
       </activity>
     </application>
 </manifest>

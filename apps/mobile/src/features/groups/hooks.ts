@@ -1,10 +1,15 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type {
+  AcceptInvite,
   CreateGroup,
   GroupActivity,
   GroupActivityList,
   GroupDetail,
+  GroupHistoryList,
+  GroupInvite,
+  GroupInviteState,
   GroupMember,
+  InvitePreview,
   GroupSummary,
   SaveGroupExpense,
   SaveGroupPayment,
@@ -23,7 +28,13 @@ export const groupKeys = {
   list: (archived: boolean) => ['groups', 'list', archived] as const,
   detail: (id: string) => ['groups', 'detail', id] as const,
   activity: (id: string) => ['groups', 'activity', id] as const,
+  history: (id: string) => ['groups', 'history', id] as const,
+  invite: (id: string) => ['groups', 'invite', id] as const,
+  preview: (code: string) => ['groups', 'preview', code] as const,
 };
+
+/** How often an open group asks for other people's changes. */
+const LIVE_REFRESH_MS = 30_000;
 
 export function useGroups(archived = false) {
   return useQuery({
@@ -36,9 +47,11 @@ export function useGroups(archived = false) {
   });
 }
 
-export function useGroup(id: string) {
+/** A group, refreshed every 30 s while its screen is open so other people's changes show up. */
+export function useGroup(id: string, options: { live?: boolean } = {}) {
   return useQuery({
     queryKey: groupKeys.detail(id),
+    refetchInterval: options.live ? LIVE_REFRESH_MS : false,
     queryFn: async (): Promise<GroupDetail> => {
       const { data, error } = await api.GET('/v1/groups/{id}', { params: { path: { id } } });
       if (!data) throw toApiError(error);
@@ -48,9 +61,10 @@ export function useGroup(id: string) {
 }
 
 /** Expenses and payments, newest first, a page at a time. */
-export function useGroupActivity(id: string) {
+export function useGroupActivity(id: string, options: { live?: boolean } = {}) {
   return useInfiniteQuery({
     queryKey: groupKeys.activity(id),
+    refetchInterval: options.live ? LIVE_REFRESH_MS : false,
     initialPageParam: undefined as string | undefined,
     queryFn: async ({ pageParam }): Promise<GroupActivityList> => {
       const query = { limit: PAGE_SIZE, ...(pageParam && { cursor: pageParam }) };
@@ -157,11 +171,14 @@ export function useSaveExpense(groupId: string, expenseId?: string) {
   });
 }
 
+/** Deletes an expense; with `version`, refuses if someone changed it since (GROUP_EXPENSE_CHANGED). */
 export function useDeleteExpense(groupId: string) {
   const refresh = useRefreshGroups();
   return useMutation({
-    mutationFn: async (expenseId: string): Promise<void> => {
-      const { error, response } = await api.DELETE('/v1/groups/{id}/expenses/{expenseId}', { params: { path: { id: groupId, expenseId } } });
+    mutationFn: async ({ expenseId, version }: { expenseId: string; version?: number }): Promise<void> => {
+      const { error, response } = await api.DELETE('/v1/groups/{id}/expenses/{expenseId}', {
+        params: { path: { id: groupId, expenseId }, query: version ? { version } : {} },
+      });
       if (!response.ok) throw toApiError(error);
     },
     onSuccess: refresh,
@@ -186,6 +203,122 @@ export function useDeletePayment(groupId: string) {
     mutationFn: async (paymentId: string): Promise<void> => {
       const { error, response } = await api.DELETE('/v1/groups/{id}/payments/{paymentId}', { params: { path: { id: groupId, paymentId } } });
       if (!response.ok) throw toApiError(error);
+    },
+    onSuccess: refresh,
+  });
+}
+
+// ---- Sharing ----
+
+export function useGroupHistory(id: string) {
+  return useInfiniteQuery({
+    queryKey: groupKeys.history(id),
+    initialPageParam: undefined as string | undefined,
+    queryFn: async ({ pageParam }): Promise<GroupHistoryList> => {
+      const query = { limit: PAGE_SIZE, ...(pageParam && { cursor: pageParam }) };
+      const { data, error } = await api.GET('/v1/groups/{id}/history', { params: { path: { id }, query } });
+      if (!data) throw toApiError(error);
+      return data;
+    },
+    getNextPageParam: (last) => last.nextCursor ?? undefined,
+  });
+}
+
+/** The group's join link, if one is on. */
+export function useInvite(groupId: string) {
+  return useQuery({
+    queryKey: groupKeys.invite(groupId),
+    queryFn: async (): Promise<GroupInviteState> => {
+      const { data, error } = await api.GET('/v1/groups/{id}/invite', { params: { path: { id: groupId } } });
+      if (!data) throw toApiError(error);
+      return data;
+    },
+  });
+}
+
+/** The join link, made if there is none; `reset` (owner only) makes a new one. */
+export function useShareInvite(groupId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (reset: boolean = false): Promise<GroupInvite> => {
+      const { data, error } = await api.POST('/v1/groups/{id}/invite', { params: { path: { id: groupId } }, body: { reset } });
+      if (!data) throw toApiError(error);
+      return data;
+    },
+    onSuccess: (invite) => queryClient.setQueryData<GroupInviteState>(groupKeys.invite(groupId), { active: true, invite }),
+  });
+}
+
+export function useTurnOffInvite(groupId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (): Promise<void> => {
+      const { error, response } = await api.DELETE('/v1/groups/{id}/invite', { params: { path: { id: groupId } } });
+      if (!response.ok) throw toApiError(error);
+    },
+    onSuccess: () => queryClient.setQueryData<GroupInviteState>(groupKeys.invite(groupId), { active: false }),
+  });
+}
+
+/** What a join link is for: the group, who invited, and the names to pick from. */
+export function useInvitePreview(code: string) {
+  return useQuery({
+    queryKey: groupKeys.preview(code),
+    queryFn: async (): Promise<InvitePreview> => {
+      const { data, error } = await api.GET('/v1/invites/{code}', { params: { path: { code } } });
+      if (!data) throw toApiError(error);
+      return data;
+    },
+    retry: false,
+  });
+}
+
+export function useAcceptInvite(code: string) {
+  const refresh = useRefreshGroups();
+  return useMutation({
+    mutationFn: async (body: AcceptInvite): Promise<GroupDetail> => {
+      const { data, error } = await api.POST('/v1/invites/{code}/accept', { params: { path: { code } }, body });
+      if (!data) throw toApiError(error);
+      return data;
+    },
+    onSuccess: refresh,
+  });
+}
+
+export function useLeaveGroup(groupId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (): Promise<void> => {
+      const { error, response } = await api.POST('/v1/groups/{id}/leave', { params: { path: { id: groupId } } });
+      if (!response.ok) throw toApiError(error);
+    },
+    onSuccess: () => {
+      queryClient.removeQueries({ queryKey: groupKeys.detail(groupId) });
+      return queryClient.invalidateQueries({ queryKey: groupKeys.all });
+    },
+  });
+}
+
+/** Owner: remove someone who joined. Their name and history stay. */
+export function useRemoveJoined(groupId: string) {
+  const refresh = useRefreshGroups();
+  return useMutation({
+    mutationFn: async (memberId: string): Promise<GroupDetail> => {
+      const { data, error } = await api.DELETE('/v1/groups/{id}/members/{memberId}/link', { params: { path: { id: groupId, memberId } } });
+      if (!data) throw toApiError(error);
+      return data;
+    },
+    onSuccess: refresh,
+  });
+}
+
+export function useTransferOwner(groupId: string) {
+  const refresh = useRefreshGroups();
+  return useMutation({
+    mutationFn: async (memberId: string): Promise<GroupDetail> => {
+      const { data, error } = await api.POST('/v1/groups/{id}/owner', { params: { path: { id: groupId } }, body: { memberId } });
+      if (!data) throw toApiError(error);
+      return data;
     },
     onSuccess: refresh,
   });

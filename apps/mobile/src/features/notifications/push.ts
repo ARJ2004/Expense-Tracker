@@ -12,6 +12,7 @@ import {
   type RemoteMessage,
 } from '@react-native-firebase/messaging';
 import { api, ledgerRoots, onBeforeSignOut } from '../../lib';
+import { groupKeys } from '../groups';
 
 /**
  * Push on this phone. Firebase starts only when the build has a google-services.json; without one
@@ -103,8 +104,11 @@ export function usePushRegistration(onOpen: (data: Data) => void): void {
       onTokenRefresh(messaging, (token) => {
         register(token).catch(() => undefined);
       }),
-      onMessage(messaging, async () => {
+      onMessage(messaging, async (m) => {
         await queryClient.invalidateQueries({ queryKey: ledgerRoots.notifications });
+        // Someone changed a shared group: show it now rather than at the next 30 s refresh.
+        const screen = dataOf(m)?.screen;
+        if (screen === 'Group' || screen === 'Groups') await queryClient.invalidateQueries({ queryKey: groupKeys.all });
       }),
       onNotificationOpenedApp(messaging, (m) => {
         const data = dataOf(m);

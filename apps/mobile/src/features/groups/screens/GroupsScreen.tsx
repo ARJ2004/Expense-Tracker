@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { errorMessage, type MainStackParamList } from '../../../lib';
 import { Button, Card, ChipGroup, EmptyState, IconButton, Text, Screen, TopBar } from '../../../ui';
+import { JoinWithCodeSheet } from '../components/JoinWithCodeSheet';
 import { PersonRow } from '../components/PersonRow';
 import { useGroups } from '../hooks';
 import { myNetLabel } from '../labels';
@@ -12,6 +13,7 @@ type Tab = 'active' | 'archived';
 /** Every group with my net balance in it, most recently used first; active or archived. */
 export function GroupsScreen({ navigation }: Props) {
   const [tab, setTab] = useState<Tab>('active');
+  const [joining, setJoining] = useState(false);
   const active = useGroups(false);
   const archived = useGroups(true);
   const groups = tab === 'active' ? active : archived;
@@ -36,8 +38,11 @@ export function GroupsScreen({ navigation }: Props) {
           <Card>
             <EmptyState
               title="No groups yet"
-              message="Make a group for a trip, your flat or a party. Add people by name, log who paid, and see who owes whom."
-              actions={[{ label: 'Create group', onPress: create }]}
+              message="Make a group for a trip, your flat or a party, or join one someone shared with you. Log who paid and see who owes whom."
+              actions={[
+                { label: 'Create group', onPress: create },
+                { label: 'Join with code', onPress: () => setJoining(true) },
+              ]}
             />
           </Card>
         ) : (
@@ -69,6 +74,8 @@ export function GroupsScreen({ navigation }: Props) {
           })}
         </Card>
       )}
+      {!!groups.data?.length && <Button variant="text" label="Join with code" onPress={() => setJoining(true)} />}
+      <JoinWithCodeSheet visible={joining} onClose={() => setJoining(false)} onCode={(code) => navigation.navigate('JoinGroup', { code })} />
     </Screen>
   );
 }
