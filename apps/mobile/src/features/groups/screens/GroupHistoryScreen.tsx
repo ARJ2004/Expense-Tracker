@@ -41,6 +41,7 @@ export function GroupHistoryScreen({ navigation, route }: Props) {
                 name={who}
                 tone={h.actorIsSelf ? 'navy' : member ? memberTone(members, member.id) : 'neutral'}
                 title={`${who} ${h.text}`}
+                titleLines={3}
                 subtitle={formatISTTime(new Date(h.createdAt))}
                 divider={false}
               />

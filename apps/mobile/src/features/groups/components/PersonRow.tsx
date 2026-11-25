@@ -11,6 +11,8 @@ export interface PersonRowProps {
   tone: AvatarTone;
   emoji?: string | null;
   title: string;
+  /** Lines the title may take before it's cut short (history sentences need more than one). */
+  titleLines?: number;
   subtitle?: string;
   /** Small words beside or above the amount: "owes", "you owe". */
   caption?: string;
@@ -33,6 +35,7 @@ export function PersonRow({
   tone,
   emoji,
   title,
+  titleLines = 1,
   subtitle,
   caption,
   amount,
@@ -49,7 +52,7 @@ export function PersonRow({
     <View style={[styles.row, divider && !last && { borderBottomColor: colors.border, borderBottomWidth: StyleSheet.hairlineWidth }]}>
       <MerchantAvatar name={name} tone={tone} emoji={emoji} />
       <View style={styles.middle}>
-        <Text variant="bodyStrong" numberOfLines={1}>
+        <Text variant="bodyStrong" numberOfLines={titleLines}>
           {title}
         </Text>
         {subtitle ? (
