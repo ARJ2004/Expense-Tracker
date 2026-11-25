@@ -115,7 +115,8 @@ model User {
   devices              Device[]
   notificationSettings NotificationSettings?
   notifications        Notification[]
-  groups               Group[]
+  ownedGroups          Group[]
+  groupMemberships     GroupMember[]
 
   @@map("users")
 }
@@ -496,68 +497,86 @@ enum GroupSplitMode {
   exact
 }
 
-/// People the user splits costs with. Members are names, not users: only the owner ever sees the
-/// group. Owned by the groups module; deleted with the user (cascade). Expenses here are not
-/// ledger transactions.
+/// People who split costs. Members are names; a member can be linked to one Altus user who joined
+/// through an invite link, and every linked member sees the same group. Owned by the groups
+/// module. owner_id is Restrict: the users purge hands ownership on (or deletes a group nobody
+/// else joined) before the user row goes, so a shared group never disappears with one account.
 model Group {
-  id         String    @id @default(uuid(7)) @db.Uuid
-  userId     String    @map("user_id") @db.Uuid
-  name       String    @db.VarChar(40)
-  emoji      String?   @db.VarChar(16)
-  archivedAt DateTime? @map("archived_at") @db.Timestamptz
-  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt  DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  id        String   @id @default(uuid(7)) @db.Uuid
+  ownerId   String   @map("owner_id") @db.Uuid
+  name      String   @db.VarChar(40)
+  emoji     String?  @db.VarChar(16)
+  /// Bumped by every write to the group, under the group row lock.
+  rev       BigInt   @default(0)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
-  user     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  owner    User           @relation(fields: [ownerId], references: [id], onDelete: Restrict)
   members  GroupMember[]
   expenses GroupExpense[]
   payments GroupPayment[]
+  invites  GroupInvite[]
+  events   GroupEvent[]
 
-  @@index([userId, archivedAt])
+  @@index([ownerId])
   @@map("groups")
 }
 
-/// A name in a group. The owner is the one member with is_self ("You").
+/// A name in a group, optionally linked to the Altus user it belongs to. "You" is whichever
+/// member is linked to the viewer.
 model GroupMember {
-  id        String   @id @default(uuid(7)) @db.Uuid
-  groupId   String   @map("group_id") @db.Uuid
-  name      String   @db.VarChar(30)
+  id         String    @id @default(uuid(7)) @db.Uuid
+  groupId    String    @map("group_id") @db.Uuid
+  name       String    @db.VarChar(30)
   /// memberNameKey(name) from @et/domain: unique in the group, ignoring case and spaces.
-  nameKey   String   @map("name_key") @db.VarChar(30)
-  isSelf    Boolean  @default(false) @map("is_self")
+  nameKey    String    @map("name_key") @db.VarChar(30)
+  /// The user this name belongs to; null = a name only.
+  userId     String?   @map("user_id") @db.Uuid
+  joinedAt   DateTime? @map("joined_at") @db.Timestamptz
+  /// This member's own archive: hides the group from their list only.
+  archivedAt DateTime? @map("archived_at") @db.Timestamptz
   /// Member order; equal splits give leftover paise to the first members.
-  position  Int
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  position   Int
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz
 
   group        Group               @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user         User?               @relation(fields: [userId], references: [id], onDelete: SetNull)
   paid         GroupExpense[]      @relation("payer")
   shares       GroupExpenseShare[]
   paymentsSent GroupPayment[]      @relation("paymentFrom")
   paymentsGot  GroupPayment[]      @relation("paymentTo")
+  events       GroupEvent[]
 
   @@unique([groupId, nameKey])
+  @@unique([groupId, userId])
   @@index([groupId, position])
+  @@index([userId])
   @@map("group_members")
 }
 
 /// One cost paid by one member and shared by some members. Member foreign keys cascade so the whole
 /// group can be deleted in one statement; GroupsService refuses to remove a member still in use.
 model GroupExpense {
-  id          String         @id @default(uuid(7)) @db.Uuid
-  groupId     String         @map("group_id") @db.Uuid
-  description String         @db.VarChar(60)
-  amountPaise BigInt         @map("amount_paise")
-  paidById    String         @map("paid_by_id") @db.Uuid
-  splitMode   GroupSplitMode @map("split_mode")
+  id              String         @id @default(uuid(7)) @db.Uuid
+  groupId         String         @map("group_id") @db.Uuid
+  description     String         @db.VarChar(60)
+  amountPaise     BigInt         @map("amount_paise")
+  paidById        String         @map("paid_by_id") @db.Uuid
+  splitMode       GroupSplitMode @map("split_mode")
   /// IST calendar day.
-  day         DateTime       @db.Date
-  createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt   DateTime       @updatedAt @map("updated_at") @db.Timestamptz
+  day             DateTime       @db.Date
+  /// Optimistic concurrency: an edit or delete must name the version it read.
+  version         Int            @default(1)
+  /// Makes a retried create a no-op (unique in the group).
+  clientRequestId String?        @map("client_request_id") @db.Uuid
+  createdAt       DateTime       @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime       @updatedAt @map("updated_at") @db.Timestamptz
 
   group  Group               @relation(fields: [groupId], references: [id], onDelete: Cascade)
   paidBy GroupMember         @relation("payer", fields: [paidById], references: [id], onDelete: Cascade)
   shares GroupExpenseShare[]
 
+  @@unique([groupId, clientRequestId])
   @@index([groupId, day(sort: Desc), id(sort: Desc)])
   @@map("group_expenses")
 }
@@ -577,18 +596,52 @@ model GroupExpenseShare {
 
 /// A settle-up: one member paid another back. Records it only; no money moves.
 model GroupPayment {
-  id          String   @id @default(uuid(7)) @db.Uuid
-  groupId     String   @map("group_id") @db.Uuid
-  fromId      String   @map("from_id") @db.Uuid
-  toId        String   @map("to_id") @db.Uuid
-  amountPaise BigInt   @map("amount_paise")
-  day         DateTime @db.Date
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  id              String   @id @default(uuid(7)) @db.Uuid
+  groupId         String   @map("group_id") @db.Uuid
+  fromId          String   @map("from_id") @db.Uuid
+  toId            String   @map("to_id") @db.Uuid
+  amountPaise     BigInt   @map("amount_paise")
+  day             DateTime @db.Date
+  clientRequestId String?  @map("client_request_id") @db.Uuid
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
 
   group Group       @relation(fields: [groupId], references: [id], onDelete: Cascade)
   from  GroupMember @relation("paymentFrom", fields: [fromId], references: [id], onDelete: Cascade)
   to    GroupMember @relation("paymentTo", fields: [toId], references: [id], onDelete: Cascade)
 
+  @@unique([groupId, clientRequestId])
   @@index([groupId, day(sort: Desc), id(sort: Desc)])
   @@map("group_payments")
+}
+
+/// A join link. The code is 10 characters of Crockford base32 (50 random bits), never reused.
+/// A group has at most one active (not revoked) invite.
+model GroupInvite {
+  id        String    @id @default(uuid(7)) @db.Uuid
+  groupId   String    @map("group_id") @db.Uuid
+  code      String    @unique @db.VarChar(16)
+  revokedAt DateTime? @map("revoked_at") @db.Timestamptz
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@index([groupId])
+  @@map("group_invites")
+}
+
+/// Append-only history of a group: who did what, written in the same transaction as the change.
+/// The actor is a member (its name survives the user leaving); summary holds display values only.
+model GroupEvent {
+  id            String   @id @default(uuid(7)) @db.Uuid
+  groupId       String   @map("group_id") @db.Uuid
+  actorMemberId String?  @map("actor_member_id") @db.Uuid
+  type          String   @db.VarChar(40)
+  summary       Json
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  group Group        @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  actor GroupMember? @relation(fields: [actorMemberId], references: [id], onDelete: SetNull)
+
+  @@index([groupId, createdAt(sort: Desc), id(sort: Desc)])
+  @@map("group_events")
 }

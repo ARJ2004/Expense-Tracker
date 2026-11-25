@@ -21,8 +21,12 @@ export async function boot(options: BootOptions = {}): Promise<INestApplication>
   return app;
 }
 
-/** Removes every user and, by cascade, their rows. System categories (user_id null) stay. */
+/**
+ * Removes every user and, by cascade, their rows. System categories (user_id null) stay. Groups
+ * go first: their owner key is RESTRICT, so a shared group never disappears with one account.
+ */
 export async function resetDb(app: INestApplication): Promise<void> {
+  await app.get(PrismaService).$executeRawUnsafe('DELETE FROM groups');
   await app.get(PrismaService).$executeRawUnsafe('DELETE FROM users');
 }
 

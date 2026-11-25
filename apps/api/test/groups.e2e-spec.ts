@@ -22,10 +22,11 @@ describe('groups', () => {
     const res = await http()
       .post('/v1/groups')
       .set(bearer(s))
-      .send({ name: 'Goa trip', emoji: '🏖️', members: ['Ravi', 'Priya', 'Arjun'] })
+      .send({ name: 'Goa trip', emoji: '🏖️', myName: 'Asha', members: ['Ravi', 'Priya', 'Arjun'] })
       .expect(201);
     const by = Object.fromEntries((res.body.members as Member[]).map((m) => [m.name, m.id])) as Record<string, string>;
-    return { id: res.body.id as string, you: by.You as string, ravi: by.Ravi as string, priya: by.Priya as string, arjun: by.Arjun as string };
+    const you = (res.body.members as Member[]).find((m) => m.isSelf)?.id as string;
+    return { id: res.body.id as string, you, ravi: by.Ravi as string, priya: by.Priya as string, arjun: by.Arjun as string };
   };
   const expense = (groupId: string, body: object, s = asha) => http().post(`/v1/groups/${groupId}/expenses`).set(bearer(s)).send(body);
   const detail = async (groupId: string) => (await http().get(`/v1/groups/${groupId}`).set(bearer(asha)).expect(200)).body;
@@ -42,16 +43,19 @@ describe('groups', () => {
     await app.close();
   });
 
-  it('creates a group with the caller as "You" first', async () => {
-    const res = await http().post('/v1/groups').set(bearer(asha)).send({ name: '  Goa   trip ', members: ['Ravi', 'Priya'] }).expect(201);
-    expect(res.body).toMatchObject({ name: 'Goa trip', archived: false, settled: true, totalSpentPaise: 0, myNetPaise: 0, transfers: [] });
-    expect(res.body.members.map((m: Member) => [m.name, m.isSelf])).toEqual([
-      ['You', true],
-      ['Ravi', false],
-      ['Priya', false],
+  it('creates a group with the caller as its first member and owner', async () => {
+    const res = await http().post('/v1/groups').set(bearer(asha)).send({ name: '  Goa   trip ', myName: 'Asha', members: ['Ravi', 'Priya'] }).expect(201);
+    expect(res.body).toMatchObject({ name: 'Goa trip', archived: false, settled: true, totalSpentPaise: 0, myNetPaise: 0, transfers: [], isOwner: true });
+    expect(res.body.members.map((m: Member & { joined: boolean }) => [m.name, m.isSelf, m.joined])).toEqual([
+      ['Asha', true, true],
+      ['Ravi', false, false],
+      ['Priya', false, false],
     ]);
+    expect(res.body.myMemberId).toBe(res.body.members[0].id);
     const list = await http().get('/v1/groups').set(bearer(asha)).expect(200);
-    expect(list.body.items).toEqual([{ id: res.body.id, name: 'Goa trip', emoji: null, memberCount: 3, myNetPaise: 0, archived: false }]);
+    expect(list.body.items).toEqual([{ id: res.body.id, name: 'Goa trip', emoji: null, memberCount: 3, myNetPaise: 0, archived: false, rev: expect.any(Number) }]);
+    const named = await http().post('/v1/groups').set(bearer(asha)).send({ name: 'Flat', members: ['Me'] }).expect(409);
+    expect(named.body.error.code).toBe('GROUP_MEMBER_DUPLICATE');
   });
 
   it('splits the Goa trip and says who pays whom, then settles up', async () => {
@@ -148,6 +152,7 @@ describe('groups', () => {
     expect(dup.body.error.code).toBe('GROUP_MEMBER_DUPLICATE');
     await http().patch(`/v1/groups/${g.id}/members/${added.body.id}`).set(bearer(asha)).send({ name: 'Meera S' }).expect(200);
     await http().patch(`/v1/groups/${g.id}/members/${added.body.id}`).set(bearer(asha)).send({ name: 'Priya' }).expect(409);
+    await http().patch(`/v1/groups/${g.id}/members/${g.you}`).set(bearer(asha)).send({ name: 'Asha K' }).expect(200);
 
     await expense(g.id, { description: 'Lunch', amountPaise: 500_00, day: today, paidById: g.you, splitMode: 'equal', memberIds: [g.you, g.ravi] }).expect(201);
     const inUse = await http().delete(`/v1/groups/${g.id}/members/${g.ravi}`).set(bearer(asha)).expect(409);
@@ -204,7 +209,9 @@ describe('groups', () => {
 
   it('allows 50 active groups', async () => {
     const prisma = app.get(PrismaService);
-    await prisma.group.createMany({ data: Array.from({ length: 50 }, (_, i) => ({ userId: asha.user.id, name: `Group ${i}` })) });
+    for (let i = 0; i < 50; i++) {
+      await prisma.group.create({ data: { ownerId: asha.user.id, name: `Group ${i}`, members: { create: { name: 'Asha', nameKey: 'asha', position: 0, userId: asha.user.id } } } });
+    }
     const res = await http().post('/v1/groups').set(bearer(asha)).send({ name: 'One more' }).expect(409);
     expect(res.body.error.code).toBe('GROUP_LIMIT');
   });

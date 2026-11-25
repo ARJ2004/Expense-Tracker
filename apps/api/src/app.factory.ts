@@ -1,4 +1,4 @@
-import { HttpStatus, ValidationPipe, type INestApplication } from '@nestjs/common';
+import { HttpStatus, RequestMethod, ValidationPipe, type INestApplication } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule, type OpenAPIObject } from '@nestjs/swagger';
 import { Logger } from 'nestjs-pino';
@@ -7,7 +7,8 @@ import { AppError, BigIntInterceptor, ErrorFilter } from './common';
 
 /** Applies the global prefix, validation, error shape and serialization. Shared by main.ts and tests. */
 export function configureApp(app: INestApplication): INestApplication {
-  app.setGlobalPrefix('v1');
+  // Join links (/j/<code>) are web pages, outside the versioned API.
+  app.setGlobalPrefix('v1', { exclude: [{ path: 'j/:code', method: RequestMethod.GET }] });
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

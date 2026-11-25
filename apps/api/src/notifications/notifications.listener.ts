@@ -2,9 +2,19 @@ import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { istDateKey } from '@et/domain';
 import { GOAL_MILESTONES, type GoalMilestonesEvent } from '../goals';
+import {
+  GROUP_DELETED,
+  GROUP_EXPENSE_CREATED,
+  GROUP_MEMBER_JOINED,
+  GROUP_PAYMENT_CREATED,
+  type GroupDeletedEvent,
+  type GroupExpenseCreatedEvent,
+  type GroupMemberJoinedEvent,
+  type GroupPaymentCreatedEvent,
+} from '../groups';
 import { TRANSACTION_CREATED, TRANSACTIONS_INGESTED, type TransactionEvent, type TransactionsIngestedEvent } from '../ingest';
 import { BADGE_UNLOCKED, STREAK_MILESTONE, type BadgeUnlockedEvent, type StreakMilestoneEvent } from '../rewards';
-import { badgeUnlocked, goalMilestone, streakMilestone } from './domain/messages';
+import { badgeUnlocked, goalMilestone, groupDeleted, groupExpense, groupJoined, groupPayment, streakMilestone } from './domain/messages';
 import { NotificationsService } from './notifications.service';
 import { TransactionAlertsService } from './transaction-alerts.service';
 
@@ -55,6 +65,37 @@ export class NotificationsListener {
     const top = GOAL_MILESTONE_RANK.find((m) => e.milestones.includes(m));
     const draft = top ? goalMilestone(e.goalId, e.name, e.emoji, top) : null;
     if (draft) await this.safely('goal', () => this.notifications.notify(e.userId, draft));
+  }
+
+  // Group events name their recipients (never the person who made the change).
+
+  @OnEvent(GROUP_MEMBER_JOINED, { async: true })
+  async onGroupJoined(e: GroupMemberJoinedEvent): Promise<void> {
+    for (const userId of e.recipientUserIds) {
+      await this.safely('group joined', () => this.notifications.notify(userId, groupJoined(e.groupId, e.groupName, e.memberName)));
+    }
+  }
+
+  @OnEvent(GROUP_EXPENSE_CREATED, { async: true })
+  async onGroupExpense(e: GroupExpenseCreatedEvent): Promise<void> {
+    for (const r of e.recipients) {
+      const draft = groupExpense(e.groupId, e.groupName, e.expenseId, e.actorName, e.description, e.amountPaise, r.sharePaise);
+      await this.safely('group expense', () => this.notifications.notify(r.userId, draft));
+    }
+  }
+
+  @OnEvent(GROUP_PAYMENT_CREATED, { async: true })
+  async onGroupPayment(e: GroupPaymentCreatedEvent): Promise<void> {
+    if (!e.recipientUserId) return;
+    const userId = e.recipientUserId;
+    await this.safely('group payment', () => this.notifications.notify(userId, groupPayment(e.groupId, e.groupName, e.paymentId, e.fromName, e.amountPaise)));
+  }
+
+  @OnEvent(GROUP_DELETED, { async: true })
+  async onGroupDeleted(e: GroupDeletedEvent): Promise<void> {
+    for (const userId of e.recipientUserIds) {
+      await this.safely('group deleted', () => this.notifications.notify(userId, groupDeleted(e.groupId, e.groupName)));
+    }
   }
 
   private async safely(what: string, fn: () => Promise<unknown>): Promise<void> {

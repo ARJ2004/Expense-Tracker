@@ -60,6 +60,14 @@ export class AppConfig {
   @IsOptional()
   @IsString()
   FIREBASE_SERVICE_ACCOUNT_BASE64?: string;
+
+  /**
+   * Where join links point (`<base>/j/<code>`). Defaults to the API behind Nginx on the EC2 IP,
+   * http://15.252.181.82/altus, until the app has a domain with HTTPS.
+   */
+  @IsOptional()
+  @IsString()
+  PUBLIC_WEB_BASE_URL?: string;
 }
 
 export function validateConfig(raw: Record<string, unknown>): AppConfig {

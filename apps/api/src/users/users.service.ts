@@ -4,6 +4,7 @@ import { Prisma, type User } from '@prisma/client';
 import { AccountsService } from '../accounts';
 import { CategoriesService } from '../categories';
 import { AppError, PrismaService } from '../common';
+import { GroupsService } from '../groups';
 import { ImportsService } from '../imports';
 import { IngestService } from '../ingest';
 import type { CompleteOnboardingDto } from './dto/complete-onboarding.dto';
@@ -34,6 +35,7 @@ export class UsersService {
     private readonly ingest: IngestService,
     private readonly categories: CategoriesService,
     private readonly accounts: AccountsService,
+    private readonly groups: GroupsService,
   ) {}
 
   /** Finds the user by Google `sub` (never by email) and refreshes their email and name, or creates them. */
@@ -110,7 +112,7 @@ export class UsersService {
    * a user already gone deletes nothing and still succeeds. Emits USER_DELETED after the commit.
    */
   async deleteAccount(userId: string): Promise<void> {
-    const owners: PurgeOwners = { imports: this.imports, ledger: this.ingest, categories: this.categories, accounts: this.accounts };
+    const owners: PurgeOwners = { groups: this.groups, imports: this.imports, ledger: this.ingest, categories: this.categories, accounts: this.accounts };
     await this.prisma.$transaction(async (tx) => {
       await purgeOwnedData(owners, tx, userId);
       await tx.user.deleteMany({ where: { id: userId } });

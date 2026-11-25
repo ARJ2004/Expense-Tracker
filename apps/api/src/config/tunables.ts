@@ -28,6 +28,8 @@ export interface Tunables {
     upload: RateLimit;
     /** PDF password attempts. */
     unlock: RateLimit;
+    /** Join links: previews, joining and the web page. */
+    invites: RateLimit;
   };
 }
 
@@ -63,6 +65,7 @@ export function loadTunables(env: NodeJS.ProcessEnv = process.env): Tunables {
       ingestBatch: perMinute(env, 'RATE_LIMIT_INGEST_BATCH_PER_MINUTE', 60),
       upload: perMinute(env, 'RATE_LIMIT_UPLOAD_PER_MINUTE', 5),
       unlock: perMinute(env, 'RATE_LIMIT_UNLOCK_PER_MINUTE', 10),
+      invites: perMinute(env, 'RATE_LIMIT_INVITES_PER_MINUTE', 30),
     },
   };
 }

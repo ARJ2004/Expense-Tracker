@@ -1472,6 +1472,1687 @@
         ]
       }
     },
+    "/v1/groups": {
+      "get": {
+        "operationId": "listGroups",
+        "parameters": [
+          {
+            "name": "archived",
+            "required": false,
+            "in": "query",
+            "description": "Archived groups instead of active ones",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupListDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Groups the caller is in, with their net balance in each, most recently used first",
+        "tags": [
+          "groups"
+        ]
+      },
+      "post": {
+        "operationId": "createGroup",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateGroupDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupDetailDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "GROUP_LIMIT or GROUP_MEMBER_DUPLICATE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a group; the caller is its first member and owner",
+        "tags": [
+          "groups"
+        ]
+      }
+    },
+    "/v1/groups/{id}": {
+      "get": {
+        "operationId": "getGroup",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupDetailDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "A group with members, balances and who pays whom",
+        "tags": [
+          "groups"
+        ]
+      },
+      "patch": {
+        "operationId": "updateGroup",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGroupDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupDetailDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "GROUP_LIMIT when restoring",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Rename the group (for everyone), or archive / restore it (for the caller only)",
+        "tags": [
+          "groups"
+        ]
+      },
+      "delete": {
+        "operationId": "deleteGroup",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "GROUP_OWNER_ONLY",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Owner only: delete a group with its members, expenses and payments, for everyone",
+        "tags": [
+          "groups"
+        ]
+      }
+    },
+    "/v1/groups/{id}/members": {
+      "post": {
+        "operationId": "addGroupMember",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MemberNameDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupMemberDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "GROUP_MEMBER_DUPLICATE or GROUP_MEMBER_LIMIT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Add a member by name",
+        "tags": [
+          "groups"
+        ]
+      }
+    },
+    "/v1/groups/{id}/members/{memberId}": {
+      "patch": {
+        "operationId": "renameGroupMember",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "memberId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MemberNameDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupMemberDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "GROUP_MEMBER_DUPLICATE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Rename a member",
+        "tags": [
+          "groups"
+        ]
+      },
+      "delete": {
+        "operationId": "removeGroupMember",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "memberId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "400": {
+            "description": "GROUP_MEMBER_SELF",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "GROUP_MEMBER_IN_USE or GROUP_MEMBER_JOINED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remove a name nobody joined as and that is in no expense or payment",
+        "tags": [
+          "groups"
+        ]
+      }
+    },
+    "/v1/groups/{id}/activity": {
+      "get": {
+        "operationId": "listGroupActivity",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupActivityListDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Expenses and payments, newest first",
+        "tags": [
+          "groups"
+        ]
+      }
+    },
+    "/v1/groups/{id}/expenses": {
+      "post": {
+        "operationId": "createGroupExpense",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveExpenseDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupActivityDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "GROUP_SPLIT_MISMATCH, GROUP_UNKNOWN_MEMBER or VALIDATION_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Add an expense: who paid and who shares it",
+        "tags": [
+          "groups"
+        ]
+      }
+    },
+    "/v1/groups/{id}/expenses/{expenseId}": {
+      "put": {
+        "operationId": "updateGroupExpense",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "expenseId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveExpenseDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupActivityDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "GROUP_EXPENSE_CHANGED: someone saved a newer version",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Replace an expense; send the version you read",
+        "tags": [
+          "groups"
+        ]
+      },
+      "delete": {
+        "operationId": "deleteGroupExpense",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "expenseId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "required": false,
+            "in": "query",
+            "description": "The version that was read; a newer one → 409",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "GROUP_EXPENSE_CHANGED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete an expense",
+        "tags": [
+          "groups"
+        ]
+      }
+    },
+    "/v1/groups/{id}/payments": {
+      "post": {
+        "operationId": "createGroupPayment",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SavePaymentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupActivityDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "GROUP_PAYMENT_SAME_MEMBER or GROUP_UNKNOWN_MEMBER",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Record that one member paid another back",
+        "tags": [
+          "groups"
+        ]
+      }
+    },
+    "/v1/groups/{id}/payments/{paymentId}": {
+      "delete": {
+        "operationId": "deleteGroupPayment",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "paymentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete a payment",
+        "tags": [
+          "groups"
+        ]
+      }
+    },
+    "/v1/groups/{id}/history": {
+      "get": {
+        "operationId": "listGroupHistory",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupHistoryListDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Who did what in the group, newest first",
+        "tags": [
+          "groups"
+        ]
+      }
+    },
+    "/v1/groups/{id}/leave": {
+      "post": {
+        "operationId": "leaveGroup",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "GROUP_OWNER_MUST_TRANSFER",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Leave a group; your name and its history stay",
+        "tags": [
+          "groups"
+        ]
+      }
+    },
+    "/v1/groups/{id}/owner": {
+      "post": {
+        "operationId": "transferGroupOwner",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferOwnerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupDetailDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "GROUP_MEMBER_NOT_JOINED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "GROUP_OWNER_ONLY",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Owner only: make someone who joined the owner",
+        "tags": [
+          "groups"
+        ]
+      }
+    },
+    "/v1/groups/{id}/members/{memberId}/link": {
+      "delete": {
+        "operationId": "removeJoinedMember",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "memberId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupDetailDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "GROUP_MEMBER_NOT_JOINED or GROUP_MEMBER_SELF",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "GROUP_OWNER_ONLY",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Owner only: remove someone who joined (their name and history stay)",
+        "tags": [
+          "groups"
+        ]
+      }
+    },
+    "/v1/groups/{id}/invite": {
+      "get": {
+        "operationId": "getGroupInvite",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InviteStateDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "The join link, if one is on",
+        "tags": [
+          "groups"
+        ]
+      },
+      "post": {
+        "operationId": "shareGroupInvite",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InviteOptionsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InviteDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "GROUP_OWNER_ONLY (reset)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "The join link, made if there is none; reset (owner only) makes a new one",
+        "tags": [
+          "groups"
+        ]
+      },
+      "delete": {
+        "operationId": "turnOffGroupInvite",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "GROUP_OWNER_ONLY",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Owner only: turn the join link off",
+        "tags": [
+          "groups"
+        ]
+      }
+    },
+    "/v1/invites/{code}": {
+      "get": {
+        "operationId": "previewInvite",
+        "parameters": [
+          {
+            "name": "code",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitePreviewDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "INVITE_NOT_FOUND: unknown, turned off, or the group is gone",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "The group a join link is for, and the names to pick from",
+        "tags": [
+          "groups"
+        ]
+      }
+    },
+    "/v1/invites/{code}/accept": {
+      "post": {
+        "operationId": "acceptInvite",
+        "parameters": [
+          {
+            "name": "code",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcceptInviteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupDetailDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "INVITE_NOT_FOUND",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "GROUP_MEMBER_ALREADY_LINKED, GROUP_MEMBER_LIMIT or GROUP_LIMIT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Join the group: claim a name, or join as a new one. Already in it: returns it.",
+        "tags": [
+          "groups"
+        ]
+      }
+    },
+    "/v1/public/invites/{code}": {
+      "get": {
+        "operationId": "previewInvitePublic",
+        "parameters": [
+          {
+            "name": "code",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicInvitePreviewDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "INVITE_NOT_FOUND",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Public: group name, icon and inviter for a join link",
+        "tags": [
+          "groups"
+        ]
+      }
+    },
     "/v1/auth/google": {
       "post": {
         "operationId": "signInWithGoogle",
@@ -2823,983 +4504,6 @@
         "summary": "Take back a contribution",
         "tags": [
           "goals"
-        ]
-      }
-    },
-    "/v1/groups": {
-      "get": {
-        "operationId": "listGroups",
-        "parameters": [
-          {
-            "name": "archived",
-            "required": false,
-            "in": "query",
-            "description": "Archived groups instead of active ones",
-            "schema": {
-              "type": "boolean"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GroupListDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "The caller's groups with their net balance in each, most recently used first",
-        "tags": [
-          "groups"
-        ]
-      },
-      "post": {
-        "operationId": "createGroup",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateGroupDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GroupDetailDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "GROUP_LIMIT or GROUP_MEMBER_DUPLICATE",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Create a group; the caller joins as \"You\"",
-        "tags": [
-          "groups"
-        ]
-      }
-    },
-    "/v1/groups/{id}": {
-      "get": {
-        "operationId": "getGroup",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GroupDetailDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "A group with members, balances and who pays whom",
-        "tags": [
-          "groups"
-        ]
-      },
-      "patch": {
-        "operationId": "updateGroup",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateGroupDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GroupDetailDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "GROUP_LIMIT when restoring",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Rename, archive or restore a group",
-        "tags": [
-          "groups"
-        ]
-      },
-      "delete": {
-        "operationId": "deleteGroup",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": ""
-          },
-          "401": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Delete a group with its members, expenses and payments",
-        "tags": [
-          "groups"
-        ]
-      }
-    },
-    "/v1/groups/{id}/members": {
-      "post": {
-        "operationId": "addGroupMember",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/MemberNameDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GroupMemberDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "GROUP_MEMBER_DUPLICATE or GROUP_MEMBER_LIMIT",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Add a member by name",
-        "tags": [
-          "groups"
-        ]
-      }
-    },
-    "/v1/groups/{id}/members/{memberId}": {
-      "patch": {
-        "operationId": "renameGroupMember",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "memberId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/MemberNameDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GroupMemberDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "GROUP_MEMBER_SELF",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "GROUP_MEMBER_DUPLICATE",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Rename a member",
-        "tags": [
-          "groups"
-        ]
-      },
-      "delete": {
-        "operationId": "removeGroupMember",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "memberId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": ""
-          },
-          "400": {
-            "description": "GROUP_MEMBER_SELF",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "GROUP_MEMBER_IN_USE",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Remove a member who is in no expense or payment",
-        "tags": [
-          "groups"
-        ]
-      }
-    },
-    "/v1/groups/{id}/activity": {
-      "get": {
-        "operationId": "listGroupActivity",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "cursor",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "maximum": 100,
-              "default": 50,
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GroupActivityListDto"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Expenses and payments, newest first",
-        "tags": [
-          "groups"
-        ]
-      }
-    },
-    "/v1/groups/{id}/expenses": {
-      "post": {
-        "operationId": "createGroupExpense",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SaveExpenseDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GroupActivityDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "GROUP_SPLIT_MISMATCH, GROUP_UNKNOWN_MEMBER or VALIDATION_FAILED",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Add an expense: who paid and who shares it",
-        "tags": [
-          "groups"
-        ]
-      }
-    },
-    "/v1/groups/{id}/expenses/{expenseId}": {
-      "put": {
-        "operationId": "updateGroupExpense",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "expenseId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SaveExpenseDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GroupActivityDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Replace an expense",
-        "tags": [
-          "groups"
-        ]
-      },
-      "delete": {
-        "operationId": "deleteGroupExpense",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "expenseId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": ""
-          },
-          "401": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Delete an expense",
-        "tags": [
-          "groups"
-        ]
-      }
-    },
-    "/v1/groups/{id}/payments": {
-      "post": {
-        "operationId": "createGroupPayment",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SavePaymentDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GroupActivityDto"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "GROUP_PAYMENT_SAME_MEMBER or GROUP_UNKNOWN_MEMBER",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Record that one member paid another back",
-        "tags": [
-          "groups"
-        ]
-      }
-    },
-    "/v1/groups/{id}/payments/{paymentId}": {
-      "delete": {
-        "operationId": "deleteGroupPayment",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "paymentId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": ""
-          },
-          "401": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Delete a payment",
-        "tags": [
-          "groups"
         ]
       }
     },
@@ -5384,6 +6088,708 @@
           "password"
         ]
       },
+      "GroupSummaryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "example": "Goa trip"
+          },
+          "emoji": {
+            "type": "string",
+            "nullable": true,
+            "example": "🏖️"
+          },
+          "memberCount": {
+            "type": "number"
+          },
+          "myNetPaise": {
+            "type": "number",
+            "description": "The caller's net balance in the group"
+          },
+          "archived": {
+            "type": "boolean",
+            "description": "Archived by the caller"
+          },
+          "rev": {
+            "type": "number",
+            "description": "Changes with every write to the group"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "emoji",
+          "memberCount",
+          "myNetPaise",
+          "archived",
+          "rev"
+        ]
+      },
+      "GroupListDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GroupSummaryDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "CreateGroupDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Goa trip"
+          },
+          "emoji": {
+            "type": "string",
+            "example": "🏖️"
+          },
+          "myName": {
+            "type": "string",
+            "example": "Asha",
+            "description": "Defaults to \"Me\""
+          },
+          "members": {
+            "example": [
+              "Ravi",
+              "Priya",
+              "Arjun"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "GroupMemberDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "example": "Ravi"
+          },
+          "isSelf": {
+            "type": "boolean",
+            "description": "This member is the caller, shown as \"You\""
+          },
+          "joined": {
+            "type": "boolean",
+            "description": "Linked to an Altus user who joined"
+          },
+          "isOwner": {
+            "type": "boolean",
+            "description": "Owns the group"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "isSelf",
+          "joined",
+          "isOwner"
+        ]
+      },
+      "GroupBalanceDto": {
+        "type": "object",
+        "properties": {
+          "memberId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "netPaise": {
+            "type": "number",
+            "description": "Positive: gets money back. Negative: owes."
+          }
+        },
+        "required": [
+          "memberId",
+          "netPaise"
+        ]
+      },
+      "GroupTransferDto": {
+        "type": "object",
+        "properties": {
+          "fromId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "toId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "amountPaise": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "fromId",
+          "toId",
+          "amountPaise"
+        ]
+      },
+      "GroupDetailDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "emoji": {
+            "type": "string",
+            "nullable": true
+          },
+          "archived": {
+            "type": "boolean",
+            "description": "Archived by the caller"
+          },
+          "rev": {
+            "type": "number",
+            "description": "Changes with every write to the group"
+          },
+          "myMemberId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The caller's member"
+          },
+          "isOwner": {
+            "type": "boolean",
+            "description": "The caller owns the group"
+          },
+          "members": {
+            "description": "In member order",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GroupMemberDto"
+            }
+          },
+          "balances": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GroupBalanceDto"
+            }
+          },
+          "transfers": {
+            "description": "Fewest payments that settle everyone",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GroupTransferDto"
+            }
+          },
+          "settled": {
+            "type": "boolean"
+          },
+          "totalSpentPaise": {
+            "type": "number"
+          },
+          "mySharePaise": {
+            "type": "number"
+          },
+          "myNetPaise": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "emoji",
+          "archived",
+          "rev",
+          "myMemberId",
+          "isOwner",
+          "members",
+          "balances",
+          "transfers",
+          "settled",
+          "totalSpentPaise",
+          "mySharePaise",
+          "myNetPaise"
+        ]
+      },
+      "UpdateGroupDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Goa trip"
+          },
+          "emoji": {
+            "type": "string",
+            "example": "🏖️"
+          },
+          "archived": {
+            "type": "boolean",
+            "description": "Archive to hide it from your own list, or bring it back. Only affects you."
+          }
+        }
+      },
+      "MemberNameDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Ravi"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "GroupActivityKind": {
+        "type": "string",
+        "enum": [
+          "expense",
+          "payment"
+        ]
+      },
+      "GroupSplitMode": {
+        "type": "string",
+        "enum": [
+          "equal",
+          "exact"
+        ],
+        "description": "Expense only"
+      },
+      "GroupShareDto": {
+        "type": "object",
+        "properties": {
+          "memberId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sharePaise": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "memberId",
+          "sharePaise"
+        ]
+      },
+      "GroupActivityDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GroupActivityKind"
+              }
+            ]
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "day": {
+            "type": "string",
+            "example": "2026-11-20"
+          },
+          "amountPaise": {
+            "type": "number"
+          },
+          "description": {
+            "type": "string",
+            "description": "Expense only"
+          },
+          "paidById": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Expense only"
+          },
+          "splitMode": {
+            "description": "Expense only",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GroupSplitMode"
+              }
+            ]
+          },
+          "shares": {
+            "description": "Expense only",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GroupShareDto"
+            }
+          },
+          "version": {
+            "type": "number",
+            "description": "Expense only: send it back when editing"
+          },
+          "fromId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Payment only"
+          },
+          "toId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Payment only"
+          }
+        },
+        "required": [
+          "kind",
+          "id",
+          "day",
+          "amountPaise"
+        ]
+      },
+      "GroupActivityListDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GroupActivityDto"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
+        ]
+      },
+      "ShareInputDto": {
+        "type": "object",
+        "properties": {
+          "memberId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sharePaise": {
+            "type": "number",
+            "example": 60000,
+            "description": "Integer paise"
+          }
+        },
+        "required": [
+          "memberId",
+          "sharePaise"
+        ]
+      },
+      "SaveExpenseDto": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string",
+            "example": "Dinner at Fisherman's Wharf"
+          },
+          "amountPaise": {
+            "type": "number",
+            "example": 360000,
+            "description": "Integer paise"
+          },
+          "day": {
+            "type": "string",
+            "example": "2026-11-20",
+            "description": "IST day, not in the future"
+          },
+          "paidById": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "splitMode": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GroupSplitMode"
+              }
+            ]
+          },
+          "memberIds": {
+            "description": "Equal split: who shares it",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "shares": {
+            "description": "Exact split: each member’s amount",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShareInputDto"
+            }
+          },
+          "clientRequestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "number",
+            "example": 1
+          }
+        },
+        "required": [
+          "description",
+          "amountPaise",
+          "day",
+          "paidById",
+          "splitMode"
+        ]
+      },
+      "SavePaymentDto": {
+        "type": "object",
+        "properties": {
+          "fromId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "toId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "amountPaise": {
+            "type": "number",
+            "example": 255000,
+            "description": "Integer paise"
+          },
+          "day": {
+            "type": "string",
+            "example": "2026-11-20",
+            "description": "IST day, not in the future"
+          },
+          "clientRequestId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Makes a retry return the first result"
+          }
+        },
+        "required": [
+          "fromId",
+          "toId",
+          "amountPaise",
+          "day"
+        ]
+      },
+      "GroupHistoryItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "type": "string",
+            "example": "expense.updated"
+          },
+          "actorName": {
+            "type": "string",
+            "nullable": true,
+            "description": "Who did it, by their name in the group"
+          },
+          "actorIsSelf": {
+            "type": "boolean",
+            "description": "The caller did it (shown as \"You\")"
+          },
+          "text": {
+            "type": "string",
+            "example": "changed Dinner from ₹3,600 to ₹3,200"
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "actorName",
+          "actorIsSelf",
+          "text",
+          "createdAt"
+        ]
+      },
+      "GroupHistoryListDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GroupHistoryItemDto"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
+        ]
+      },
+      "TransferOwnerDto": {
+        "type": "object",
+        "properties": {
+          "memberId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "A joined member"
+          }
+        },
+        "required": [
+          "memberId"
+        ]
+      },
+      "InviteDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "K7Q2M9XP4R"
+          },
+          "displayCode": {
+            "type": "string",
+            "example": "K7Q2-M9XP4R"
+          },
+          "url": {
+            "type": "string",
+            "example": "http://15.252.181.82/altus/j/K7Q2M9XP4R"
+          }
+        },
+        "required": [
+          "code",
+          "displayCode",
+          "url"
+        ]
+      },
+      "InviteStateDto": {
+        "type": "object",
+        "properties": {
+          "active": {
+            "type": "boolean",
+            "description": "A link is on"
+          },
+          "invite": {
+            "$ref": "#/components/schemas/InviteDto"
+          }
+        },
+        "required": [
+          "active"
+        ]
+      },
+      "InviteOptionsDto": {
+        "type": "object",
+        "properties": {
+          "reset": {
+            "type": "boolean",
+            "description": "Turn the current link off and make a new one (owner only)"
+          }
+        }
+      },
+      "InviteMemberDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "joined": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "joined"
+        ]
+      },
+      "InvitePreviewDto": {
+        "type": "object",
+        "properties": {
+          "groupId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "groupName": {
+            "type": "string"
+          },
+          "emoji": {
+            "type": "string",
+            "nullable": true
+          },
+          "invitedBy": {
+            "type": "string",
+            "description": "The owner's name in the group"
+          },
+          "members": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InviteMemberDto"
+            }
+          },
+          "alreadyMember": {
+            "type": "boolean",
+            "description": "The caller is already in the group"
+          }
+        },
+        "required": [
+          "groupId",
+          "groupName",
+          "emoji",
+          "invitedBy",
+          "members",
+          "alreadyMember"
+        ]
+      },
+      "AcceptInviteDto": {
+        "type": "object",
+        "properties": {
+          "memberId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "example": "Ravi"
+          }
+        }
+      },
+      "PublicInvitePreviewDto": {
+        "type": "object",
+        "properties": {
+          "groupName": {
+            "type": "string"
+          },
+          "emoji": {
+            "type": "string",
+            "nullable": true
+          },
+          "invitedBy": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "groupName",
+          "emoji",
+          "invitedBy"
+        ]
+      },
       "GoogleSignInDto": {
         "type": "object",
         "properties": {
@@ -6425,447 +7831,6 @@
           "newMilestones"
         ]
       },
-      "GroupSummaryDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "name": {
-            "type": "string",
-            "example": "Goa trip"
-          },
-          "emoji": {
-            "type": "string",
-            "nullable": true,
-            "example": "🏖️"
-          },
-          "memberCount": {
-            "type": "number"
-          },
-          "myNetPaise": {
-            "type": "number",
-            "description": "The owner's net balance in the group"
-          },
-          "archived": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "emoji",
-          "memberCount",
-          "myNetPaise",
-          "archived"
-        ]
-      },
-      "GroupListDto": {
-        "type": "object",
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/GroupSummaryDto"
-            }
-          }
-        },
-        "required": [
-          "items"
-        ]
-      },
-      "CreateGroupDto": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "example": "Goa trip"
-          },
-          "emoji": {
-            "type": "string",
-            "example": "🏖️"
-          },
-          "members": {
-            "example": [
-              "Ravi",
-              "Priya",
-              "Arjun"
-            ],
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "required": [
-          "name"
-        ]
-      },
-      "GroupMemberDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "name": {
-            "type": "string",
-            "example": "Ravi"
-          },
-          "isSelf": {
-            "type": "boolean",
-            "description": "The owner, shown as \"You\""
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "isSelf"
-        ]
-      },
-      "GroupBalanceDto": {
-        "type": "object",
-        "properties": {
-          "memberId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "netPaise": {
-            "type": "number",
-            "description": "Positive: gets money back. Negative: owes."
-          }
-        },
-        "required": [
-          "memberId",
-          "netPaise"
-        ]
-      },
-      "GroupTransferDto": {
-        "type": "object",
-        "properties": {
-          "fromId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "toId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "amountPaise": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "fromId",
-          "toId",
-          "amountPaise"
-        ]
-      },
-      "GroupDetailDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "name": {
-            "type": "string"
-          },
-          "emoji": {
-            "type": "string",
-            "nullable": true
-          },
-          "archived": {
-            "type": "boolean"
-          },
-          "members": {
-            "description": "In member order; \"You\" first",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/GroupMemberDto"
-            }
-          },
-          "balances": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/GroupBalanceDto"
-            }
-          },
-          "transfers": {
-            "description": "Fewest payments that settle everyone",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/GroupTransferDto"
-            }
-          },
-          "settled": {
-            "type": "boolean"
-          },
-          "totalSpentPaise": {
-            "type": "number"
-          },
-          "mySharePaise": {
-            "type": "number"
-          },
-          "myNetPaise": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "emoji",
-          "archived",
-          "members",
-          "balances",
-          "transfers",
-          "settled",
-          "totalSpentPaise",
-          "mySharePaise",
-          "myNetPaise"
-        ]
-      },
-      "UpdateGroupDto": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "example": "Goa trip"
-          },
-          "emoji": {
-            "type": "string",
-            "example": "🏖️"
-          },
-          "archived": {
-            "type": "boolean",
-            "description": "Archive to hide it from the list, or bring it back"
-          }
-        }
-      },
-      "MemberNameDto": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "example": "Ravi"
-          }
-        },
-        "required": [
-          "name"
-        ]
-      },
-      "GroupActivityKind": {
-        "type": "string",
-        "enum": [
-          "expense",
-          "payment"
-        ]
-      },
-      "GroupSplitMode": {
-        "type": "string",
-        "enum": [
-          "equal",
-          "exact"
-        ],
-        "description": "Expense only"
-      },
-      "GroupShareDto": {
-        "type": "object",
-        "properties": {
-          "memberId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "sharePaise": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "memberId",
-          "sharePaise"
-        ]
-      },
-      "GroupActivityDto": {
-        "type": "object",
-        "properties": {
-          "kind": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/GroupActivityKind"
-              }
-            ]
-          },
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "day": {
-            "type": "string",
-            "example": "2026-11-20"
-          },
-          "amountPaise": {
-            "type": "number"
-          },
-          "description": {
-            "type": "string",
-            "description": "Expense only"
-          },
-          "paidById": {
-            "type": "string",
-            "format": "uuid",
-            "description": "Expense only"
-          },
-          "splitMode": {
-            "description": "Expense only",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/GroupSplitMode"
-              }
-            ]
-          },
-          "shares": {
-            "description": "Expense only",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/GroupShareDto"
-            }
-          },
-          "fromId": {
-            "type": "string",
-            "format": "uuid",
-            "description": "Payment only"
-          },
-          "toId": {
-            "type": "string",
-            "format": "uuid",
-            "description": "Payment only"
-          }
-        },
-        "required": [
-          "kind",
-          "id",
-          "day",
-          "amountPaise"
-        ]
-      },
-      "GroupActivityListDto": {
-        "type": "object",
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/GroupActivityDto"
-            }
-          },
-          "nextCursor": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "required": [
-          "items",
-          "nextCursor"
-        ]
-      },
-      "ShareInputDto": {
-        "type": "object",
-        "properties": {
-          "memberId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "sharePaise": {
-            "type": "number",
-            "example": 60000,
-            "description": "Integer paise"
-          }
-        },
-        "required": [
-          "memberId",
-          "sharePaise"
-        ]
-      },
-      "SaveExpenseDto": {
-        "type": "object",
-        "properties": {
-          "description": {
-            "type": "string",
-            "example": "Dinner at Fisherman's Wharf"
-          },
-          "amountPaise": {
-            "type": "number",
-            "example": 360000,
-            "description": "Integer paise"
-          },
-          "day": {
-            "type": "string",
-            "example": "2026-11-20",
-            "description": "IST day, not in the future"
-          },
-          "paidById": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "splitMode": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/GroupSplitMode"
-              }
-            ]
-          },
-          "memberIds": {
-            "description": "Equal split: who shares it",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "shares": {
-            "description": "Exact split: each member’s amount",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ShareInputDto"
-            }
-          }
-        },
-        "required": [
-          "description",
-          "amountPaise",
-          "day",
-          "paidById",
-          "splitMode"
-        ]
-      },
-      "SavePaymentDto": {
-        "type": "object",
-        "properties": {
-          "fromId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "toId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "amountPaise": {
-            "type": "number",
-            "example": 255000,
-            "description": "Integer paise"
-          },
-          "day": {
-            "type": "string",
-            "example": "2026-11-20",
-            "description": "IST day, not in the future"
-          }
-        },
-        "required": [
-          "fromId",
-          "toId",
-          "amountPaise",
-          "day"
-        ]
-      },
       "BudgetState": {
         "type": "string",
         "enum": [
@@ -7196,7 +8161,11 @@
           "streak_milestone",
           "streak_at_risk",
           "goal_milestone",
-          "badge_unlocked"
+          "badge_unlocked",
+          "group_joined",
+          "group_expense",
+          "group_payment",
+          "group_deleted"
         ]
       },
       "NotificationDto": {
@@ -7273,7 +8242,8 @@
         "enum": [
           "daily",
           "alerts",
-          "rewards"
+          "rewards",
+          "groups"
         ]
       },
       "NotificationSettingDto": {

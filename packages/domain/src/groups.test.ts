@@ -107,3 +107,41 @@ describe('memberNameKey', () => {
     expect(memberNameKey('  Ravi   Kumar ')).toBe('ravi kumar');
   });
 });
+
+describe('sharing helpers', () => {
+  const { formatInviteCode, groupEventText, inviteCodeFrom, normalizeInviteCode, uniqueMemberName } = jest.requireActual('./groups') as typeof import('./groups');
+
+  it('makes 10-character Crockford codes from random bytes', () => {
+    const code = inviteCodeFrom([0xff, 0x00, 0xab, 0x12, 0x9c, 0x44, 0x7e]);
+    expect(code).toMatch(/^[0-9A-HJKMNP-TV-Z]{10}$/);
+    expect(inviteCodeFrom([0, 0, 0, 0, 0, 0, 0])).toBe('0000000000');
+    expect(() => inviteCodeFrom([1, 2, 3])).toThrow(RangeError);
+  });
+
+  it('reads codes the way people type or paste them', () => {
+    expect(normalizeInviteCode('k7q2-m9xp4r')).toBe('K7Q2M9XP4R');
+    expect(normalizeInviteCode(' K7Q2 M9XP4R ')).toBe('K7Q2M9XP4R');
+    expect(normalizeInviteCode('http://15.252.181.82/altus/j/K7Q2M9XP4R')).toBe('K7Q2M9XP4R');
+    expect(normalizeInviteCode('altus://j/k7q2m9xp4r')).toBe('K7Q2M9XP4R');
+    expect(normalizeInviteCode('OIL0000000')).toBe('0110000000');
+    expect(normalizeInviteCode('SHORT')).toBeNull();
+    expect(normalizeInviteCode('K7Q2M9XP4U')).toBeNull();
+    expect(formatInviteCode('K7Q2M9XP4R')).toBe('K7Q2-M9XP4R');
+  });
+
+  it('finds a free name for someone joining', () => {
+    expect(uniqueMemberName(['You', 'Priya'], 'Ravi')).toBe('Ravi');
+    expect(uniqueMemberName(['Ravi', 'ravi 2'], ' Ravi ')).toBe('Ravi 3');
+    expect(uniqueMemberName([], '   ')).toBe('Member');
+    expect(uniqueMemberName(['A'.repeat(30)], 'A'.repeat(30))).toHaveLength(30);
+  });
+
+  it('words history rows without the actor', () => {
+    expect(groupEventText('expense.created', { description: 'Dinner', amountPaise: 360_000 })).toBe('added Dinner · ₹3,600');
+    expect(groupEventText('expense.updated', { description: 'Dinner', amountPaise: 320_000, before: { amountPaise: 360_000 } })).toBe(
+      'changed Dinner from ₹3,600 to ₹3,200',
+    );
+    expect(groupEventText('member.joined', { name: 'Ravi', claimed: true })).toBe('joined as Ravi');
+    expect(groupEventText('payment.created', { from: 'Arjun', to: 'Asha', amountPaise: 3334 })).toBe('recorded Arjun paid Asha ₹33.34');
+  });
+});

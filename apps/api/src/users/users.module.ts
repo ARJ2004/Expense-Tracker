@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AccountsModule } from '../accounts';
 import { CategoriesModule } from '../categories';
+import { GroupsModule } from '../groups';
 import { ImportsModule } from '../imports';
 import { IngestModule } from '../ingest';
 import { UsersController } from './users.controller';
@@ -11,7 +12,7 @@ import { UsersService } from './users.service';
  * modules that own a user's data so account deletion asks each to purge its own tables.
  */
 @Module({
-  imports: [IngestModule, ImportsModule, CategoriesModule, AccountsModule],
+  imports: [IngestModule, ImportsModule, CategoriesModule, AccountsModule, GroupsModule],
   controllers: [UsersController],
   providers: [UsersService],
   exports: [UsersService],
