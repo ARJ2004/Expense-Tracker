@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SignInScreen, useSession } from '../features/auth';
+import { useJoinLinkCapture } from '../features/groups';
 import { OnboardingNavigator } from '../features/onboarding';
 import { useTheme } from '../theme';
 import { EmptyState, Logo, Screen } from '../ui';
@@ -44,6 +45,8 @@ export function RootNavigator() {
   const onLaunched = useCallback(() => setLaunched(true), []);
   const status = useSession((s) => s.status);
   const boot = useSession((s) => s.boot);
+  // Join links can arrive signed out; the code waits until the main app can open it.
+  useJoinLinkCapture();
 
   useEffect(() => {
     boot();

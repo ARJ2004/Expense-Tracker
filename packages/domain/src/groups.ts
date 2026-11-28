@@ -1,3 +1,5 @@
+import { formatINR } from './money';
+
 /**
  * Groups and shared expenses: members are names, an expense has one payer and is shared by some
  * members, and payments settle debts between members. Balances and "who pays whom" are worked
@@ -121,4 +123,135 @@ export function simplifyDebts(balances: ReadonlyMap<string, number>): Transfer[]
     left.set(creditor, (left.get(creditor) ?? 0) - amountPaise);
   }
   return transfers;
+}
+
+// ---- Sharing (F13) ----
+
+/** Crockford base32: no I, L, O or U, so a code read aloud or typed by hand survives. */
+const CROCKFORD = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+export const INVITE_CODE_LENGTH = 10;
+
+/** A join code from random bytes: 10 Crockford characters, 50 bits. `bytes` needs ≥ 7 values. */
+export function inviteCodeFrom(bytes: ArrayLike<number>): string {
+  let bits = 0;
+  let value = 0;
+  let out = '';
+  for (let i = 0; i < bytes.length && out.length < INVITE_CODE_LENGTH; i++) {
+    value = (value << 8) | ((bytes[i] ?? 0) & 0xff);
+    bits += 8;
+    while (bits >= 5 && out.length < INVITE_CODE_LENGTH) {
+      out += CROCKFORD[(value >>> (bits - 5)) & 31];
+      bits -= 5;
+    }
+    value &= (1 << bits) - 1;
+  }
+  if (out.length < INVITE_CODE_LENGTH) throw new RangeError('Not enough random bytes for a join code');
+  return out;
+}
+
+/**
+ * A code as someone typed or pasted it ("k7q2-m9xp4r", "K7Q2 M9XP4R", a whole link) → "K7Q2M9XP4R",
+ * or null when it can't be one. O reads as 0 and I/L as 1, as Crockford intends.
+ */
+export function normalizeInviteCode(input: string): string | null {
+  const fromLink = /\/j\/([^/?#\s]+)/i.exec(input)?.[1] ?? input;
+  const code = fromLink.toUpperCase().replace(/[\s-]/g, '').replace(/O/g, '0').replace(/[IL]/g, '1');
+  return code.length === INVITE_CODE_LENGTH && [...code].every((c) => CROCKFORD.includes(c)) ? code : null;
+}
+
+/** "K7Q2M9XP4R" → "K7Q2-M9XP4R", for reading aloud. */
+export function formatInviteCode(code: string): string {
+  return `${code.slice(0, 4)}-${code.slice(4)}`;
+}
+
+/**
+ * A name for someone joining that no member has yet: "Ravi", else "Ravi 2", "Ravi 3"… Trimmed to
+ * the member name limit.
+ */
+export function uniqueMemberName(taken: readonly string[], wanted: string): string {
+  const keys = new Set(taken.map(memberNameKey));
+  const base = (wanted.trim().replace(/\s+/g, ' ') || 'Member').slice(0, GROUP_LIMITS.memberNameLength.max);
+  if (!keys.has(memberNameKey(base))) return base;
+  for (let n = 2; ; n++) {
+    const suffix = ` ${n}`;
+    const name = base.slice(0, GROUP_LIMITS.memberNameLength.max - suffix.length) + suffix;
+    if (!keys.has(memberNameKey(name))) return name;
+  }
+}
+
+export const GROUP_EVENT_TYPES = [
+  'group.created',
+  'group.renamed',
+  'member.added',
+  'member.renamed',
+  'member.removed',
+  'member.joined',
+  'member.left',
+  'member.unlinked',
+  'owner.changed',
+  'invite.reset',
+  'expense.created',
+  'expense.updated',
+  'expense.deleted',
+  'payment.created',
+  'payment.deleted',
+] as const;
+export type GroupEventType = (typeof GROUP_EVENT_TYPES)[number];
+
+/** Display values a history row keeps; never anything from anyone's personal data. */
+export interface GroupEventSummary {
+  name?: string;
+  from?: string;
+  to?: string;
+  description?: string;
+  amountPaise?: number;
+  before?: { description?: string; amountPaise?: number };
+  claimed?: boolean;
+}
+
+const inr = (paise: number | undefined) => formatINR(Math.abs(paise ?? 0), { decimals: 'auto' });
+
+/**
+ * What happened, without the actor (the app puts "You" or the member's name in front):
+ * "added Dinner · ₹3,600", "changed Dinner from ₹3,600 to ₹3,200", "joined as Ravi".
+ */
+export function groupEventText(type: GroupEventType, s: GroupEventSummary): string {
+  switch (type) {
+    case 'group.created':
+      return `created the group`;
+    case 'group.renamed':
+      return `renamed the group to ${s.to}`;
+    case 'member.added':
+      return `added ${s.name}`;
+    case 'member.renamed':
+      return `renamed ${s.from} to ${s.to}`;
+    case 'member.removed':
+      return `removed ${s.name}`;
+    case 'member.joined':
+      return s.claimed ? `joined as ${s.name}` : `joined the group`;
+    case 'member.left':
+      return `left the group`;
+    case 'member.unlinked':
+      return `removed ${s.name} from the group`;
+    case 'owner.changed':
+      return `made ${s.name} the owner`;
+    case 'invite.reset':
+      return `reset the invite link`;
+    case 'expense.created':
+      return `added ${s.description} · ${inr(s.amountPaise)}`;
+    case 'expense.updated': {
+      const b = s.before ?? {};
+      if (b.amountPaise !== undefined && b.amountPaise !== s.amountPaise) {
+        return `changed ${s.description} from ${inr(b.amountPaise)} to ${inr(s.amountPaise)}`;
+      }
+      if (b.description && b.description !== s.description) return `renamed ${b.description} to ${s.description}`;
+      return `edited ${s.description}`;
+    }
+    case 'expense.deleted':
+      return `deleted ${s.description} · ${inr(s.amountPaise)}`;
+    case 'payment.created':
+      return `recorded ${s.from} paid ${s.to} ${inr(s.amountPaise)}`;
+    case 'payment.deleted':
+      return `deleted the payment ${s.from} → ${s.to} ${inr(s.amountPaise)}`;
+  }
 }

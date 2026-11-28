@@ -97,3 +97,9 @@ export function byDay<T extends { day: string }>(items: readonly T[]): { day: st
   }
   return days;
 }
+
+/** The name someone goes by in a group they make or join: their first name, else their email's start. */
+export function myGroupName(user: { name: string | null; email: string } | null | undefined): string {
+  const raw = user?.name?.trim() || user?.email?.split('@')[0] || 'Me';
+  return (raw.split(/\s+/)[0] ?? raw).slice(0, 30);
+}

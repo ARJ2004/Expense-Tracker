@@ -13,7 +13,7 @@ async function runAndRecordOwners(): Promise<string[]> {
       return Promise.resolve();
     },
   });
-  const owners: PurgeOwners = { imports: owner('imports'), ledger: owner('ledger'), categories: owner('categories'), accounts: owner('accounts') };
+  const owners: PurgeOwners = { groups: owner('groups'), imports: owner('imports'), ledger: owner('ledger'), categories: owner('categories'), accounts: owner('accounts') };
   await purgeOwnedData(owners, tx, 'user-1');
   return called;
 }
@@ -28,6 +28,10 @@ describe('purge-order', () => {
     const owners = await runAndRecordOwners();
     expect(owners.indexOf('imports')).toBeLessThan(owners.indexOf('ledger'));
     expect(owners.indexOf('imports')).toBeLessThan(owners.indexOf('categories'));
+  });
+
+  it('purges groups first: shared groups are handed on before the user row goes (RESTRICT owner key)', async () => {
+    expect((await runAndRecordOwners())[0]).toBe('groups');
   });
 
   it('asks every owning module exactly once, in PURGE_ORDER', async () => {

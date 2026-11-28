@@ -112,3 +112,50 @@ export function badgeUnlocked(code: BadgeCode): NotificationDraft {
     data: { screen: 'Rewards' },
   };
 }
+
+// ---- Groups (F13). Data opens the group; dedup keys are the row the push is about. ----
+
+export function groupJoined(groupId: string, groupName: string, memberName: string): NotificationDraft {
+  return {
+    type: 'group_joined',
+    dedupKey: `group_joined:${groupId}:${memberName}`,
+    title: `${memberName} joined ${groupName}`,
+    body: 'They can now see and add expenses in the group',
+    data: { screen: 'Group', id: groupId },
+  };
+}
+
+export function groupExpense(groupId: string, groupName: string, expenseId: string, actorName: string, description: string, amountPaise: number, sharePaise: number): NotificationDraft {
+  return {
+    type: 'group_expense',
+    dedupKey: `group_expense:${expenseId}`,
+    title: `${actorName} added ${description} · ${inrExact(amountPaise)}`,
+    body: `${groupName} · your share is ${inrExact(sharePaise)}`,
+    data: { screen: 'Group', id: groupId },
+  };
+}
+
+export function groupPayment(groupId: string, groupName: string, paymentId: string, fromName: string, amountPaise: number): NotificationDraft {
+  return {
+    type: 'group_payment',
+    dedupKey: `group_payment:${paymentId}`,
+    title: `${fromName} paid you ${inrExact(amountPaise)}`,
+    body: `Recorded in ${groupName}`,
+    data: { screen: 'Group', id: groupId },
+  };
+}
+
+export function groupDeleted(groupId: string, groupName: string): NotificationDraft {
+  return {
+    type: 'group_deleted',
+    dedupKey: `group_deleted:${groupId}`,
+    title: `${groupName} was deleted`,
+    body: 'The owner deleted the group and everything in it',
+    data: { screen: 'Groups' },
+  };
+}
+
+/** Group amounts keep their paise ("₹33.34"): people settle up to the paisa. */
+function inrExact(paise: number): string {
+  return formatINR(Math.abs(paise), { decimals: 'auto' });
+}

@@ -1,14 +1,25 @@
 import React, { useState } from 'react';
 import { Alert, StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { GroupDetail } from '@et/api-client';
+import type { GroupDetail, GroupMember } from '@et/api-client';
 import { GROUP_LIMITS, memberNameKey } from '@et/domain';
 import { MerchantAvatar } from '../../../components';
 import { errorMessage, type MainStackParamList } from '../../../lib';
 import { space } from '../../../theme';
 import { Button, Card, ChipGroup, IconButton, SectionLabel, Screen, Tag, Text, TextField, TopBar } from '../../../ui';
-import { useAddMember, useCreateGroup, useDeleteGroup, useGroup, useRemoveMember, useUpdateGroup } from '../hooks';
-import { GROUP_EMOJI } from '../labels';
+import { useSession } from '../../auth';
+import {
+  useAddMember,
+  useCreateGroup,
+  useDeleteGroup,
+  useGroup,
+  useLeaveGroup,
+  useRemoveJoined,
+  useRemoveMember,
+  useTransferOwner,
+  useUpdateGroup,
+} from '../hooks';
+import { GROUP_EMOJI, myGroupName } from '../labels';
 
 type Props = NativeStackScreenProps<MainStackParamList, 'GroupForm'>;
 type Nav = Props['navigation'];
@@ -16,7 +27,7 @@ type Nav = Props['navigation'];
 const EMOJI_CHIPS = GROUP_EMOJI.map((e) => ({ value: e, label: e }));
 const TONES = ['soft', 'amber', 'teal'] as const;
 
-/** New group, or edit one: name, icon and members by name. Editing also archives or deletes. */
+/** New group, or edit one: name, icon and members. Editing also archives, leaves or deletes. */
 export function GroupFormScreen({ navigation, route }: Props) {
   const id = route.params?.id;
   return id ? <EditGroup id={id} navigation={navigation} /> : <NewGroup navigation={navigation} />;
@@ -35,15 +46,28 @@ function NameAndIcon({ name, setName, emoji, setEmoji, autoFocus }: { name: stri
   );
 }
 
-/** One member line: avatar, name, and either "Always included" (You) or a remove button. */
-function MemberLine({ name, isSelf, index, onRemove, last }: { name: string; isSelf: boolean; index: number; onRemove?: () => void; last: boolean }) {
+interface MemberLineProps {
+  name: string;
+  isSelf: boolean;
+  index: number;
+  tags?: string[];
+  /** The trailing button: remove a name, or open the owner's options for someone who joined. */
+  action?: { icon: 'close' | 'settings'; label: string; onPress: () => void };
+  last: boolean;
+}
+
+/** One member line: avatar, name, tags ("You", "Owner", "Joined") and an optional button. */
+function MemberLine({ name, isSelf, index, tags = [], action, last }: MemberLineProps) {
   return (
     <View style={[styles.member, !last && styles.gap]}>
       <MerchantAvatar name={isSelf ? 'You' : name} tone={isSelf ? 'navy' : TONES[index % TONES.length]} />
       <Text variant="bodyStrong" style={styles.flex} numberOfLines={1}>
-        {isSelf ? 'You' : name}
+        {isSelf ? `${name} (you)` : name}
       </Text>
-      {isSelf ? <Tag tone="neutral" label="Always included" /> : onRemove && <IconButton icon="close" accessibilityLabel={`Remove ${name}`} onPress={onRemove} />}
+      {tags.map((t) => (
+        <Tag key={t} tone="neutral" label={t} />
+      ))}
+      {action && <IconButton icon={action.icon} accessibilityLabel={action.label} onPress={action.onPress} />}
     </View>
   );
 }
@@ -68,12 +92,14 @@ function AddMemberField({ onAdd, busy }: { onAdd: (name: string) => boolean | vo
 
 function NewGroup({ navigation }: { navigation: Nav }) {
   const create = useCreateGroup();
+  const user = useSession((s) => s.user);
+  const myName = myGroupName(user);
   const [name, setName] = useState('');
   const [emoji, setEmoji] = useState<string | null>(GROUP_EMOJI[0]);
   const [members, setMembers] = useState<string[]>([]);
 
   const addMember = (n: string) => {
-    const keys = ['you', ...members.map(memberNameKey)];
+    const keys = [memberNameKey(myName), ...members.map(memberNameKey)];
     if (keys.includes(memberNameKey(n))) {
       Alert.alert('Already in the group', `Someone here is already called ${n}.`);
       return false;
@@ -83,7 +109,7 @@ function NewGroup({ navigation }: { navigation: Nav }) {
   };
   const save = () =>
     create.mutate(
-      { name: name.trim(), members, ...(emoji ? { emoji } : {}) },
+      { name: name.trim(), myName, members, ...(emoji ? { emoji } : {}) },
       {
         onSuccess: (g) => navigation.replace('GroupDetail', { id: g.id }),
         onError: (e) => Alert.alert('Not created', errorMessage(e)),
@@ -96,12 +122,22 @@ function NewGroup({ navigation }: { navigation: Nav }) {
       <NameAndIcon name={name} setName={setName} emoji={emoji} setEmoji={setEmoji} autoFocus />
       <SectionLabel label={`Members · ${members.length + 1}`} />
       <Card>
-        <MemberLine name="You" isSelf index={0} last={members.length === 0} />
+        <MemberLine name={myName} isSelf index={0} tags={['Owner']} last={members.length === 0} />
         {members.map((m, i) => (
-          <MemberLine key={m} name={m} isSelf={false} index={i} onRemove={() => setMembers(members.filter((x) => x !== m))} last={i === members.length - 1} />
+          <MemberLine
+            key={m}
+            name={m}
+            isSelf={false}
+            index={i}
+            action={{ icon: 'close', label: `Remove ${m}`, onPress: () => setMembers(members.filter((x) => x !== m)) }}
+            last={i === members.length - 1}
+          />
         ))}
       </Card>
       <AddMemberField onAdd={addMember} />
+      <Text variant="secondary" tone="muted">
+        Add people by name now. After creating the group you can share a link so they can join and see it on their phones.
+      </Text>
     </Screen>
   );
 }
@@ -126,29 +162,54 @@ function EditGroup({ id, navigation }: { id: string; navigation: Nav }) {
 function EditGroupForm({ group, navigation }: { group: GroupDetail; navigation: Nav }) {
   const update = useUpdateGroup(group.id);
   const remove = useDeleteGroup(group.id);
+  const leave = useLeaveGroup(group.id);
   const addMember = useAddMember(group.id);
   const removeMember = useRemoveMember(group.id);
+  const removeJoined = useRemoveJoined(group.id);
+  const transfer = useTransferOwner(group.id);
   const [name, setName] = useState(group.name);
   const [emoji, setEmoji] = useState<string | null>(group.emoji);
   const others = group.members.filter((m) => !m.isSelf);
+  const failed = (title: string) => (e: unknown) => Alert.alert(title, errorMessage(e));
 
-  const save = () =>
-    update.mutate(
-      { name: name.trim(), ...(emoji ? { emoji } : {}) },
-      { onSuccess: () => navigation.goBack(), onError: (e) => Alert.alert('Not saved', errorMessage(e)) },
-    );
-  const add = (n: string) => addMember.mutate(n, { onError: (e) => Alert.alert('Not added', errorMessage(e)) });
-  const drop = (memberId: string) => removeMember.mutate(memberId, { onError: (e) => Alert.alert('Can’t remove them', errorMessage(e)) });
-  const archive = () =>
-    update.mutate({ archived: !group.archived }, { onSuccess: () => navigation.navigate('Groups'), onError: (e) => Alert.alert('Not changed', errorMessage(e)) });
-  const confirmDelete = () =>
-    Alert.alert(`Delete ${group.name}?`, 'Its members, expenses and payments are removed. This can’t be undone.', [
+  const save = () => update.mutate({ name: name.trim(), ...(emoji ? { emoji } : {}) }, { onSuccess: () => navigation.goBack(), onError: failed('Not saved') });
+  const add = (n: string) => addMember.mutate(n, { onError: failed('Not added') });
+  const ownerOptions = (m: GroupMember) =>
+    Alert.alert(m.name, 'They joined this group on Altus.', [
       { text: 'Cancel', style: 'cancel' },
       {
-        text: 'Delete',
-        style: 'destructive',
-        onPress: () => remove.mutate(undefined, { onSuccess: () => navigation.navigate('Groups'), onError: (e) => Alert.alert('Not deleted', errorMessage(e)) }),
+        text: 'Make owner',
+        onPress: () =>
+          Alert.alert(`Make ${m.name} the owner?`, 'They can then reset the link, remove people and delete the group. You stay in the group.', [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Make owner', onPress: () => transfer.mutate(m.id, { onError: failed('Not changed') }) },
+          ]),
       },
+      {
+        text: 'Remove from group',
+        style: 'destructive',
+        onPress: () =>
+          Alert.alert(`Remove ${m.name}?`, 'They stop seeing this group. Their name, expenses and payments stay, so nobody’s balance changes.', [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Remove', style: 'destructive', onPress: () => removeJoined.mutate(m.id, { onError: failed('Not removed') }) },
+          ]),
+      },
+    ]);
+  const action = (m: GroupMember): MemberLineProps['action'] => {
+    if (m.isSelf) return undefined;
+    if (!m.joined) return { icon: 'close', label: `Remove ${m.name}`, onPress: () => removeMember.mutate(m.id, { onError: failed('Can’t remove them') }) };
+    return group.isOwner ? { icon: 'settings', label: `Options for ${m.name}`, onPress: () => ownerOptions(m) } : undefined;
+  };
+  const archive = () => update.mutate({ archived: !group.archived }, { onSuccess: () => navigation.navigate('Groups'), onError: failed('Not changed') });
+  const confirmLeave = () =>
+    Alert.alert(`Leave ${group.name}?`, 'You stop seeing this group. Your name and what you paid stay, so nobody’s balance changes.', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Leave', style: 'destructive', onPress: () => leave.mutate(undefined, { onSuccess: () => navigation.navigate('Groups'), onError: failed('Couldn’t leave') }) },
+    ]);
+  const confirmDelete = () =>
+    Alert.alert(`Delete ${group.name}?`, 'It’s removed for everyone in it, with its expenses and payments. This can’t be undone.', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Delete', style: 'destructive', onPress: () => remove.mutate(undefined, { onSuccess: () => navigation.navigate('Groups'), onError: failed('Not deleted') }) },
     ]);
 
   return (
@@ -158,21 +219,40 @@ function EditGroupForm({ group, navigation }: { group: GroupDetail; navigation: 
       <SectionLabel label={`Members · ${group.members.length}`} />
       <Card>
         {group.members.map((m, i) => (
-          <MemberLine key={m.id} name={m.name} isSelf={m.isSelf} index={others.indexOf(m)} onRemove={() => drop(m.id)} last={i === group.members.length - 1} />
+          <MemberLine
+            key={m.id}
+            name={m.name}
+            isSelf={m.isSelf}
+            index={others.indexOf(m)}
+            tags={m.isOwner ? ['Owner'] : m.joined && !m.isSelf ? ['Joined'] : []}
+            action={action(m)}
+            last={i === group.members.length - 1}
+          />
         ))}
       </Card>
       <AddMemberField onAdd={add} busy={addMember.isPending} />
       <Text variant="secondary" tone="muted">
-        Someone who is part of an expense or payment can’t be removed until it’s edited or deleted.
+        Anyone in the group can add names and edit expenses. A name that is part of an expense or payment can’t be removed until that’s edited or deleted.
       </Text>
       <Button block variant="secondary" label={group.archived ? 'Bring back group' : 'Archive group'} onPress={archive} />
       <Text variant="secondary" tone="muted">
-        {group.archived ? 'Puts it back in your active groups.' : 'Hides it from your groups. Balances and history are kept.'}
+        {group.archived ? 'Puts it back in your active groups.' : 'Hides it from your groups only. Everyone else still sees it.'}
       </Text>
-      <Button block variant="danger" label="Delete group" loading={remove.isPending} onPress={confirmDelete} />
-      <Text variant="secondary" tone="muted">
-        Removes the group with everything in it.
-      </Text>
+      {group.isOwner ? (
+        <>
+          <Button block variant="danger" label="Delete group" loading={remove.isPending} onPress={confirmDelete} />
+          <Text variant="secondary" tone="muted">
+            Removes the group with everything in it, for everyone. To leave instead, make someone else the owner first.
+          </Text>
+        </>
+      ) : (
+        <>
+          <Button block variant="danger" label="Leave group" loading={leave.isPending} onPress={confirmLeave} />
+          <Text variant="secondary" tone="muted">
+            You can join again with the group’s link.
+          </Text>
+        </>
+      )}
     </Screen>
   );
 }

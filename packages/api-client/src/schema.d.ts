@@ -283,6 +283,302 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/groups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Groups the caller is in, with their net balance in each, most recently used first */
+        get: operations["listGroups"];
+        put?: never;
+        /** Create a group; the caller is its first member and owner */
+        post: operations["createGroup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/groups/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** A group with members, balances and who pays whom */
+        get: operations["getGroup"];
+        put?: never;
+        post?: never;
+        /** Owner only: delete a group with its members, expenses and payments, for everyone */
+        delete: operations["deleteGroup"];
+        options?: never;
+        head?: never;
+        /** Rename the group (for everyone), or archive / restore it (for the caller only) */
+        patch: operations["updateGroup"];
+        trace?: never;
+    };
+    "/v1/groups/{id}/members": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add a member by name */
+        post: operations["addGroupMember"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/groups/{id}/members/{memberId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove a name nobody joined as and that is in no expense or payment */
+        delete: operations["removeGroupMember"];
+        options?: never;
+        head?: never;
+        /** Rename a member */
+        patch: operations["renameGroupMember"];
+        trace?: never;
+    };
+    "/v1/groups/{id}/activity": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Expenses and payments, newest first */
+        get: operations["listGroupActivity"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/groups/{id}/expenses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add an expense: who paid and who shares it */
+        post: operations["createGroupExpense"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/groups/{id}/expenses/{expenseId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Replace an expense; send the version you read */
+        put: operations["updateGroupExpense"];
+        post?: never;
+        /** Delete an expense */
+        delete: operations["deleteGroupExpense"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/groups/{id}/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Record that one member paid another back */
+        post: operations["createGroupPayment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/groups/{id}/payments/{paymentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete a payment */
+        delete: operations["deleteGroupPayment"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/groups/{id}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Who did what in the group, newest first */
+        get: operations["listGroupHistory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/groups/{id}/leave": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Leave a group; your name and its history stay */
+        post: operations["leaveGroup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/groups/{id}/owner": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Owner only: make someone who joined the owner */
+        post: operations["transferGroupOwner"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/groups/{id}/members/{memberId}/link": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Owner only: remove someone who joined (their name and history stay) */
+        delete: operations["removeJoinedMember"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/groups/{id}/invite": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The join link, if one is on */
+        get: operations["getGroupInvite"];
+        put?: never;
+        /** The join link, made if there is none; reset (owner only) makes a new one */
+        post: operations["shareGroupInvite"];
+        /** Owner only: turn the join link off */
+        delete: operations["turnOffGroupInvite"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/invites/{code}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The group a join link is for, and the names to pick from */
+        get: operations["previewInvite"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/invites/{code}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Join the group: claim a name, or join as a new one. Already in it: returns it. */
+        post: operations["acceptInvite"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/public/invites/{code}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Public: group name, icon and inviter for a join link */
+        get: operations["previewInvitePublic"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/auth/google": {
         parameters: {
             query?: never;
@@ -522,164 +818,6 @@ export interface paths {
         post?: never;
         /** Take back a contribution */
         delete: operations["removeGoalContribution"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/groups": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** The caller's groups with their net balance in each, most recently used first */
-        get: operations["listGroups"];
-        put?: never;
-        /** Create a group; the caller joins as "You" */
-        post: operations["createGroup"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/groups/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** A group with members, balances and who pays whom */
-        get: operations["getGroup"];
-        put?: never;
-        post?: never;
-        /** Delete a group with its members, expenses and payments */
-        delete: operations["deleteGroup"];
-        options?: never;
-        head?: never;
-        /** Rename, archive or restore a group */
-        patch: operations["updateGroup"];
-        trace?: never;
-    };
-    "/v1/groups/{id}/members": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Add a member by name */
-        post: operations["addGroupMember"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/groups/{id}/members/{memberId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /** Remove a member who is in no expense or payment */
-        delete: operations["removeGroupMember"];
-        options?: never;
-        head?: never;
-        /** Rename a member */
-        patch: operations["renameGroupMember"];
-        trace?: never;
-    };
-    "/v1/groups/{id}/activity": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Expenses and payments, newest first */
-        get: operations["listGroupActivity"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/groups/{id}/expenses": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Add an expense: who paid and who shares it */
-        post: operations["createGroupExpense"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/groups/{id}/expenses/{expenseId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Replace an expense */
-        put: operations["updateGroupExpense"];
-        post?: never;
-        /** Delete an expense */
-        delete: operations["deleteGroupExpense"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/groups/{id}/payments": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Record that one member paid another back */
-        post: operations["createGroupPayment"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/groups/{id}/payments/{paymentId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /** Delete a payment */
-        delete: operations["deleteGroupPayment"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1214,6 +1352,277 @@ export interface components {
             /** @description The statement PDF's password. Used once to open the file; never stored or logged. */
             password: string;
         };
+        GroupSummaryDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example Goa trip */
+            name: string;
+            /** @example 🏖️ */
+            emoji: string | null;
+            memberCount: number;
+            /** @description The caller's net balance in the group */
+            myNetPaise: number;
+            /** @description Archived by the caller */
+            archived: boolean;
+            /** @description Changes with every write to the group */
+            rev: number;
+        };
+        GroupListDto: {
+            items: components["schemas"]["GroupSummaryDto"][];
+        };
+        CreateGroupDto: {
+            /** @example Goa trip */
+            name: string;
+            /** @example 🏖️ */
+            emoji?: string;
+            /**
+             * @description Defaults to "Me"
+             * @example Asha
+             */
+            myName?: string;
+            /**
+             * @example [
+             *       "Ravi",
+             *       "Priya",
+             *       "Arjun"
+             *     ]
+             */
+            members?: string[];
+        };
+        GroupMemberDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example Ravi */
+            name: string;
+            /** @description This member is the caller, shown as "You" */
+            isSelf: boolean;
+            /** @description Linked to an Altus user who joined */
+            joined: boolean;
+            /** @description Owns the group */
+            isOwner: boolean;
+        };
+        GroupBalanceDto: {
+            /** Format: uuid */
+            memberId: string;
+            /** @description Positive: gets money back. Negative: owes. */
+            netPaise: number;
+        };
+        GroupTransferDto: {
+            /** Format: uuid */
+            fromId: string;
+            /** Format: uuid */
+            toId: string;
+            amountPaise: number;
+        };
+        GroupDetailDto: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            emoji: string | null;
+            /** @description Archived by the caller */
+            archived: boolean;
+            /** @description Changes with every write to the group */
+            rev: number;
+            /**
+             * Format: uuid
+             * @description The caller's member
+             */
+            myMemberId: string;
+            /** @description The caller owns the group */
+            isOwner: boolean;
+            /** @description In member order */
+            members: components["schemas"]["GroupMemberDto"][];
+            balances: components["schemas"]["GroupBalanceDto"][];
+            /** @description Fewest payments that settle everyone */
+            transfers: components["schemas"]["GroupTransferDto"][];
+            settled: boolean;
+            totalSpentPaise: number;
+            mySharePaise: number;
+            myNetPaise: number;
+        };
+        UpdateGroupDto: {
+            /** @example Goa trip */
+            name?: string;
+            /** @example 🏖️ */
+            emoji?: string;
+            /** @description Archive to hide it from your own list, or bring it back. Only affects you. */
+            archived?: boolean;
+        };
+        MemberNameDto: {
+            /** @example Ravi */
+            name: string;
+        };
+        /** @enum {string} */
+        GroupActivityKind: "expense" | "payment";
+        /**
+         * @description Expense only
+         * @enum {string}
+         */
+        GroupSplitMode: "equal" | "exact";
+        GroupShareDto: {
+            /** Format: uuid */
+            memberId: string;
+            sharePaise: number;
+        };
+        GroupActivityDto: {
+            kind: components["schemas"]["GroupActivityKind"];
+            /** Format: uuid */
+            id: string;
+            /** @example 2026-11-20 */
+            day: string;
+            amountPaise: number;
+            /** @description Expense only */
+            description?: string;
+            /**
+             * Format: uuid
+             * @description Expense only
+             */
+            paidById?: string;
+            /** @description Expense only */
+            splitMode?: components["schemas"]["GroupSplitMode"];
+            /** @description Expense only */
+            shares?: components["schemas"]["GroupShareDto"][];
+            /** @description Expense only: send it back when editing */
+            version?: number;
+            /**
+             * Format: uuid
+             * @description Payment only
+             */
+            fromId?: string;
+            /**
+             * Format: uuid
+             * @description Payment only
+             */
+            toId?: string;
+        };
+        GroupActivityListDto: {
+            items: components["schemas"]["GroupActivityDto"][];
+            nextCursor: string | null;
+        };
+        ShareInputDto: {
+            /** Format: uuid */
+            memberId: string;
+            /**
+             * @description Integer paise
+             * @example 60000
+             */
+            sharePaise: number;
+        };
+        SaveExpenseDto: {
+            /** @example Dinner at Fisherman's Wharf */
+            description: string;
+            /**
+             * @description Integer paise
+             * @example 360000
+             */
+            amountPaise: number;
+            /**
+             * @description IST day, not in the future
+             * @example 2026-11-20
+             */
+            day: string;
+            /** Format: uuid */
+            paidById: string;
+            splitMode: components["schemas"]["GroupSplitMode"];
+            /** @description Equal split: who shares it */
+            memberIds?: string[];
+            /** @description Exact split: each member’s amount */
+            shares?: components["schemas"]["ShareInputDto"][];
+            /** Format: uuid */
+            clientRequestId?: string;
+            /** @example 1 */
+            version?: number;
+        };
+        SavePaymentDto: {
+            /** Format: uuid */
+            fromId: string;
+            /** Format: uuid */
+            toId: string;
+            /**
+             * @description Integer paise
+             * @example 255000
+             */
+            amountPaise: number;
+            /**
+             * @description IST day, not in the future
+             * @example 2026-11-20
+             */
+            day: string;
+            /**
+             * Format: uuid
+             * @description Makes a retry return the first result
+             */
+            clientRequestId?: string;
+        };
+        GroupHistoryItemDto: {
+            /** Format: uuid */
+            id: string;
+            /** @example expense.updated */
+            type: string;
+            /** @description Who did it, by their name in the group */
+            actorName: string | null;
+            /** @description The caller did it (shown as "You") */
+            actorIsSelf: boolean;
+            /** @example changed Dinner from ₹3,600 to ₹3,200 */
+            text: string;
+            createdAt: string;
+        };
+        GroupHistoryListDto: {
+            items: components["schemas"]["GroupHistoryItemDto"][];
+            nextCursor: string | null;
+        };
+        TransferOwnerDto: {
+            /**
+             * Format: uuid
+             * @description A joined member
+             */
+            memberId: string;
+        };
+        InviteDto: {
+            /** @example K7Q2M9XP4R */
+            code: string;
+            /** @example K7Q2-M9XP4R */
+            displayCode: string;
+            /** @example http://15.252.181.82/altus/j/K7Q2M9XP4R */
+            url: string;
+        };
+        InviteStateDto: {
+            /** @description A link is on */
+            active: boolean;
+            invite?: components["schemas"]["InviteDto"];
+        };
+        InviteOptionsDto: {
+            /** @description Turn the current link off and make a new one (owner only) */
+            reset?: boolean;
+        };
+        InviteMemberDto: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            joined: boolean;
+        };
+        InvitePreviewDto: {
+            /** Format: uuid */
+            groupId: string;
+            groupName: string;
+            emoji: string | null;
+            /** @description The owner's name in the group */
+            invitedBy: string;
+            members: components["schemas"]["InviteMemberDto"][];
+            /** @description The caller is already in the group */
+            alreadyMember: boolean;
+        };
+        AcceptInviteDto: {
+            /** Format: uuid */
+            memberId?: string;
+            /** @example Ravi */
+            name?: string;
+        };
+        PublicInvitePreviewDto: {
+            groupName: string;
+            emoji: string | null;
+            invitedBy: string;
+        };
         GoogleSignInDto: {
             /** @description Google ID token from the app */
             idToken: string;
@@ -1598,175 +2007,6 @@ export interface components {
              */
             newMilestones: string[];
         };
-        GroupSummaryDto: {
-            /** Format: uuid */
-            id: string;
-            /** @example Goa trip */
-            name: string;
-            /** @example 🏖️ */
-            emoji: string | null;
-            memberCount: number;
-            /** @description The owner's net balance in the group */
-            myNetPaise: number;
-            archived: boolean;
-        };
-        GroupListDto: {
-            items: components["schemas"]["GroupSummaryDto"][];
-        };
-        CreateGroupDto: {
-            /** @example Goa trip */
-            name: string;
-            /** @example 🏖️ */
-            emoji?: string;
-            /**
-             * @example [
-             *       "Ravi",
-             *       "Priya",
-             *       "Arjun"
-             *     ]
-             */
-            members?: string[];
-        };
-        GroupMemberDto: {
-            /** Format: uuid */
-            id: string;
-            /** @example Ravi */
-            name: string;
-            /** @description The owner, shown as "You" */
-            isSelf: boolean;
-        };
-        GroupBalanceDto: {
-            /** Format: uuid */
-            memberId: string;
-            /** @description Positive: gets money back. Negative: owes. */
-            netPaise: number;
-        };
-        GroupTransferDto: {
-            /** Format: uuid */
-            fromId: string;
-            /** Format: uuid */
-            toId: string;
-            amountPaise: number;
-        };
-        GroupDetailDto: {
-            /** Format: uuid */
-            id: string;
-            name: string;
-            emoji: string | null;
-            archived: boolean;
-            /** @description In member order; "You" first */
-            members: components["schemas"]["GroupMemberDto"][];
-            balances: components["schemas"]["GroupBalanceDto"][];
-            /** @description Fewest payments that settle everyone */
-            transfers: components["schemas"]["GroupTransferDto"][];
-            settled: boolean;
-            totalSpentPaise: number;
-            mySharePaise: number;
-            myNetPaise: number;
-        };
-        UpdateGroupDto: {
-            /** @example Goa trip */
-            name?: string;
-            /** @example 🏖️ */
-            emoji?: string;
-            /** @description Archive to hide it from the list, or bring it back */
-            archived?: boolean;
-        };
-        MemberNameDto: {
-            /** @example Ravi */
-            name: string;
-        };
-        /** @enum {string} */
-        GroupActivityKind: "expense" | "payment";
-        /**
-         * @description Expense only
-         * @enum {string}
-         */
-        GroupSplitMode: "equal" | "exact";
-        GroupShareDto: {
-            /** Format: uuid */
-            memberId: string;
-            sharePaise: number;
-        };
-        GroupActivityDto: {
-            kind: components["schemas"]["GroupActivityKind"];
-            /** Format: uuid */
-            id: string;
-            /** @example 2026-11-20 */
-            day: string;
-            amountPaise: number;
-            /** @description Expense only */
-            description?: string;
-            /**
-             * Format: uuid
-             * @description Expense only
-             */
-            paidById?: string;
-            /** @description Expense only */
-            splitMode?: components["schemas"]["GroupSplitMode"];
-            /** @description Expense only */
-            shares?: components["schemas"]["GroupShareDto"][];
-            /**
-             * Format: uuid
-             * @description Payment only
-             */
-            fromId?: string;
-            /**
-             * Format: uuid
-             * @description Payment only
-             */
-            toId?: string;
-        };
-        GroupActivityListDto: {
-            items: components["schemas"]["GroupActivityDto"][];
-            nextCursor: string | null;
-        };
-        ShareInputDto: {
-            /** Format: uuid */
-            memberId: string;
-            /**
-             * @description Integer paise
-             * @example 60000
-             */
-            sharePaise: number;
-        };
-        SaveExpenseDto: {
-            /** @example Dinner at Fisherman's Wharf */
-            description: string;
-            /**
-             * @description Integer paise
-             * @example 360000
-             */
-            amountPaise: number;
-            /**
-             * @description IST day, not in the future
-             * @example 2026-11-20
-             */
-            day: string;
-            /** Format: uuid */
-            paidById: string;
-            splitMode: components["schemas"]["GroupSplitMode"];
-            /** @description Equal split: who shares it */
-            memberIds?: string[];
-            /** @description Exact split: each member’s amount */
-            shares?: components["schemas"]["ShareInputDto"][];
-        };
-        SavePaymentDto: {
-            /** Format: uuid */
-            fromId: string;
-            /** Format: uuid */
-            toId: string;
-            /**
-             * @description Integer paise
-             * @example 255000
-             */
-            amountPaise: number;
-            /**
-             * @description IST day, not in the future
-             * @example 2026-11-20
-             */
-            day: string;
-        };
         /**
          * @description warning from 80%, over once spend passes the budget; a fixed budget paid in full is ok
          * @enum {string}
@@ -1921,7 +2161,7 @@ export interface components {
             badges: components["schemas"]["BadgeDto"][];
         };
         /** @enum {string} */
-        NotificationType: "morning_allowance" | "daily_summary" | "weekly_recap" | "big_spend" | "over_allowance" | "budget_threshold" | "streak_milestone" | "streak_at_risk" | "goal_milestone" | "badge_unlocked";
+        NotificationType: "morning_allowance" | "daily_summary" | "weekly_recap" | "big_spend" | "over_allowance" | "budget_threshold" | "streak_milestone" | "streak_at_risk" | "goal_milestone" | "badge_unlocked" | "group_joined" | "group_expense" | "group_payment" | "group_deleted";
         NotificationDto: {
             /** Format: uuid */
             id: string;
@@ -1949,7 +2189,7 @@ export interface components {
             items: components["schemas"]["NotificationDto"][];
         };
         /** @enum {string} */
-        NotificationGroup: "daily" | "alerts" | "rewards";
+        NotificationGroup: "daily" | "alerts" | "rewards" | "groups";
         NotificationSettingDto: {
             type: components["schemas"]["NotificationType"];
             group: components["schemas"]["NotificationGroup"];
@@ -3030,6 +3270,1126 @@ export interface operations {
             };
         };
     };
+    listGroups: {
+        parameters: {
+            query?: {
+                /** @description Archived groups instead of active ones */
+                archived?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupListDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    createGroup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateGroupDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupDetailDto"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description GROUP_LIMIT or GROUP_MEMBER_DUPLICATE */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getGroup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupDetailDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    deleteGroup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description GROUP_OWNER_ONLY */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    updateGroup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateGroupDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupDetailDto"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description GROUP_LIMIT when restoring */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    addGroupMember: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MemberNameDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupMemberDto"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description GROUP_MEMBER_DUPLICATE or GROUP_MEMBER_LIMIT */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    removeGroupMember: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                memberId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description GROUP_MEMBER_SELF */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description GROUP_MEMBER_IN_USE or GROUP_MEMBER_JOINED */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    renameGroupMember: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                memberId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MemberNameDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupMemberDto"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description GROUP_MEMBER_DUPLICATE */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    listGroupActivity: {
+        parameters: {
+            query?: {
+                cursor?: string;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupActivityListDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    createGroupExpense: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveExpenseDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupActivityDto"];
+                };
+            };
+            /** @description GROUP_SPLIT_MISMATCH, GROUP_UNKNOWN_MEMBER or VALIDATION_FAILED */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    updateGroupExpense: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                expenseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveExpenseDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupActivityDto"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description GROUP_EXPENSE_CHANGED: someone saved a newer version */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    deleteGroupExpense: {
+        parameters: {
+            query?: {
+                /** @description The version that was read; a newer one → 409 */
+                version?: number;
+            };
+            header?: never;
+            path: {
+                id: string;
+                expenseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description GROUP_EXPENSE_CHANGED */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    createGroupPayment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SavePaymentDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupActivityDto"];
+                };
+            };
+            /** @description GROUP_PAYMENT_SAME_MEMBER or GROUP_UNKNOWN_MEMBER */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    deleteGroupPayment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                paymentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    listGroupHistory: {
+        parameters: {
+            query?: {
+                cursor?: string;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupHistoryListDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    leaveGroup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description GROUP_OWNER_MUST_TRANSFER */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    transferGroupOwner: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TransferOwnerDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupDetailDto"];
+                };
+            };
+            /** @description GROUP_MEMBER_NOT_JOINED */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description GROUP_OWNER_ONLY */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    removeJoinedMember: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                memberId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupDetailDto"];
+                };
+            };
+            /** @description GROUP_MEMBER_NOT_JOINED or GROUP_MEMBER_SELF */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description GROUP_OWNER_ONLY */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getGroupInvite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InviteStateDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    shareGroupInvite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InviteOptionsDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InviteDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description GROUP_OWNER_ONLY (reset) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    turnOffGroupInvite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description GROUP_OWNER_ONLY */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    previewInvite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvitePreviewDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description INVITE_NOT_FOUND: unknown, turned off, or the group is gone */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    acceptInvite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AcceptInviteDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GroupDetailDto"];
+                };
+            };
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description INVITE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description GROUP_MEMBER_ALREADY_LINKED, GROUP_MEMBER_LIMIT or GROUP_LIMIT */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    previewInvitePublic: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicInvitePreviewDto"];
+                };
+            };
+            /** @description INVITE_NOT_FOUND */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     signInWithGoogle: {
         parameters: {
             query?: never;
@@ -3872,648 +5232,6 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["GoalDto"];
                 };
-            };
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    listGroups: {
-        parameters: {
-            query?: {
-                /** @description Archived groups instead of active ones */
-                archived?: boolean;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["GroupListDto"];
-                };
-            };
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    createGroup: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateGroupDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["GroupDetailDto"];
-                };
-            };
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description GROUP_LIMIT or GROUP_MEMBER_DUPLICATE */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    getGroup: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["GroupDetailDto"];
-                };
-            };
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    deleteGroup: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    updateGroup: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateGroupDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["GroupDetailDto"];
-                };
-            };
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description GROUP_LIMIT when restoring */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    addGroupMember: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["MemberNameDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["GroupMemberDto"];
-                };
-            };
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description GROUP_MEMBER_DUPLICATE or GROUP_MEMBER_LIMIT */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    removeGroupMember: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-                memberId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description GROUP_MEMBER_SELF */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description GROUP_MEMBER_IN_USE */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    renameGroupMember: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-                memberId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["MemberNameDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["GroupMemberDto"];
-                };
-            };
-            /** @description GROUP_MEMBER_SELF */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description GROUP_MEMBER_DUPLICATE */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    listGroupActivity: {
-        parameters: {
-            query?: {
-                cursor?: string;
-                limit?: number;
-            };
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["GroupActivityListDto"];
-                };
-            };
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    createGroupExpense: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SaveExpenseDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["GroupActivityDto"];
-                };
-            };
-            /** @description GROUP_SPLIT_MISMATCH, GROUP_UNKNOWN_MEMBER or VALIDATION_FAILED */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    updateGroupExpense: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-                expenseId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SaveExpenseDto"];
-            };
-        };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["GroupActivityDto"];
-                };
-            };
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    deleteGroupExpense: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-                expenseId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    createGroupPayment: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SavePaymentDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["GroupActivityDto"];
-                };
-            };
-            /** @description GROUP_PAYMENT_SAME_MEMBER or GROUP_UNKNOWN_MEMBER */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    deleteGroupPayment: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-                paymentId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
             };
             401: {
                 headers: {

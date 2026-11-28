@@ -5,7 +5,7 @@ import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import type { GroupActivity, GroupDetail, GroupSplitMode } from '@et/api-client';
 import { GROUP_LIMITS, istDateKey, toPaise, validateExactSplit } from '@et/domain';
 import { AmountEntry, AmountKeypad, isPositiveAmount } from '../../../components';
-import { errorMessage, type MainStackParamList } from '../../../lib';
+import { ApiError, errorMessage, newUuid, type MainStackParamList } from '../../../lib';
 import { Button, ChipGroup, ListRow, Screen, Text, TextField, TopBar } from '../../../ui';
 import { sharePaise, SplitEditor } from '../components/SplitEditor';
 import { typedRupees } from '../components/SettleUpSheet';
@@ -33,13 +33,24 @@ export function GroupExpenseFormScreen({ navigation, route }: Props) {
       </Screen>
     );
   }
-  return <ExpenseForm group={group.data} editing={editing} navigation={navigation} />;
+  // A newer version from someone else remounts the form with their values.
+  return <ExpenseForm key={editing?.version ?? 'new'} group={group.data} editing={editing} navigation={navigation} onStale={() => activity.refetch()} />;
 }
 
-function ExpenseForm({ group, editing, navigation }: { group: GroupDetail; editing?: GroupActivity; navigation: Nav }) {
+interface ExpenseFormProps {
+  group: GroupDetail;
+  editing?: GroupActivity;
+  navigation: Nav;
+  /** Someone else changed or deleted it: reload. */
+  onStale: () => void;
+}
+
+function ExpenseForm({ group, editing, navigation, onStale }: ExpenseFormProps) {
   const save = useSaveExpense(group.id, editing?.id);
   const remove = useDeleteExpense(group.id);
   const today = istDateKey(new Date());
+  // One id per new expense, kept across retries, so a flaky network never adds it twice.
+  const [clientRequestId] = useState(newUuid);
   const self = group.members.find((m) => m.isSelf);
   const [description, setDescription] = useState(editing?.description ?? '');
   const [amount, setAmount] = useState(editing ? typedRupees(editing.amountPaise) : '');
@@ -76,14 +87,31 @@ function ExpenseForm({ group, editing, navigation }: { group: GroupDetail; editi
         paidById,
         splitMode: mode,
         ...(mode === 'equal' ? { memberIds: sharedBy } : { shares: exactShares }),
+        ...(editing ? { version: editing.version } : { clientRequestId }),
       },
-      { onSuccess: () => navigation.goBack(), onError: (e) => Alert.alert('Not saved', errorMessage(e)) },
+      { onSuccess: () => navigation.goBack(), onError: stale('Not saved') },
     );
+  /** 409: someone saved first; 404: someone deleted it. Never overwrite either silently. */
+  const stale = (title: string) => (e: unknown) => {
+    if (e instanceof ApiError && e.code === 'GROUP_EXPENSE_CHANGED') {
+      Alert.alert('Changed by someone else', 'Someone saved this expense just now. Their version is loaded; check it and make your change again.');
+      onStale();
+    } else if (e instanceof ApiError && e.code === 'NOT_FOUND') {
+      Alert.alert('Expense deleted', 'Someone deleted this expense.');
+      navigation.goBack();
+    } else {
+      Alert.alert(title, errorMessage(e));
+    }
+  };
   const confirmDelete = () =>
     editing &&
     Alert.alert(`Delete ${editing.description ?? 'this expense'}?`, 'Balances are worked out again without it.', [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: () => remove.mutate(editing.id, { onSuccess: () => navigation.goBack(), onError: (e) => Alert.alert('Not deleted', errorMessage(e)) }) },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: () => remove.mutate({ expenseId: editing.id, version: editing.version }, { onSuccess: () => navigation.goBack(), onError: stale('Not deleted') }),
+      },
     ]);
 
   const footer = keypad ? (

@@ -10,10 +10,14 @@ export const NOTIFICATION_TYPES = [
   'streak_at_risk',
   'goal_milestone',
   'badge_unlocked',
+  'group_joined',
+  'group_expense',
+  'group_payment',
+  'group_deleted',
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 
-export const NOTIFICATION_GROUPS = ['daily', 'alerts', 'rewards'] as const;
+export const NOTIFICATION_GROUPS = ['daily', 'alerts', 'rewards', 'groups'] as const;
 export type NotificationGroup = (typeof NOTIFICATION_GROUPS)[number];
 
 export const NOTIFICATION_INFO: Record<NotificationType, { group: NotificationGroup; label: string; description: string }> = {
@@ -27,6 +31,10 @@ export const NOTIFICATION_INFO: Record<NotificationType, { group: NotificationGr
   streak_at_risk: { group: 'rewards', label: 'Streak reminders', description: '8 pm, when a streak is close to breaking' },
   goal_milestone: { group: 'rewards', label: 'Goal milestones', description: '25%, 50%, 75% and 100% saved' },
   badge_unlocked: { group: 'rewards', label: 'Badges', description: 'When you unlock a badge' },
+  group_joined: { group: 'groups', label: 'People joining', description: 'Someone joins a group you own' },
+  group_expense: { group: 'groups', label: 'New group expenses', description: 'Someone adds an expense you share' },
+  group_payment: { group: 'groups', label: 'Payments to you', description: 'Someone records paying you back' },
+  group_deleted: { group: 'groups', label: 'Deleted groups', description: 'A group you are in is deleted' },
 };
 
 /** What a rule or notice decides to say; the service applies the user's settings and the limits. */
