@@ -1,0 +1,47 @@
+---
+import LogoMark from './LogoMark.astro';
+import Qr from './Qr.astro';
+import { footerColumns, site } from '../data/site';
+const year = new Date().getFullYear();
+---
+<footer class="site-footer">
+  <div class="wrap top">
+    <div class="about">
+      <a href="/" class="brand" aria-label="Altus home"><LogoMark size={30} /><span class="wordmark">Altus</span></a>
+      <p>{site.tagline}</p>
+      <a class="qr-card" href={site.getPath}>
+        <span class="qr"><Qr size={56} /></span>
+        <span class="qr-text"><b>Get Altus on your phone</b><span>Scan with your phone's camera</span></span>
+      </a>
+    </div>
+    <div class="cols">
+      {footerColumns.map((col) => (
+        <div class="col">
+          <h2>{col.title}</h2>
+          {col.links.map((l) => <a href={l.href}>{l.label}</a>)}
+        </div>
+      ))}
+    </div>
+  </div>
+  <div class="wrap bottom">© {year} Altus. Amounts in ₹, dates in IST.</div>
+</footer>
+
+<style>
+  .site-footer { background: #00111F; color: #EAF2F6; }
+  .top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 48px; padding-top: 72px; padding-bottom: 40px; }
+  .about { display: flex; flex-direction: column; gap: 14px; max-width: 320px; }
+  .brand { display: flex; align-items: center; gap: 10px; color: #FFFFFF; text-decoration: none; }
+  .wordmark { font-family: Montserrat, sans-serif; font-weight: 800; font-size: 20px; }
+  p { margin: 0; font-size: 14px; line-height: 1.6; color: #9DB3C2; }
+  .qr-card { display: flex; align-items: center; gap: 14px; margin-top: 8px; background: #071D30; border: 1px solid #14324B; border-radius: 18px; padding: 12px; text-decoration: none; color: #FFFFFF; }
+  .qr { background: #FFFFFF; border-radius: 8px; padding: 4px; display: flex; flex: none; }
+  .qr-text { display: flex; flex-direction: column; gap: 2px; font-size: 12px; color: #9DB3C2; }
+  .qr-text b { font-size: 14px; color: #FFFFFF; }
+  .cols { display: flex; flex-wrap: wrap; gap: 40px 64px; }
+  .col { display: flex; flex-direction: column; gap: 4px; }
+  h2 { margin: 0 0 6px; font-size: 13px; font-weight: 700; color: #FFFFFF; }
+  .col a { color: #9DB3C2; text-decoration: none; font-size: 14px; min-height: 32px; display: inline-flex; align-items: center; }
+  .col a:hover { color: #FFFFFF; }
+  .bottom { border-top: 1px solid #14324B; padding-top: 22px; padding-bottom: 28px; font-size: 13px; color: #9DB3C2; }
+  @media (max-width: 640px) { .qr-card { display: none; } }
+</style>

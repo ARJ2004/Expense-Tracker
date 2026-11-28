@@ -4,9 +4,16 @@ import { DocumentBuilder, SwaggerModule, type OpenAPIObject } from '@nestjs/swag
 import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
 import { AppError, BigIntInterceptor, ErrorFilter } from './common';
+import { parseTrustProxy } from './config/trust-proxy';
 
 /** Applies the global prefix, validation, error shape and serialization. Shared by main.ts and tests. */
 export function configureApp(app: INestApplication): INestApplication {
+  // Rate limits key on req.ip, which is only the visitor's address once the proxies in front
+  // (Nginx, and CloudFront in production) are trusted.
+  (app.getHttpAdapter().getInstance() as { set(key: string, value: unknown): void }).set(
+    'trust proxy',
+    parseTrustProxy(process.env.TRUST_PROXY),
+  );
   // Join links (/j/<code>) are web pages, outside the versioned API.
   app.setGlobalPrefix('v1', { exclude: [{ path: 'j/:code', method: RequestMethod.GET }] });
   app.useGlobalPipes(

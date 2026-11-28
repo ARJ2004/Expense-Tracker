@@ -64,11 +64,15 @@ Every query is scoped to the signed-in user, and someone else's record returns 4
 ```
 apps/api/              NestJS + Prisma API (port 4000), one module per feature
 apps/mobile/           React Native app, one folder per feature under src/features/
+apps/web/              Marketing website (Astro, static), served from S3 through CloudFront
+packages/brand/        colour, radius and spacing tokens shared by the app and the website
 packages/domain/       money (paise), IST dates, enums, NormalizedTxn — no framework code
 packages/parsers/      SMS templates and statement adapters, shared by the app and the API
 packages/api-client/   typed client generated from the API's OpenAPI spec
 packages/config/       shared TypeScript and ESLint config
 infra/backup/          database backup script and S3 lifecycle rule
+infra/web/             CloudFormation for S3 + CloudFront, and the APK publish script
+infra/nginx/           the Nginx origin block CloudFront talks to on EC2
 ```
 
 ## Design
@@ -140,3 +144,11 @@ still contains a personal phone number, an email or a full account number.
 - Bank differences live in adapters and templates, never in `if (bank === …)` branches.
 - Amounts are integer paise. No floats, anywhere.
 - Secrets, raw SMS and real statements are never committed.
+
+## Website
+
+The marketing site lives in `apps/web`: static Astro pages built from the approved design, with
+the app's own fonts and colour tokens. `pnpm --filter @et/web run dev` serves it locally. It is
+published to S3 behind CloudFront, which also gives the API and invite links an HTTPS address
+before there is a domain. Setup, deploys, rollbacks and the APK release steps are in
+[docs/deploy-web.md](docs/deploy-web.md).

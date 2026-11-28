@@ -1,0 +1,20 @@
+---
+import Base from '../layouts/Base.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+---
+<Base title="Page not found · Altus" description="This page doesn't exist." noindex>
+  <header style="background:#012A4A;color:#FFFFFF">
+    <Nav />
+    <div id="main" tabindex="-1" class="wrap" style="padding-top:64px;padding-bottom:120px;display:flex;flex-direction:column;gap:20px;align-items:flex-start">
+      <span style="font-family:'IBM Plex Mono',monospace;font-weight:600;color:#2ECC71">404</span>
+      <h1 style="margin:0;font-size:clamp(40px,5vw,64px);line-height:1.04;letter-spacing:-0.035em">This page went missing.</h1>
+      <p style="margin:0;font-size:19px;line-height:1.55;color:#CFE0EA;max-width:540px">Unlike your spends, which Altus keeps track of. Try one of these instead.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:14px">
+        <a href="/" style="background:#2ECC71;color:#012A4A;text-decoration:none;font-weight:700;font-size:16px;padding:16px 26px;border-radius:999px">Go to the home page</a>
+        <a href="/download" style="color:#FFFFFF;text-decoration:none;font-weight:600;font-size:16px;padding:16px 24px;border-radius:999px;border:1px solid #1B4C74">Download Altus</a>
+      </div>
+    </div>
+  </header>
+  <Footer />
+</Base>

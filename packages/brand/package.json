@@ -1,0 +1,19 @@
+{
+  "name": "@et/brand",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Altus colour and spacing tokens, shared by the app and the website.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "react-native": "src/index.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src"
+  },
+  "devDependencies": {
+    "@et/config": "workspace:*",
+    "eslint": "^9.17.0",
+    "typescript": "~5.7.2"
+  }
+}

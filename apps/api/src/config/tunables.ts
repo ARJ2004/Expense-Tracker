@@ -30,6 +30,8 @@ export interface Tunables {
     unlock: RateLimit;
     /** Join links: previews, joining and the web page. */
     invites: RateLimit;
+    /** POST /v1/waitlist from the website, per client IP. */
+    waitlist: RateLimit;
   };
 }
 
@@ -66,6 +68,7 @@ export function loadTunables(env: NodeJS.ProcessEnv = process.env): Tunables {
       upload: perMinute(env, 'RATE_LIMIT_UPLOAD_PER_MINUTE', 5),
       unlock: perMinute(env, 'RATE_LIMIT_UNLOCK_PER_MINUTE', 10),
       invites: perMinute(env, 'RATE_LIMIT_INVITES_PER_MINUTE', 30),
+      waitlist: perMinute(env, 'RATE_LIMIT_WAITLIST_PER_MINUTE', 5),
     },
   };
 }

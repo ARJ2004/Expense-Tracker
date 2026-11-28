@@ -1,0 +1,119 @@
+---
+// Built from the approved V3 design (Compare). Copy: content-v2/v3; see docs/deploy-web.md.
+import Base from '../layouts/Base.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import { breadcrumbs } from '../data/jsonld';
+const jsonLd = [breadcrumbs(Astro.site!, 'Compare', '/compare')];
+---
+<Base title={'How Altus Compares: Expense Trackers and Splitwise'} description={'How Altus compares with other expense trackers and Splitwise, and when another app is the better pick. For Android in India.'} jsonLd={jsonLd}>
+
+
+<header style="background:#012A4A;color:#FFFFFF;position:relative;overflow:hidden">
+  <svg aria-hidden="true" viewBox="0 0 1440 300" preserveAspectRatio="xMidYMax slice" style="position:absolute;left:0;bottom:0;width:100%;height:300px;pointer-events:none"><path d="M760 300 L1040 60 L1320 300 Z" fill="#17A2B8" opacity="0.07"></path><path d="M960 300 L1260 0 L1560 300 Z" fill="#2ECC71" opacity="0.06"></path></svg>
+  <Nav current="/compare" />
+  <div id="main" tabindex="-1" class="wrap" style="padding-top:64px;padding-bottom:96px;display:flex;flex-direction:column;gap:28px;position:relative">
+    <span class="rise" style="font-size:13px;font-weight:700;color:#2ECC71;letter-spacing:.06em;text-transform:uppercase">Compare</span>
+    <h1 class="rise d1" style="margin:0;font-size:clamp(42px,5.6vw,72px);line-height:1.03;letter-spacing:-0.035em;font-weight:700;max-width:960px">How Altus compares</h1>
+    <p class="rise d2" style="margin:0;font-size:19px;line-height:1.55;color:#CFE0EA;max-width:680px">Most people use one app to track spends and another to split with friends. Here's how Altus compares with both, and when another app is the better pick.</p>
+  </div>
+</header>
+
+<!-- ONE COMPARISON (V3.1) -->
+<section id="splitwise" class="wrap" style="padding-top:96px;display:flex;flex-direction:column;gap:16px">
+  <span id="chooser"></span>
+  <div style="overflow-x:auto;background:#FFFFFF;border:1px solid #DCE3E8;border-radius:28px">
+    <table style="width:100%;min-width:680px;border-collapse:collapse;font-size:15px;line-height:1.45">
+      <caption style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Altus compared with other expense trackers and Splitwise</caption>
+      <thead>
+        <tr>
+          <th scope="col" style="padding:22px 28px;text-align:left;font-size:13px;font-weight:600;color:#4A6378;width:34%">&nbsp;</th>
+          <th scope="col" style="padding:22px 20px;text-align:left;background:#012A4A;color:#FFFFFF;font-size:16px;width:22%"><span style="display:inline-flex;align-items:center;gap:8px"><svg width="20" height="20" viewBox="0 0 120 120" aria-hidden="true"><path d="M8 104 L46 40 L84 104 Z" fill="#17A2B8"></path><path d="M36 104 L76 18 L116 104 Z" fill="#2ECC71"></path><path d="M62 48 L76 18 L90 48 L82 42 L76 50 L70 42 Z" fill="#FFFFFF"></path></svg>Altus</span></th>
+          <th scope="col" style="padding:22px 20px;text-align:left;font-size:16px;color:#012A4A;width:22%">Expense trackers<span style="display:block;font-size:12px;font-weight:500;color:#4A6378">SMS-based or manual</span></th>
+          <th scope="col" style="padding:22px 20px;text-align:left;font-size:16px;color:#012A4A;width:22%">Splitwise<span style="display:block;font-size:12px;font-weight:500;color:#4A6378">Bill splitting</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="row"><th scope="row">Adds your spends from bank SMS</th><td class="a"><span class="yes" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg></span>Yes</td><td>Some do</td><td><span class="no" aria-hidden="true">–</span>No</td></tr>
+        <tr class="row"><th scope="row">Imports bank statements, even locked PDFs</th><td class="a"><span class="yes" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg></span>Yes</td><td>Some do</td><td><span class="no" aria-hidden="true">–</span>No</td></tr>
+        <tr class="row"><th scope="row">Shows what you can spend today</th><td class="a"><span class="yes" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg></span>Yes</td><td>Rarely</td><td><span class="no" aria-hidden="true">–</span>No</td></tr>
+        <tr class="row"><th scope="row">Budgets and savings goals</th><td class="a"><span class="yes" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg></span>Yes</td><td><span class="yes" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg></span>Usually</td><td><span class="no" aria-hidden="true">–</span>No</td></tr>
+        <tr class="row"><th scope="row">Splits bills with friends</th><td class="a"><span class="yes" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg></span>Equal or exact amounts</td><td><span class="no" aria-hidden="true">–</span>No</td><td><span class="yes" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg></span>More ways to split</td></tr>
+        <tr class="row"><th scope="row">Works on iPhone</th><td class="a muted">Not yet, waitlist open</td><td><span class="yes" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg></span>Usually</td><td><span class="yes" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg></span>Yes</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="margin:0;font-size:13px;line-height:1.5;color:#4A6378">Bank SMS reading is in the Android APK today, and comes to the Google Play version after Google's approval. Other apps' features are from their public listings as of [MONTH YEAR] [VERIFY]. Splitwise is a trademark of its owner [LEGAL CHECK].</p>
+</section>
+
+<!-- WHEN TO PICK SOMETHING ELSE -->
+<section class="wrap" style="padding-top:96px">
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:40px;align-items:start">
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <h2 style="margin:0;font-size:clamp(28px,3.2vw,40px);line-height:1.12;letter-spacing:-0.02em;font-weight:700">When another app is the better pick</h2>
+      <p style="margin:0;font-size:16px;line-height:1.6;color:#4A6378">We'd rather tell you now than after you install.</p>
+    </div>
+    <ul style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:18px;font-size:16px;line-height:1.55">
+      <li style="display:flex;gap:14px"><span style="flex:none;width:28px;height:28px;border-radius:999px;background:#FCEFD9;color:#8A5A12;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px">1</span><span><b>You use an iPhone.</b> iOS doesn't let apps read SMS, and there's no iPhone app yet.</span></li>
+      <li style="display:flex;gap:14px"><span style="flex:none;width:28px;height:28px;border-radius:999px;background:#FCEFD9;color:#8A5A12;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px">2</span><span><b>Your group needs percentages or other currencies.</b> Altus splits equally or by exact amounts, in rupees. Splitwise does more here.</span></li>
+      <li style="display:flex;gap:14px"><span style="flex:none;width:28px;height:28px;border-radius:999px;background:#FCEFD9;color:#8A5A12;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px">3</span><span><b>You want investments and net worth.</b> Altus covers spending, budgets and goals, not stocks or mutual funds.</span></li>
+    </ul>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:96px;padding-bottom:120px">
+  <div style="background:#012A4A;color:#FFFFFF;border-radius:36px;padding:clamp(32px,5vw,56px);display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:28px">
+    <div style="display:flex;flex-direction:column;gap:12px;max-width:620px"><h2 style="margin:0;font-size:clamp(28px,3.4vw,42px);line-height:1.1;letter-spacing:-0.03em;font-weight:700">Try it on your own month.</h2><p style="margin:0;font-size:17px;line-height:1.6;color:#CFE0EA">Import one statement and see. If it isn't for you, export your data and delete your account from Settings.</p></div>
+    <a class="btn-primary" href="/download#android" style="background:#2ECC71;color:#012A4A;text-decoration:none;font-weight:700;font-size:16px;padding:16px 26px;border-radius:999px;min-height:44px;box-sizing:border-box;display:inline-flex;align-items:center">Get Altus for Android</a>
+  </div>
+</section>
+
+<Footer />
+</Base>
+
+<style is:global>
+b,strong,th,h1,h2,h3,h4{font-weight:700}
+a{color:#14804A}a:hover{color:#0E5A34}
+.wrap{max-width:1200px;margin:0 auto;padding:0 32px;box-sizing:border-box}
+.navlink{color:#CFE0EA;text-decoration:none;font-weight:500;font-size:15px;padding:10px 4px;transition:color .2s}
+.navlink:hover,.navlink.on{color:#FFFFFF}
+.navlink.on{box-shadow:inset 0 -2px 0 #2ECC71}
+.btn-primary{transition:transform .2s,box-shadow .2s}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(46,204,113,.28);color:#012A4A}
+.lift{transition:transform .3s cubic-bezier(.2,.7,.2,1),box-shadow .3s}
+.lift:hover{transform:translateY(-4px);box-shadow:0 18px 40px rgba(1,42,74,.10)}
+.flink{color:#9DB3C2;text-decoration:none;font-size:14px}.flink:hover{color:#FFFFFF}
+.ct{width:100%;min-width:960px;border-collapse:collapse;font-size:15px}
+.ct th,.ct td{padding:18px 16px;text-align:center;vertical-align:middle}
+.ct th:first-child,.ct td:first-child{text-align:left;padding-left:28px}
+.ct tbody tr{border-top:1px solid #E8EEF1;transition:background .2s}
+.ct tbody tr:hover{background:#F8F9F9}
+.ct .alt{background:#F2FBF6}
+.ct tbody tr:hover .alt{background:#E3F5EA}
+.yes,.part,.no{display:inline-flex;width:26px;height:26px;border-radius:999px;align-items:center;justify-content:center;box-sizing:border-box}
+.yes{background:#2ECC71;color:#012A4A}
+.row{border-top:1px solid #E8EEF1;transition:background .2s}
+.row:hover{background:#FBFCFC}
+.row th{padding:18px 28px;text-align:left;font-weight:600;font-size:15px}
+.row td{padding:18px 20px;color:#012A4A;font-weight:500;vertical-align:middle}
+.row td.a{background:#F2FBF6;color:#0E5A34;font-weight:600}
+.row td.a.muted{color:#4A6378;font-weight:500}
+.row .yes,.row .no{width:22px;height:22px;font-size:12px;margin-right:10px;vertical-align:middle;font-weight:700}
+.part{border:2px solid #17A2B8;background:linear-gradient(90deg,#17A2B8 50%,transparent 50%)}
+.no{background:#E8EEF1;color:#4A6378;font-weight:700}
+@keyframes rise{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+.rise{animation:rise .9s cubic-bezier(.2,.7,.2,1) both}
+.d1{animation-delay:.1s}.d2{animation-delay:.2s}.d3{animation-delay:.3s}
+@keyframes pop{0%{transform:scale(0)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
+.ct .yes{animation:pop .5s cubic-bezier(.2,.7,.2,1) both .6s}
+.cat{font:inherit;text-align:left;cursor:pointer;border-radius:20px;padding:18px 20px;display:flex;flex-direction:column;gap:6px;transition:background .25s,border-color .25s,transform .25s}
+.cat:hover{transform:translateY(-2px)}
+.cat:focus-visible{outline:3px solid #17A2B8;outline-offset:2px}
+.jump{min-height:44px;display:inline-flex;align-items:center;box-sizing:border-box;color:#FFFFFF;text-decoration:none;font-size:14px;font-weight:600;padding:10px 16px;border-radius:999px;border:1px solid #1B4C74;transition:background .2s,border-color .2s}
+.jump:hover{background:rgba(46,204,113,.14);border-color:#2ECC71;color:#FFFFFF}
+.jump:focus-visible{outline:3px solid #17A2B8;outline-offset:2px}
+@media (max-width:640px){.vs-cell::before{content:attr(data-col);display:block;font-size:10px;font-weight:700;color:#4A6378;letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px;width:100%}}
+@media (max-width:640px){.wrap{padding:0 16px}}
+@media (max-width:640px){.hrow{grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important}.hrow>span:first-child{grid-column:1/-1;padding-bottom:4px !important}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>

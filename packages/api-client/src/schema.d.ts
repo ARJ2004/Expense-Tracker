@@ -978,6 +978,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/waitlist": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Public: join the iPhone waitlist from the website */
+        post: operations["joinWaitlist"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2219,6 +2236,24 @@ export interface components {
         };
         UnregisterDeviceDto: {
             token: string;
+        };
+        JoinWaitlistDto: {
+            /** @example you@example.com */
+            email: string;
+            /**
+             * @description The page the form was on
+             * @enum {string}
+             */
+            source?: "download" | "home" | "features" | "compare" | "about";
+            /** @description Leave empty */
+            website?: string;
+        };
+        WaitlistAcceptedDto: {
+            /**
+             * @example ok
+             * @enum {string}
+             */
+            status: "ok";
         };
     };
     responses: never;
@@ -5622,6 +5657,47 @@ export interface operations {
                 };
             };
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    joinWaitlist: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["JoinWaitlistDto"];
+            };
+        };
+        responses: {
+            /** @description Same answer for a new or a repeated address */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WaitlistAcceptedDto"];
+                };
+            };
+            /** @description VALIDATION_FAILED */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };

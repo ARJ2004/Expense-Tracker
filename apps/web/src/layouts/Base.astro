@@ -1,0 +1,57 @@
+---
+import '../styles/tokens.css';
+import '../styles/fonts.css';
+import '../styles/base.css';
+import { prelaunch } from '../data/site';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Open Graph title, when it differs from the page title. */
+  ogTitle?: string;
+  ogDescription?: string;
+  /** Structured data objects, each rendered as its own JSON-LD block. */
+  jsonLd?: object[];
+  noindex?: boolean;
+}
+
+const { title, description, ogTitle, ogDescription, jsonLd = [], noindex = false } = Astro.props;
+const path = Astro.url.pathname.replace(/\/index\.html$/, '/').replace(/(.)\/$/, '$1');
+const canonical = new URL(path, Astro.site).toString();
+const ogImage = new URL('/og/altus.v1.png', Astro.site).toString();
+const robots = noindex || prelaunch ? 'noindex, nofollow' : 'index, follow';
+---
+<!doctype html>
+<html lang="en-IN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="robots" content={robots} />
+    <link rel="canonical" href={canonical} />
+    <link rel="alternate" hreflang="en-IN" href={canonical} />
+    <link rel="alternate" hreflang="x-default" href={canonical} />
+    <meta name="theme-color" content="#012A4A" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="preload" href="/fonts/plus-jakarta-sans-bold.v1.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/plus-jakarta-sans-regular.v1.woff2" as="font" type="font/woff2" crossorigin />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Altus" />
+    <meta property="og:locale" content="en_IN" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:title" content={ogTitle ?? title} />
+    <meta property="og:description" content={ogDescription ?? description} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    {jsonLd.map((data) => <script type="application/ld+json" set:html={JSON.stringify(data)} />)}
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <slot />
+  </body>
+</html>

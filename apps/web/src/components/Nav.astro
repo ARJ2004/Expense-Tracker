@@ -1,0 +1,33 @@
+---
+import LogoMark from './LogoMark.astro';
+import { nav } from '../data/site';
+
+interface Props { current?: string }
+const { current } = Astro.props;
+---
+<nav class="wrap site-nav" aria-label="Main">
+  <a href="/" class="brand" aria-label="Altus home">
+    <LogoMark size={36} />
+    <span class="wordmark">Altus</span>
+  </a>
+  <div class="links">
+    {nav.map((item) => (
+      <a class:list={['navlink', { on: current === item.href }]} href={item.href} aria-current={current === item.href ? 'page' : undefined}>{item.label}</a>
+    ))}
+    <a class="btn-primary nav-cta" href="/download">Get the app</a>
+  </div>
+</nav>
+
+<style>
+  .site-nav { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding-top: 22px; padding-bottom: 22px; position: relative; z-index: 2; }
+  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: #FFFFFF; min-height: 44px; }
+  .brand:hover { color: #FFFFFF; }
+  .wordmark { font-family: Montserrat, sans-serif; font-weight: 800; font-size: 24px; letter-spacing: -0.5px; }
+  .links { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 28px; }
+  .navlink { color: #CFE0EA; text-decoration: none; font-weight: 500; font-size: 15px; padding: 10px 4px; min-height: 44px; display: inline-flex; align-items: center; transition: color .2s; }
+  .navlink:hover, .navlink.on { color: #FFFFFF; }
+  .navlink.on { box-shadow: inset 0 -2px 0 #2ECC71; }
+  .nav-cta { background: #2ECC71; color: #012A4A; text-decoration: none; font-weight: 700; font-size: 15px; padding: 12px 20px; border-radius: 999px; min-height: 44px; display: inline-flex; align-items: center; transition: transform .2s, box-shadow .2s; }
+  .nav-cta:hover { color: #012A4A; transform: translateY(-2px); box-shadow: 0 10px 24px rgba(46,204,113,.28); }
+  @media (max-width: 640px) { .links { gap: 0 16px; } .navlink { font-size: 14px; } }
+</style>

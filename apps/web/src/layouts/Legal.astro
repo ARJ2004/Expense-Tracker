@@ -1,0 +1,41 @@
+---
+import Base from './Base.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import { breadcrumbs } from '../data/jsonld';
+
+interface Props { frontmatter: { title: string; description: string; updated: string } }
+const { title, description, updated } = Astro.props.frontmatter;
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+---
+<Base title={`${title} · Altus`} description={description} jsonLd={[breadcrumbs(Astro.site!, title, path)]}>
+  <header class="legal-head">
+    <Nav />
+    <div id="main" tabindex="-1" class="wrap legal-hero">
+      <h1>{title}</h1>
+      <p>Last updated {updated}</p>
+    </div>
+  </header>
+  <main class="wrap legal-body">
+    <article class="prose"><slot /></article>
+  </main>
+  <Footer />
+</Base>
+
+<style is:global>
+  .legal-head { background: #012A4A; color: #FFFFFF; }
+  .legal-hero { padding-top: 48px; padding-bottom: 64px; }
+  .legal-hero h1 { margin: 0; font-size: clamp(36px, 5vw, 56px); line-height: 1.05; letter-spacing: -0.03em; }
+  .legal-hero p { margin: 12px 0 0; color: #9FC3D8; font-size: 15px; }
+  .legal-body { padding-top: 56px; padding-bottom: 96px; }
+  .prose { max-width: 760px; font-size: 17px; line-height: 1.7; color: #012A4A; }
+  .prose h2 { font-size: 26px; line-height: 1.2; letter-spacing: -0.02em; margin: 48px 0 12px; }
+  .prose h3 { font-size: 19px; margin: 32px 0 8px; }
+  .prose p, .prose li { color: #2B4660; }
+  .prose ul, .prose ol { padding-left: 22px; }
+  .prose li { margin: 6px 0; }
+  .prose a { color: #14804A; font-weight: 600; }
+  .prose code { font-family: 'IBM Plex Mono', monospace; font-weight: 500; background: #E8EEF1; padding: 1px 6px; border-radius: 6px; font-size: .9em; }
+  .prose blockquote { margin: 24px 0; padding: 16px 20px; background: #FCEFD9; color: #8A5A12; border-radius: 16px; }
+  .prose blockquote p { color: #8A5A12; margin: 0; }
+</style>

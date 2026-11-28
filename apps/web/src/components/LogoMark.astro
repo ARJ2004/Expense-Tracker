@@ -1,0 +1,6 @@
+---
+/** The Altus mark: a teal peak, a green peak and a white cap. Decorative unless a label is given. */
+interface Props { size?: number; label?: string }
+const { size = 36, label } = Astro.props;
+---
+<svg width={size} height={size} viewBox="0 0 120 120" role={label ? 'img' : undefined} aria-label={label} aria-hidden={label ? undefined : 'true'} focusable="false"><path d="M8 104 L46 40 L84 104 Z" fill="#17A2B8"></path><path d="M36 104 L76 18 L116 104 Z" fill="#2ECC71"></path><path d="M62 48 L76 18 L90 48 L82 42 L76 50 L70 42 Z" fill="#FFFFFF"></path></svg>

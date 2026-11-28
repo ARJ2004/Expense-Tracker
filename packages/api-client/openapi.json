@@ -5039,6 +5039,58 @@
           "notifications"
         ]
       }
+    },
+    "/v1/waitlist": {
+      "post": {
+        "operationId": "joinWaitlist",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JoinWaitlistDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Same answer for a new or a repeated address",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WaitlistAcceptedDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Public: join the iPhone waitlist from the website",
+        "tags": [
+          "waitlist"
+        ]
+      }
     }
   },
   "info": {
@@ -8346,6 +8398,49 @@
         },
         "required": [
           "token"
+        ]
+      },
+      "JoinWaitlistDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "you@example.com",
+            "maxLength": 254
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "download",
+              "home",
+              "features",
+              "compare",
+              "about"
+            ],
+            "description": "The page the form was on"
+          },
+          "website": {
+            "type": "string",
+            "description": "Leave empty"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "WaitlistAcceptedDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "ok",
+            "enum": [
+              "ok"
+            ]
+          }
+        },
+        "required": [
+          "status"
         ]
       }
     }

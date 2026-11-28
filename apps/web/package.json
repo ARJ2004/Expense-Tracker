@@ -1,0 +1,25 @@
+{
+  "name": "@et/web",
+  "version": "0.0.1",
+  "private": true,
+  "description": "The Altus marketing website: static Astro output, served from S3 through CloudFront.",
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/build-tokens.mjs && astro dev",
+    "build": "node scripts/build-tokens.mjs && astro build && node scripts/check-dist.mjs",
+    "preview": "astro preview",
+    "typecheck": "node scripts/build-tokens.mjs && astro check",
+    "lint": "node scripts/check-dist.mjs --source",
+    "release:apk": "node scripts/release-apk.mjs"
+  },
+  "dependencies": {
+    "@et/brand": "workspace:*",
+    "astro": "5.18.2"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.12",
+    "@types/qrcode": "1.5.6",
+    "qrcode": "1.5.4",
+    "typescript": "~5.7.2"
+  }
+}

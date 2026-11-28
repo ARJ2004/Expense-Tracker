@@ -47,3 +47,25 @@ jobs:
         run: |
           pnpm run api-client:generate
           git diff --exit-code packages/api-client/openapi.json packages/api-client/src/schema.d.ts
+
+  web:
+    # The marketing website (apps/web): no database needed.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Build shared packages
+        run: pnpm --filter "./packages/*" run build
+      - name: Type-check the site
+        run: pnpm --filter @et/web run typecheck
+      - name: Build the site and check it (links, JSON-LD, no third-party origins)
+        # Pre-launch: unfilled placeholders are warnings here; the deploy workflow decides.
+        run: pnpm --filter @et/web run build
+        env:
+          PUBLIC_PRELAUNCH: '1'
+          SITE_URL: ${{ vars.SITE_URL || 'https://example.cloudfront.net' }}

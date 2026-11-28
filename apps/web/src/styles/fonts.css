@@ -1,0 +1,8 @@
+/* The app's own fonts, subset (scripts/build-fonts.sh). Only these weights exist in the app. */
+@font-face { font-family: 'Plus Jakarta Sans'; font-weight: 400; font-style: normal; font-display: swap; src: url('/fonts/plus-jakarta-sans-regular.v1.woff2') format('woff2'); }
+@font-face { font-family: 'Plus Jakarta Sans'; font-weight: 500; font-style: normal; font-display: swap; src: url('/fonts/plus-jakarta-sans-medium.v1.woff2') format('woff2'); }
+@font-face { font-family: 'Plus Jakarta Sans'; font-weight: 600; font-style: normal; font-display: swap; src: url('/fonts/plus-jakarta-sans-semibold.v1.woff2') format('woff2'); }
+@font-face { font-family: 'Plus Jakarta Sans'; font-weight: 700; font-style: normal; font-display: swap; src: url('/fonts/plus-jakarta-sans-bold.v1.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Mono'; font-weight: 500; font-style: normal; font-display: swap; src: url('/fonts/ibm-plex-mono-medium.v1.woff2') format('woff2'); }
+@font-face { font-family: 'IBM Plex Mono'; font-weight: 600; font-style: normal; font-display: swap; src: url('/fonts/ibm-plex-mono-semibold.v1.woff2') format('woff2'); }
+@font-face { font-family: Montserrat; font-weight: 800; font-style: normal; font-display: block; src: url('/fonts/montserrat-extrabold.v1.woff2') format('woff2'); }

@@ -645,3 +645,16 @@ model GroupEvent {
   @@index([groupId, createdAt(sort: Desc), id(sort: Desc)])
   @@map("group_events")
 }
+
+/// iPhone waitlist from the website. Email only: no IP, user agent or referrer. Not tied to a user.
+model WaitlistEntry {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  /// Trimmed and lower-cased.
+  email     String   @unique @db.VarChar(254)
+  platform  String   @default("ios") @db.VarChar(16)
+  /// Which page the form was on ("download", "home"), nothing more.
+  source    String?  @db.VarChar(32)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@map("waitlist_entries")
+}

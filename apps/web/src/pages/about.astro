@@ -1,0 +1,154 @@
+---
+// Built from the approved V3 design (About). Copy: content-v2/v3; see docs/deploy-web.md.
+import Base from '../layouts/Base.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import { breadcrumbs } from '../data/jsonld';
+import { site } from '../data/site';
+const jsonLd = [breadcrumbs(Astro.site!, 'About', '/about')];
+---
+<Base title={'About Altus: an Expense Tracker Built for India'} description={"Why we built Altus, what we've shipped and what's next. An Android expense tracker for how India pays, with bill splitting built in."} jsonLd={jsonLd}>
+
+
+<header style="background:#012A4A;color:#FFFFFF;position:relative;overflow:hidden">
+  <Nav current="/about" />
+  <div id="main" tabindex="-1" class="wrap" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr));gap:48px;align-items:end;padding-top:64px;position:relative">
+    <div style="display:flex;flex-direction:column;gap:28px;padding-bottom:110px">
+      <span class="rise" style="font-size:13px;font-weight:700;color:#2ECC71;letter-spacing:.06em;text-transform:uppercase">About</span>
+      <h1 class="rise d1" style="margin:0;font-size:clamp(42px,5.4vw,70px);line-height:1.04;letter-spacing:-0.035em;font-weight:700">Built for how India pays</h1>
+      <p class="rise d2" style="margin:0;font-size:19px;line-height:1.6;color:#CFE0EA;max-width:540px">UPI on one app, a credit card on another, cash for the rest. Altus is an expense tracker that puts all of it in one ledger, so you can see your whole month.</p>
+    </div>
+    <svg viewBox="0 0 520 380" role="img" aria-label="Altus logo: two peaks, teal and green" style="width:100%;max-width:560px;height:auto;justify-self:end;display:block">
+      <path class="pl" d="M0 380 L170 120 L340 380 Z" fill="#17A2B8"></path>
+      <path class="pr" d="M130 380 L330 20 L530 380 Z" fill="#2ECC71"></path>
+      <path class="pr" d="M265 137 L330 20 L395 137 L360 113 L330 145 L300 113 Z" fill="#FFFFFF"></path>
+    </svg>
+  </div>
+</header>
+
+<!-- STORY -->
+<section class="wrap" style="padding-top:120px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:64px">
+  <div style="display:flex;flex-direction:column;gap:20px">
+    <span style="font-size:13px;font-weight:700;color:#14804A;letter-spacing:.06em;text-transform:uppercase">Why we started</span>
+    <p style="margin:0;font-size:clamp(26px,2.8vw,34px);line-height:1.3;letter-spacing:-0.02em;font-weight:700">"[FOUNDER QUOTE: why you started Altus, in one sentence]"</p>
+    <span style="font-size:15px;color:#4A6378">[FOUNDER NAME], [TITLE]</span>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:20px;font-size:17px;line-height:1.7;color:#4A6378">
+    <p style="margin:0">[FOUNDER STORY: the moment that started it. For example, the month you couldn't say where your salary went.] Your bank already tells you about every payment. The alerts sit in your SMS inbox, the rest is spread across UPI apps, cards and statements, and nobody adds it up.</p>
+    <p style="margin:0">So Altus does the adding up. It reads the bank SMS on your phone and the statements you download from your bank, and puts them in one ledger. A payment that appears in two places is counted once. Every amount is kept to the paisa. Then it answers the question most days come down to: how much can I spend today? A lot of a month is shared too, like rent with flatmates or a trip. So Altus splits those in groups in the same app, and keeps group entries out of your own budgets.</p>
+    <p style="margin:0">We started on Android because that's where apps can read SMS, and it's what most people in India use. [FOUNDER/TEAM LINE: who builds Altus and where, e.g. "Built by [TEAM SIZE] people in [CITY]".] An iPhone app comes next, built around statements and manual entry, since iOS doesn't allow SMS reading.</p>
+  </div>
+</section>
+
+<!-- NAME -->
+<section class="wrap" style="padding-top:110px">
+  <div style="background:#FFFFFF;border:1px solid #DCE3E8;border-radius:32px;padding:clamp(28px,4vw,56px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:40px;align-items:center">
+    <div style="display:flex;align-items:center;gap:20px">
+      <svg width="96" height="96" viewBox="0 0 120 120" aria-hidden="true"><path d="M8 104 L46 40 L84 104 Z" fill="#17A2B8"></path><path d="M36 104 L76 18 L116 104 Z" fill="#2ECC71"></path><path d="M62 48 L76 18 L90 48 L82 42 L76 50 L70 42 Z" fill="#FFFFFF"></path></svg>
+      <div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:Montserrat,sans-serif;font-weight:800;font-size:44px;letter-spacing:-1px">Altus</span><span style="font-family:'IBM Plex Mono',monospace;font-size:14px;color:#4A6378;font-weight:600">/ˈal.tus/ · Latin, "high"</span></div>
+    </div>
+    <p style="margin:0;font-size:17px;line-height:1.7;color:#4A6378">Altus is Latin for "high", which is where we'd like your savings to head. The logo is two peaks, one teal and one green, for what you spend and what you save.</p>
+  </div>
+</section>
+
+<!-- PRINCIPLES -->
+<section class="wrap" style="padding-top:110px;display:flex;flex-direction:column;gap:40px">
+  <div style="display:flex;flex-direction:column;gap:16px;max-width:680px">
+    <span style="font-size:13px;font-weight:700;color:#14804A;letter-spacing:.06em;text-transform:uppercase">What we believe</span>
+    <h2 style="margin:0;font-size:clamp(32px,3.8vw,48px);line-height:1.1;letter-spacing:-0.03em;font-weight:700">Four rules we build by</h2>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:20px">
+    <div class="lift" style="background:#012A4A;color:#FFFFFF;border-radius:28px;padding:28px;display:flex;flex-direction:column;gap:14px">
+      <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#2ECC71" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"></path></svg>
+      <h3 style="margin:0;font-size:20px;font-weight:700">Send the least we can</h3>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#CFE0EA">Messages are read on your phone, and only the fields a ledger needs leave it.</p>
+    </div>
+    <div class="lift" style="background:#FFFFFF;border:1px solid #DCE3E8;border-radius:28px;padding:28px;display:flex;flex-direction:column;gap:14px">
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:600;color:#14804A">₹0.01</span>
+      <h3 style="margin:0;font-size:20px;font-weight:700">Count every rupee once</h3>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#4A6378">One payment is one transaction, however many places it shows up. Kept to the paisa.</p>
+    </div>
+    <div class="lift" style="background:#FFFFFF;border:1px solid #DCE3E8;border-radius:28px;padding:28px;display:flex;flex-direction:column;gap:14px">
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:600;color:#0F6674">SMS → ledger</span>
+      <h3 style="margin:0;font-size:20px;font-weight:700">Read, don't make you type</h3>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#4A6378">An expense tracker works best when you don't have to fill it in.</p>
+    </div>
+    <div class="lift" style="background:#FFFFFF;border:1px solid #DCE3E8;border-radius:28px;padding:28px;display:flex;flex-direction:column;gap:14px">
+      <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#14804A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"></path></svg>
+      <h3 style="margin:0;font-size:20px;font-weight:700">Say what isn't built</h3>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#4A6378">If a feature isn't ready, we say so. Plans are marked as plans.</p>
+    </div>
+  </div>
+</section>
+
+<!-- JOURNEY -->
+<section class="wrap" style="padding-top:110px;display:flex;flex-direction:column;gap:40px">
+  <div style="display:flex;flex-direction:column;gap:16px;max-width:680px">
+    <span style="font-size:13px;font-weight:700;color:#14804A;letter-spacing:.06em;text-transform:uppercase">The journey so far</span>
+    <h2 style="margin:0;font-size:clamp(32px,3.8vw,48px);line-height:1.1;letter-spacing:-0.03em;font-weight:700">Built in the open, one piece at a time</h2>
+  </div>
+  <div style="overflow-x:auto;padding-bottom:8px">
+    <div style="display:grid;grid-template-columns:repeat(7,minmax(150px,1fr));min-width:1050px;position:relative">
+      <div aria-hidden="true" style="position:absolute;left:0;right:0;top:11px;height:2px;background:linear-gradient(90deg,#2ECC71 0 79%,#DCE3E8 79% 100%)"></div>
+      <div style="display:flex;flex-direction:column;gap:12px;padding-right:16px;position:relative"><span style="width:24px;height:24px;border-radius:999px;background:#2ECC71;border:4px solid #F8F9F9;box-sizing:border-box"></span><span style="font-size:12px;font-weight:700;color:#14804A">DONE</span><span style="font-weight:700">Foundations</span><span style="font-size:13px;color:#4A6378;line-height:1.5">The app, Google sign-in and onboarding</span></div>
+      <div style="display:flex;flex-direction:column;gap:12px;padding-right:16px;position:relative"><span style="width:24px;height:24px;border-radius:999px;background:#2ECC71;border:4px solid #F8F9F9;box-sizing:border-box"></span><span style="font-size:12px;font-weight:700;color:#14804A">DONE</span><span style="font-weight:700">The core ledger</span><span style="font-size:13px;color:#4A6378;line-height:1.5">Accounts, manual entry, categories, search, CSV and Excel statements, dashboard, export and deletion</span></div>
+      <div style="display:flex;flex-direction:column;gap:12px;padding-right:16px;position:relative"><span style="width:24px;height:24px;border-radius:999px;background:#2ECC71;border:4px solid #F8F9F9;box-sizing:border-box"></span><span style="font-size:12px;font-weight:700;color:#14804A">DONE</span><span style="font-weight:700">Automatic capture</span><span style="font-size:13px;color:#4A6378;line-height:1.5">PDF statements with password unlock, bank SMS reading and live capture</span></div>
+      <div style="display:flex;flex-direction:column;gap:12px;padding-right:16px;position:relative"><span style="width:24px;height:24px;border-radius:999px;background:#2ECC71;border:4px solid #F8F9F9;box-sizing:border-box"></span><span style="font-size:12px;font-weight:700;color:#14804A">DONE</span><span style="font-weight:700">Plan and stay informed</span><span style="font-size:13px;color:#4A6378;line-height:1.5">Budgets, daily allowance, goals, streaks, badges, notifications with quiet hours</span></div>
+      <div style="display:flex;flex-direction:column;gap:12px;padding-right:16px;position:relative"><span style="width:24px;height:24px;border-radius:999px;background:#2ECC71;border:4px solid #F8F9F9;box-sizing:border-box"></span><span style="font-size:12px;font-weight:700;color:#14804A">DONE</span><span style="font-weight:700">Split with friends</span><span style="font-size:13px;color:#4A6378;line-height:1.5">Equal or exact splits, settle up, invite links, join codes, "That's me", history and live updates</span></div>
+      <div style="display:flex;flex-direction:column;gap:12px;padding-right:16px;position:relative"><span class="pulse" style="width:24px;height:24px;border-radius:999px;background:#FFFFFF;border:4px solid #2ECC71;box-sizing:border-box"></span><span style="font-size:12px;font-weight:700;color:#0F6674">NOW · [DATE]</span><span style="font-weight:700">Google Play launch</span><span style="font-size:13px;color:#4A6378;line-height:1.5">Publishing on Play and asking Google to approve SMS reading</span></div>
+      <div style="display:flex;flex-direction:column;gap:12px;padding-right:16px;position:relative"><span style="width:24px;height:24px;border-radius:999px;background:#FFFFFF;border:4px solid #DCE3E8;box-sizing:border-box"></span><span style="font-size:12px;font-weight:700;color:#4A6378">[DATE]</span><span style="font-weight:700">Next</span><span style="font-size:13px;color:#4A6378;line-height:1.5">An iPhone app, and exploring the Account Aggregator network</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- TEAM -->
+<section class="wrap" style="padding-top:110px;display:flex;flex-direction:column;gap:40px">
+  <h2 style="margin:0;font-size:clamp(32px,3.8vw,48px);line-height:1.1;letter-spacing:-0.03em;font-weight:700">The people behind Altus</h2>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:20px">
+    <div style="background:#FFFFFF;border:1px solid #DCE3E8;border-radius:28px;padding:24px;display:flex;align-items:center;gap:16px"><div role="img" aria-label="Photo placeholder" style="width:72px;height:72px;border-radius:999px;background:#E3F5EA;color:#0E5A34;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:22px;flex:none">A</div><div style="display:flex;flex-direction:column;gap:4px"><span style="font-weight:700;font-size:17px">[NAME]</span><span style="font-size:14px;color:#4A6378">[ROLE]: [ONE LINE BIO]</span></div></div>
+    <div style="background:#FFFFFF;border:1px solid #DCE3E8;border-radius:28px;padding:24px;display:flex;align-items:center;gap:16px"><div role="img" aria-label="Photo placeholder" style="width:72px;height:72px;border-radius:999px;background:#DDF1F4;color:#0F6674;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:22px;flex:none">B</div><div style="display:flex;flex-direction:column;gap:4px"><span style="font-weight:700;font-size:17px">[NAME]</span><span style="font-size:14px;color:#4A6378">[ROLE]: [ONE LINE BIO]</span></div></div>
+    <div style="background:#F8F9F9;border:1.5px dashed #9FB2BF;border-radius:28px;padding:24px;display:flex;align-items:center;gap:16px"><div style="width:72px;height:72px;border-radius:999px;background:#FFFFFF;border:1.5px dashed #9FB2BF;display:flex;align-items:center;justify-content:center;flex:none"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#4A6378" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg></div><div style="display:flex;flex-direction:column;gap:4px"><span style="font-weight:700;font-size:17px">You?</span><span style="font-size:14px;font-weight:600;color:#4A6378">We're hiring [LINK]</span></div></div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact" class="wrap" style="padding-top:110px;padding-bottom:120px">
+  <div style="background:#012A4A;color:#FFFFFF;border-radius:36px;padding:clamp(32px,5vw,64px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:40px;align-items:center">
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <h2 style="margin:0;font-size:clamp(30px,3.6vw,46px);line-height:1.08;letter-spacing:-0.03em;font-weight:700">Say hello</h2>
+      <p style="margin:0;font-size:17px;line-height:1.6;color:#CFE0EA">Found a bank SMS Altus didn't read, or want your bank's statement supported? Tell us. Real examples help us add banks faster. Please remove account numbers before you send them.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <a href={`mailto:${site.contactEmail}`} style="display:flex;justify-content:space-between;align-items:center;background:#0A3354;border:1px solid #1B4C74;border-radius:18px;padding:18px 20px;color:#FFFFFF;text-decoration:none;font-weight:600"><span>[CONTACT EMAIL]</span><span aria-hidden="true" style="color:#2ECC71">→</span></a>
+      <a href={`mailto:${site.supportEmail}`} style="display:flex;justify-content:space-between;align-items:center;background:#0A3354;border:1px solid #1B4C74;border-radius:18px;padding:18px 20px;color:#FFFFFF;text-decoration:none;font-weight:600"><span>Support: [SUPPORT EMAIL]</span><span aria-hidden="true" style="color:#2ECC71">→</span></a>
+      <a href={`mailto:${site.pressEmail}`} style="display:flex;justify-content:space-between;align-items:center;background:#0A3354;border:1px solid #1B4C74;border-radius:18px;padding:18px 20px;color:#FFFFFF;text-decoration:none;font-weight:600"><span>Press: [PRESS EMAIL]</span><span aria-hidden="true" style="color:#2ECC71">→</span></a>
+    </div>
+  </div>
+</section>
+
+<Footer />
+</Base>
+
+<style is:global>
+b,strong,th,h1,h2,h3,h4{font-weight:700}
+a{color:#14804A}a:hover{color:#0E5A34}
+.wrap{max-width:1200px;margin:0 auto;padding:0 32px;box-sizing:border-box}
+.navlink{color:#CFE0EA;text-decoration:none;font-weight:500;font-size:15px;padding:10px 4px;transition:color .2s}
+.navlink:hover,.navlink.on{color:#FFFFFF}
+.navlink.on{box-shadow:inset 0 -2px 0 #2ECC71}
+.btn-primary{transition:transform .2s,box-shadow .2s}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(46,204,113,.28);color:#012A4A}
+.lift{transition:transform .3s cubic-bezier(.2,.7,.2,1),box-shadow .3s}
+.lift:hover{transform:translateY(-4px);box-shadow:0 18px 40px rgba(1,42,74,.10)}
+.flink{color:#9DB3C2;text-decoration:none;font-size:14px}.flink:hover{color:#FFFFFF}
+@keyframes rise{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+.rise{animation:rise .9s cubic-bezier(.2,.7,.2,1) both}
+.d1{animation-delay:.1s}.d2{animation-delay:.2s}.d3{animation-delay:.3s}
+@keyframes peakL{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+@keyframes peakR{from{transform:translateY(70px);opacity:0}to{transform:none;opacity:1}}
+.pl{animation:peakL 1.2s cubic-bezier(.2,.7,.2,1) both .3s}.pr{animation:peakR 1.4s cubic-bezier(.2,.7,.2,1) both .5s}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(46,204,113,.6)}70%{box-shadow:0 0 0 10px rgba(46,204,113,0)}100%{box-shadow:0 0 0 0 rgba(46,204,113,0)}}
+.pulse{animation:pulse 2s infinite}
+@media (max-width:640px){.wrap{padding:0 16px}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>

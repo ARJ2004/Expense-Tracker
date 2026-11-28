@@ -68,6 +68,16 @@ export class AppConfig {
   @IsOptional()
   @IsString()
   PUBLIC_WEB_BASE_URL?: string;
+
+  /**
+   * Express "trust proxy", so rate limits see the visitor's IP. "loopback" (default) trusts Nginx on
+   * the same box, which writes the single viewer IP into X-Forwarded-For (taken from CloudFront's
+   * CloudFront-Viewer-Address, see infra/nginx/altus-origin.conf). A hop count, "loopback", or a
+   * comma-separated list of addresses or subnets.
+   */
+  @IsOptional()
+  @IsString()
+  TRUST_PROXY?: string;
 }
 
 export function validateConfig(raw: Record<string, unknown>): AppConfig {

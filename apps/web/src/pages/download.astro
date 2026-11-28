@@ -1,0 +1,180 @@
+---
+// Built from the approved V3 design (Download). Copy: content-v2/v3; see docs/deploy-web.md.
+import Base from '../layouts/Base.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import Qr from '../components/Qr.astro';
+import { breadcrumbs, faqPage, softwareApplication } from '../data/jsonld';
+import { faq } from '../data/faq';
+import { apkDate, apkHref, apkSize, apkVersion } from '../data/release';
+import { site } from '../data/site';
+
+const jsonLd = [softwareApplication(Astro.site!), faqPage(), breadcrumbs(Astro.site!, 'Download', '/download')];
+const shortUrl = new URL(site.getPath, Astro.site).host + site.getPath;
+---
+<Base title={'Download Altus: Expense Tracker for Android 7.0+'} description={'Get Altus for Android 7.0 and newer to track spends and split bills. See what each permission is for, why SMS is APK-only for now, and the iPhone waitlist.'} jsonLd={jsonLd}>
+
+
+<header style="background:#012A4A;color:#FFFFFF;position:relative;overflow:hidden">
+  <svg aria-hidden="true" viewBox="0 0 1440 360" preserveAspectRatio="xMidYMax slice" style="position:absolute;left:0;bottom:0;width:100%;height:360px;pointer-events:none"><path d="M-60 360 L260 80 L580 360 Z" fill="#17A2B8" opacity="0.06"></path><path d="M900 360 L1200 40 L1500 360 Z" fill="#2ECC71" opacity="0.06"></path></svg>
+  <Nav current="/download" />
+  <div id="main" tabindex="-1" class="wrap" style="padding-top:64px;padding-bottom:160px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:24px;position:relative">
+    <span class="rise" style="font-size:13px;font-weight:700;color:#2ECC71;letter-spacing:.06em;text-transform:uppercase">Download</span>
+    <h1 class="rise d1" style="margin:0;font-size:clamp(42px,5.6vw,72px);line-height:1.03;letter-spacing:-0.035em;font-weight:700;max-width:860px">Download Altus for Android</h1>
+    <p class="rise d2" style="margin:0;font-size:19px;line-height:1.55;color:#CFE0EA;max-width:600px">Altus works on Android 7.0 and newer. There's no iPhone app yet, so join the waitlist and we'll email you once when it's ready.</p>
+  </div>
+</header>
+
+<!-- PLATFORM CARDS -->
+<section class="wrap" style="margin-top:-100px;position:relative;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr));gap:24px">
+  <!-- Android -->
+  <div id="android" style="background:#FFFFFF;border:1px solid #DCE3E8;border-radius:32px;padding:clamp(28px,3.6vw,44px);display:flex;flex-direction:column;gap:28px;box-shadow:0 30px 60px rgba(1,42,74,.10)">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:14px">
+        <span style="width:52px;height:52px;border-radius:16px;background:#E3F5EA;color:#0E5A34;display:flex;align-items:center;justify-content:center"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"></rect><path d="M11 18h2"></path></svg></span>
+        <div style="display:flex;flex-direction:column"><span style="font-size:24px;font-weight:700;letter-spacing:-0.02em">Android</span><span style="font-size:14px;color:#4A6378">Android 7.0 and newer</span></div>
+      </div>
+      <span style="font-size:12px;font-weight:700;color:#0E5A34;background:#E3F5EA;padding:6px 12px;border-radius:999px;display:inline-flex;align-items:center;gap:6px"><span style="width:7px;height:7px;border-radius:999px;background:#14804A"></span>[AVAILABILITY: Early access]</span>
+    </div>
+    <div style="display:flex;gap:28px;align-items:center;flex-wrap:wrap">
+      <div class="hide-sm" style="display:flex;flex-direction:column;align-items:center;gap:10px">
+        <div style="position:relative;width:176px;height:176px;border-radius:20px;border:1px solid #DCE3E8;padding:12px;box-sizing:border-box;background:#FFFFFF;overflow:hidden"><Qr size={150} />
+          <span class="scanline" aria-hidden="true" style="position:absolute;left:8px;right:8px;height:3px;border-radius:999px;background:#2ECC71;box-shadow:0 0 12px #2ECC71"></span>
+        </div>
+        <span style="font-size:13px;font-weight:600;color:#4A6378;text-align:center;line-height:1.5">Scan with your phone's camera,<br>or visit <b style="color:#012A4A">{shortUrl}</b></span>
+      </div>
+      <div style="flex:1;min-width:220px;display:flex;flex-direction:column;gap:12px">
+        <a class="btn-primary" href={apkHref} download style="display:flex;align-items:center;gap:14px;background:#012A4A;color:#FFFFFF;text-decoration:none;padding:14px 20px;border-radius:16px;min-height:44px">
+          <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#2ECC71" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"></path></svg>
+          <span style="display:flex;flex-direction:column;line-height:1.25"><span style="font-size:17px;font-weight:700">Download the APK</span><span style="font-size:12px;color:#9FC3D8;font-weight:600">Includes bank SMS reading · {apkSize}</span></span>
+        </a>
+        <span aria-disabled="true" style="display:flex;align-items:center;gap:12px;border:1px dashed #9FB2BF;color:#4A6378;padding:12px 18px;border-radius:16px;min-height:44px;box-sizing:border-box">
+          <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3.5v17l9-8.5z" fill="#9FB2BF"></path><path d="M4 3.5l12 7-3 2z" fill="#B8C6D0"></path><path d="M4 20.5l12-7-3-1z" fill="#C9D4DB"></path><path d="M16 10.5l4 2.3c.6.4.6 1 0 1.4l-4 2.3-3-3.5z" fill="#9FB2BF"></path></svg>
+          <span style="display:flex;flex-direction:column;line-height:1.3"><span style="font-size:15px;font-weight:700">Google Play: coming soon</span><span style="font-size:12px">Button goes live with [PLAY STORE LINK]</span></span>
+        </span>
+        <span style="font-size:12px;color:#4A6378;line-height:1.5">Your phone will ask you to allow installs from your browser or file manager. Allow it for this install, then you can turn it off again.</span>
+        <span style="font-size:12px;color:#4A6378;line-height:1.5">Version {apkVersion} · Updated {apkDate}</span>
+      </div>
+    </div>
+    <div style="background:#DDF1F4;color:#0F6674;border-radius:18px;padding:16px 18px;display:flex;gap:12px;align-items:flex-start;font-size:14px;line-height:1.6">
+      <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:2px"><circle cx="12" cy="12" r="9"></circle><path d="M12 8h.01M11 12h1v5h1"></path></svg>
+      <span><b>Bank SMS and Google Play.</b> Google checks every app that asks to read SMS. Until it approves Altus, the Google Play version won't read bank SMS; statements, cash and everything else still work. The APK on this page reads bank SMS today. [STATUS DATE]</span>
+    </div>
+    <div style="border-top:1px solid #E8EEF1;padding-top:24px;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px">
+      <div style="display:flex;flex-direction:column;gap:6px"><span style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:#14804A">STEP 1</span><span style="font-size:15px;font-weight:600">Install and sign in with your Google account</span></div>
+      <div style="display:flex;flex-direction:column;gap:6px"><span style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:#14804A">STEP 2</span><span style="font-size:15px;font-weight:600">Add your monthly income and the accounts you pay from</span></div>
+      <div style="display:flex;flex-direction:column;gap:6px"><span style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:#14804A">STEP 3</span><span style="font-size:15px;font-weight:600">Import a statement or add a spend, then turn on bank SMS in Settings, Data sources</span></div>
+    </div>
+  </div>
+
+  <!-- iOS -->
+  <div id="iphone" style="background:#00111F;color:#EAF2F6;border:1px solid #14324B;border-radius:32px;padding:clamp(28px,3.6vw,44px);display:flex;flex-direction:column;gap:28px;position:relative;overflow:hidden;box-shadow:0 30px 60px rgba(1,42,74,.18)">
+    <svg aria-hidden="true" viewBox="0 0 400 220" style="position:absolute;right:-40px;bottom:-30px;width:400px;height:220px;pointer-events:none"><path d="M20 220 L150 60 L280 220 Z" fill="#17A2B8" opacity="0.10"></path><path d="M110 220 L270 0 L430 220 Z" fill="#2ECC71" opacity="0.08"></path></svg>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;position:relative">
+      <div style="display:flex;align-items:center;gap:14px">
+        <span style="width:52px;height:52px;border-radius:16px;background:#0A3354;color:#7FD3E0;display:flex;align-items:center;justify-content:center"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"></rect><path d="M10 5h4"></path></svg></span>
+        <div style="display:flex;flex-direction:column"><span style="font-size:24px;font-weight:700;letter-spacing:-0.02em;color:#FFFFFF">iPhone</span><span style="font-size:14px;color:#9DB3C2">iOS version in the works</span></div>
+      </div>
+      <span style="font-size:12px;font-weight:700;background:#FCEFD9;padding:6px 12px;border-radius:999px"><span class="shimmer">Coming later · Waitlist open</span></span>
+    </div>
+    <p style="margin:0;font-size:17px;line-height:1.6;color:#9DB3C2;position:relative">iOS doesn't let apps read SMS, so the iPhone app can't work the same way as Android. We're building it around statements and manual entry, and we'll launch it when it's useful on its own.</p>
+    <form method="post" action="/v1/waitlist" data-waitlist style="display:flex;flex-direction:column;gap:10px;position:relative">
+        <label for="notify-email" style="font-size:14px;font-weight:600;color:#EAF2F6">Your email</label>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <input id="notify-email" name="email" type="email" required autocomplete="email" maxlength="254" placeholder="you@example.com" style="flex:1;min-width:200px;font:inherit;font-size:16px;padding:14px 16px;border-radius:14px;border:1px solid #1B4C74;background:#071D30;color:#FFFFFF;min-height:48px;box-sizing:border-box">
+          <input type="hidden" name="source" value="download">
+          <div class="hp" aria-hidden="true"><label for="website">Leave this empty</label><input id="website" name="website" type="text" tabindex="-1" autocomplete="off"></div>
+          <button class="notify" type="submit" style="font:inherit;font-size:16px;font-weight:700;padding:14px 22px;border-radius:14px;border:0;background:#2ECC71;color:#012A4A;cursor:pointer;min-height:48px">Join the waitlist</button>
+        </div>
+        <span data-waitlist-error role="alert" style="font-size:13px;color:#FF8A80" hidden></span>
+        <span style="font-size:12px;color:#9DB3C2">One email when the iPhone app is ready. No spam, and we won't share your address. <a href="/privacy#waitlist" style="color:#9FC3D8">Privacy</a></span>
+      </form>
+      <div role="status" data-waitlist-done hidden style="display:flex;align-items:center;gap:14px;background:#0D3B2A;border:1px solid #1F6B47;border-radius:18px;padding:18px;position:relative">
+        <span style="width:36px;height:36px;border-radius:999px;background:#2ECC71;color:#012A4A;display:flex;align-items:center;justify-content:center;flex:none"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"></path></svg></span>
+        <div style="display:flex;flex-direction:column;gap:2px"><span style="font-weight:700;color:#FFFFFF">You're on the list.</span><span style="font-size:14px;color:#7EE2A8">We'll email you when Altus is ready for iPhone.</span></div>
+      </div>
+    <div style="display:flex;align-items:center;gap:14px;padding:14px 18px;border:1px dashed #1B4C74;border-radius:16px;position:relative;opacity:.8">
+      <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#9DB3C2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="4"></rect><path d="M9 12h6"></path></svg>
+      <span style="font-size:14px;color:#9DB3C2">App Store button appears here at launch</span>
+    </div>
+  </div>
+</section>
+
+<div id="join" class="wrap" style="padding-top:56px">
+  <div style="display:flex;gap:16px;align-items:flex-start;background:#DDF1F4;border-radius:20px;padding:18px 22px">
+    <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#0F6674" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:2px"><path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"></path><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"></path></svg>
+    <span style="font-size:15px;line-height:1.6;color:#0F6674"><b>Got a group invite?</b> Install Altus and sign in, then tap the invite link again, or go to Settings, Groups, Join with code and enter the 10-character code. Friends on iPhone stay in the group as a name for now.</span>
+  </div>
+</div>
+
+<!-- PERMISSIONS -->
+<section id="permissions" class="wrap" style="padding-top:110px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:56px;align-items:center">
+  <div style="display:flex;flex-direction:column;gap:18px">
+    <span style="font-size:13px;font-weight:700;color:#14804A;letter-spacing:.06em;text-transform:uppercase">Before you install</span>
+    <h2 style="margin:0;font-size:clamp(30px,3.4vw,42px);line-height:1.1;letter-spacing:-0.03em;font-weight:700">What Altus asks for, and why</h2>
+    <p style="margin:0;font-size:17px;line-height:1.65;color:#4A6378">Altus asks for a permission only when you turn on the feature that needs it, and explains why first.</p>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <div style="background:#FFFFFF;border:1px solid #DCE3E8;border-radius:20px;padding:20px;display:flex;gap:16px;align-items:flex-start"><span style="width:40px;height:40px;border-radius:12px;background:#E3F5EA;color:#0E5A34;display:flex;align-items:center;justify-content:center;flex:none"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.8 7L4 20l1.1-4.6A8 8 0 1 1 21 12z"></path></svg></span><div style="display:flex;flex-direction:column;gap:4px"><span style="font-weight:700">Read SMS</span><span style="font-size:14px;line-height:1.55;color:#4A6378">Finds debit and credit alerts from banks. Each message is read on your phone; only transaction details go to your ledger. Never reads personal messages or OTPs, never sends or deletes SMS. Turn it off in Settings, Data sources. (APK only for now.)</span></div></div>
+    <div style="background:#FFFFFF;border:1px solid #DCE3E8;border-radius:20px;padding:20px;display:flex;gap:16px;align-items:flex-start"><span style="width:40px;height:40px;border-radius:12px;background:#DDF1F4;color:#0F6674;display:flex;align-items:center;justify-content:center;flex:none"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M10.3 21a2 2 0 0 0 3.4 0"></path></svg></span><div style="display:flex;flex-direction:column;gap:4px"><span style="font-weight:700">Notifications</span><span style="font-size:14px;line-height:1.55;color:#4A6378">Your morning allowance, evening summary, budget alerts, streaks and group updates. On Android 13 and newer Altus asks once, after explaining why. Nothing arrives between 10 pm and 8 am.</span></div></div>
+    <div style="background:#FFFFFF;border:1px solid #DCE3E8;border-radius:20px;padding:20px;display:flex;gap:16px;align-items:flex-start"><span style="width:40px;height:40px;border-radius:12px;background:#FCEFD9;color:#8A5A12;display:flex;align-items:center;justify-content:center;flex:none"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"></path><path d="M14 3v5h5"></path></svg></span><div style="display:flex;flex-direction:column;gap:4px"><span style="font-weight:700">Files: no permission needed</span><span style="font-size:14px;line-height:1.55;color:#4A6378">Android's own file picker opens and you choose the statement, or where to save your CSV. Altus sees only that file.</span></div></div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq" class="wrap" style="padding-top:110px;padding-bottom:120px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:56px">
+  <div style="display:flex;flex-direction:column;gap:16px">
+    <span style="font-size:13px;font-weight:700;color:#14804A;letter-spacing:.06em;text-transform:uppercase">Questions</span>
+    <h2 style="margin:0;font-size:clamp(30px,3.4vw,42px);line-height:1.1;letter-spacing:-0.03em;font-weight:700">Good to know</h2>
+    <p style="margin:0;font-size:16px;line-height:1.6;color:#4A6378">Something else? <a href="/about" style="font-weight:600">Get in touch</a>, or see <a href="/features#capture" style="font-weight:600">which banks and formats work</a>.</p>
+  </div>
+  <div style="border-top:1px solid #DCE3E8;align-self:start;grid-column:span 1;min-width:0">
+    {faq.map((f, i) => (
+      <details name="faq" class="faq-item" open={i === 0}>
+        <summary class="faq"><span>{f.q}</span><span class="faq-icon" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg></span></summary>
+        <p style="margin:0;padding:0 48px 22px 0;font-size:15px;line-height:1.65;color:#4A6378">{f.a}</p>
+      </details>
+    ))}
+  </div>
+</section>
+
+<Footer />
+<script>
+  import { initWaitlist } from '../scripts/waitlist';
+  initWaitlist();
+</script>
+</Base>
+
+<style is:global>
+b,strong,th,h1,h2,h3,h4{font-weight:700}
+a{color:#14804A}a:hover{color:#0E5A34}
+.wrap{max-width:1200px;margin:0 auto;padding:0 32px;box-sizing:border-box}
+.navlink{color:#CFE0EA;text-decoration:none;font-weight:500;font-size:15px;padding:10px 4px;transition:color .2s}
+.navlink:hover,.navlink.on{color:#FFFFFF}
+.navlink.on{box-shadow:inset 0 -2px 0 #2ECC71}
+.btn-primary{transition:transform .2s,box-shadow .2s}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(46,204,113,.28);color:#012A4A}
+.flink{color:#9DB3C2;text-decoration:none;font-size:14px}.flink:hover{color:#FFFFFF}
+.faq{width:100%;background:none;border:0;padding:22px 0;display:flex;justify-content:space-between;align-items:center;gap:16px;font:inherit;font-size:17px;font-weight:700;color:#012A4A;text-align:left;cursor:pointer}
+.faq:focus-visible,.notify:focus-visible,input:focus-visible{outline:3px solid #17A2B8;outline-offset:2px}
+.notify{transition:transform .2s}
+.notify:hover{transform:translateY(-1px)}
+@keyframes rise{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+.rise{animation:rise .9s cubic-bezier(.2,.7,.2,1) both}
+.d1{animation-delay:.1s}.d2{animation-delay:.2s}.d3{animation-delay:.3s}
+@keyframes scanline{0%{top:8px}100%{top:calc(100% - 11px)}}
+.scanline{animation:scanline 2.2s ease-in-out infinite alternate}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.floaty{animation:floaty 6s ease-in-out infinite}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+.shimmer{background:linear-gradient(90deg,#8A5A12 0%,#C98A2B 45%,#8A5A12 90%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shimmer 4s linear infinite}
+@media (max-width:640px){.wrap{padding:0 16px}.hide-sm{display:none !important}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}.shimmer{color:#8A5A12}}
+
+.faq-item{border-bottom:1px solid #DCE3E8}
+.faq{list-style:none}
+.faq::-webkit-details-marker{display:none}
+.faq-icon{flex:none;width:32px;height:32px;border-radius:999px;display:flex;align-items:center;justify-content:center;background:#E8EEF1;color:#012A4A;transition:transform .3s,background .3s}
+details[open] .faq-icon{transform:rotate(45deg);background:#012A4A;color:#2ECC71}
+.hp{position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden}
+</style>

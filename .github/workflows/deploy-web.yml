@@ -1,0 +1,93 @@
+name: Deploy website
+
+# Publishes apps/web to S3 and CloudFront after CI passes on main, or on demand (also used to roll
+# back: run it with an older commit SHA). Setup is in docs/deploy-web.md, "GitHub settings".
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: Commit to deploy (blank = latest main). Use an older SHA to roll back.
+        required: false
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: deploy-web
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      AWS_REGION: ap-south-1
+      BUCKET: ${{ vars.SITE_BUCKET }}
+      DISTRIBUTION_ID: ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}
+      KVS_ARN: ${{ vars.CLOUDFRONT_KVS_ARN }}
+      SITE_URL: ${{ vars.SITE_URL }}
+      # "1" until launch: robots Disallow, noindex, and placeholders allowed. Set to "0" to launch.
+      PUBLIC_PRELAUNCH: ${{ vars.PUBLIC_PRELAUNCH || '1' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.sha || github.event.workflow_run.head_sha || github.sha }}
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter "./packages/*" run build
+      - name: Build the site
+        run: pnpm --filter @et/web run build
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ap-south-1
+
+      - name: Upload hashed assets first (cached for a year)
+        working-directory: apps/web/dist
+        run: |
+          for d in _astro fonts og; do
+            [ -d "$d" ] && aws s3 sync "$d" "s3://$BUCKET/$d" --cache-control 'public, max-age=31536000, immutable'
+          done
+
+      - name: Upload pages and everything else (always revalidated)
+        working-directory: apps/web/dist
+        run: |
+          aws s3 sync . "s3://$BUCKET" --delete \
+            --exclude '_astro/*' --exclude 'fonts/*' --exclude 'og/*' --exclude 'apk/*' --exclude 'google*.html' \
+            --cache-control 'public, max-age=0, s-maxage=300, must-revalidate'
+          # The 404 page carries a marker the viewer-response function turns into a 404 status.
+          aws s3 cp 404.html "s3://$BUCKET/404.html" --content-type 'text/html; charset=utf-8' \
+            --cache-control 'public, max-age=0, s-maxage=300' --metadata altus-status=404
+          aws s3 cp .well-known/assetlinks.json "s3://$BUCKET/.well-known/assetlinks.json" \
+            --content-type application/json --cache-control 'public, max-age=300'
+
+      - name: Publish the page list to the edge function
+        run: |
+          ROUTES="$(node apps/web/scripts/routes.mjs apps/web/dist)"
+          echo "routes: $ROUTES"
+          ETAG="$(aws cloudfront-keyvaluestore describe-key-value-store --kvs-arn "$KVS_ARN" --query ETag --output text)"
+          aws cloudfront-keyvaluestore put-key --kvs-arn "$KVS_ARN" --if-match "$ETAG" --key routes --value "$ROUTES" > /dev/null
+
+      - name: Invalidate CloudFront
+        run: aws cloudfront create-invalidation --distribution-id "$DISTRIBUTION_ID" --paths '/*' --query Invalidation.Id --output text
+
+      - name: Smoke test
+        run: |
+          sleep 20
+          for p in / /features /compare /about /download /privacy; do
+            code="$(curl -s -o /dev/null -w '%{http_code}' "$SITE_URL$p")"; echo "$p $code"; [ "$code" = 200 ]
+          done
+          code="$(curl -s -o /dev/null -w '%{http_code}' "$SITE_URL/this-page-does-not-exist")"; echo "404 page: $code"; [ "$code" = 404 ]
+          curl -fsS "$SITE_URL/.well-known/assetlinks.json" -o /dev/null -w 'assetlinks: %{content_type}\n'
+          curl -fsS "$SITE_URL/v1/health" && echo || echo "::warning::API not reachable through CloudFront yet (see docs/deploy-web.md, EC2 origin steps)"

@@ -1,0 +1,448 @@
+---
+// Built from the approved V3 design (Main). Copy: content-v2/v3; see docs/deploy-web.md.
+import Base from '../layouts/Base.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import Qr from '../components/Qr.astro';
+import { organization, softwareApplication } from '../data/jsonld';
+
+const jsonLd = [softwareApplication(Astro.site!), organization(Astro.site!)];
+const tabs = [
+  { name: 'Capture', title: 'Spends that add themselves', alt: 'Bank SMS alert turned into a transaction in Altus', body: 'Bank SMS are added as they arrive. Statements fill in the history, and the Add sheet covers cash. Savings accounts, credit cards, wallets and cash sit side by side.' },
+  { name: 'One ledger', title: 'One list you can trust', alt: 'Altus ledger with search and filters', body: "A payment from an SMS and a statement shows once. Search by merchant or note, filter by date, amount or account, and fix a merchant's category once for all its payments." },
+  { name: 'Plan', title: 'Know what you can spend today', alt: 'Altus daily allowance card showing what you can spend today', body: 'Altus starts from your income, holds back rent, EMIs and goal savings, and spreads the rest over the days left. Budgets and savings goals sit alongside.' },
+];
+---
+<Base title={'Altus: Expense Tracker App for India, with Bill Splitting'} description={'Altus reads your bank SMS and statements, counts every payment once and shows what you can spend today. Split bills with friends in the same app. Android.'} jsonLd={jsonLd}>
+
+
+<!-- HERO -->
+<header style="background:#012A4A;color:#FFFFFF;position:relative;overflow:hidden">
+  <svg aria-hidden="true" viewBox="0 0 1440 420" preserveAspectRatio="xMidYMax slice" style="position:absolute;left:0;right:0;bottom:0;width:100%;height:420px;pointer-events:none">
+    <path d="M-40 420 L360 120 L760 420 Z" fill="#17A2B8" opacity="0.07"></path>
+    <path d="M420 420 L900 40 L1380 420 Z" fill="#2ECC71" opacity="0.06"></path>
+    <path d="M1000 420 L1300 190 L1600 420 Z" fill="#17A2B8" opacity="0.05"></path>
+  </svg>
+  <Nav current="/" />
+
+  <div id="main" tabindex="-1" class="wrap" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr));gap:56px;align-items:center;padding-top:56px;padding-bottom:120px;position:relative">
+    <div style="display:flex;flex-direction:column;gap:28px">
+      <a class="rise pill" href="/download#iphone" style="display:inline-flex;align-self:flex-start;align-items:center;gap:10px;padding:6px 6px 6px 14px;border-radius:999px;background:rgba(46,204,113,0.14);color:#BFF2D4;font-size:13px;font-weight:600;text-decoration:none;flex-wrap:wrap">
+        <span class="pulse" style="width:8px;height:8px;border-radius:999px;background:#2ECC71"></span>
+        For Android 7.0 and up
+        <span style="background:#0A3354;color:#FFFFFF;border-radius:999px;padding:5px 12px;display:inline-flex;align-items:center;gap:6px">iPhone waitlist open <span aria-hidden="true">→</span></span>
+      </a>
+      <h1 class="rise d1" style="margin:0;font-size:clamp(40px,5vw,64px);line-height:1.04;letter-spacing:-0.035em;font-weight:700">Your spends, <span style="color:#2ECC71">filled in.</span><br><span style="color:#CFE0EA">Your splits, sorted.</span></h1>
+      <p class="rise d2" style="margin:0;font-size:19px;line-height:1.55;color:#CFE0EA;max-width:520px">Altus is an expense tracker app for India. It reads your bank SMS and statements, shows what you can spend today, and splits rent and trips with friends in the same app.</p>
+      <div class="rise d3" style="display:flex;flex-wrap:wrap;gap:14px">
+        <a class="btn-primary" href="/download#android" style="display:inline-flex;align-items:center;gap:10px;background:#2ECC71;color:#012A4A;text-decoration:none;font-weight:700;font-size:16px;padding:16px 26px;border-radius:999px;min-height:44px;box-sizing:border-box">
+          <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"></path><path d="M7 10l5 5 5-5"></path><path d="M5 21h14"></path></svg>
+          Get Altus for Android
+        </a>
+        <a class="btn-ghost" href="#how" style="display:inline-flex;align-items:center;gap:10px;color:#FFFFFF;text-decoration:none;font-weight:600;font-size:16px;padding:16px 24px;border-radius:999px;border:1px solid #1B4C74;min-height:44px;box-sizing:border-box">See how it works</a>
+      </div>
+      <a class="rise d4 hlink" href="#split" style="align-self:flex-start;display:inline-flex;align-items:center;gap:8px;min-height:44px;color:#FFFFFF;font-size:15px;font-weight:600;text-decoration:underline;text-decoration-color:#17A2B8;text-underline-offset:4px">How splitting works <span aria-hidden="true">↓</span></a>
+      <div class="rise d4" style="display:flex;align-items:center;gap:10px;font-size:14px;color:#9FC3D8">
+        <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#2ECC71" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+        Your SMS are read on your phone. Only transaction details are sent. We never ask for bank passwords.
+      </div>
+    </div>
+
+    <!-- phone + floating SMS -->
+    <div style="position:relative;display:flex;justify-content:center;min-height:640px">
+      <div class="sms hide-sm" style="position:absolute;left:0;top:96px;width:280px;z-index:3;background:#FFFFFF;color:#012A4A;border-radius:18px;padding:14px 16px;box-shadow:0 24px 48px rgba(0,17,31,.35);display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;color:#4A6378"><span>VM-HDFCBK</span><span>now</span></div>
+        <div style="font-size:13px;line-height:1.45;color:#012A4A">Rs.450.00 debited from a/c **4821 to SWIGGY on 28-11-26. UPI Ref 6331. Not you? Call 1800…</div>
+      </div>
+      <div class="chip hide-sm" style="position:absolute;left:36px;top:228px;z-index:3;display:flex;align-items:center;gap:8px;background:#0D3B2A;color:#7EE2A8;border:1px solid #1F6B47;padding:8px 12px;border-radius:999px;font-size:12px;font-weight:600">
+        <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"></path></svg>
+        Parsed on device
+      </div>
+
+      <div class="floaty" style="width:316px;height:640px;border-radius:46px;background:#00111F;border:1px solid #1B4C74;padding:10px;box-sizing:border-box;box-shadow:0 40px 80px rgba(0,17,31,.5);position:relative;z-index:2">
+        <div style="width:100%;height:100%;border-radius:37px;background:#F8F9F9;overflow:hidden;display:flex;flex-direction:column;gap:12px;padding:26px 16px 16px;box-sizing:border-box">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="display:flex;flex-direction:column;gap:2px">
+              <span style="font-size:11px;color:#4A6378;font-weight:600">November</span>
+              <span style="font-size:17px;font-weight:700;color:#012A4A">Home</span>
+            </div>
+            <div style="width:32px;height:32px;border-radius:999px;background:#DDF1F4;color:#0F6674;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700">A</div>
+          </div>
+          <div style="background:#012A4A;border-radius:22px;padding:16px;display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span style="font-size:11px;font-weight:600;color:#9FC3D8">Spent this month</span>
+              <span style="font-size:10px;font-weight:600;color:#BFF2D4;background:rgba(46,204,113,0.18);padding:3px 8px;border-radius:999px">56% used</span>
+            </div>
+            <span style="font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:30px;letter-spacing:-1.2px;color:#FFFFFF">₹38,420</span>
+            <div style="height:6px;border-radius:999px;background:rgba(255,255,255,0.14);overflow:hidden"><div class="grow" style="width:56%;height:100%;background:#2ECC71;border-radius:999px"></div></div>
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:#9FC3D8">
+              <span>Income <b style="font-family:'IBM Plex Mono',monospace;color:#2ECC71;font-weight:600">₹68,000</b></span>
+              <span>Left <b style="font-family:'IBM Plex Mono',monospace;color:#FFFFFF;font-weight:600">₹29,580</b></span>
+            </div>
+          </div>
+          <div style="background:#FFFFFF;border:1px solid #DCE3E8;border-radius:18px;padding:12px;display:flex;flex-direction:column;gap:8px">
+            <span style="font-size:11px;font-weight:700;color:#012A4A">Where it went</span>
+            <div style="display:flex;height:8px;border-radius:999px;overflow:hidden;gap:2px">
+              <div class="grow" style="width:34%;background:#012A4A"></div><div class="grow" style="width:24%;background:#2ECC71"></div><div class="grow" style="width:18%;background:#17A2B8"></div><div class="grow" style="width:14%;background:#9FB2BF"></div><div class="grow" style="width:10%;background:#E8A33D"></div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 10px;font-size:10px;color:#4A6378">
+              <span>● Food 34%</span><span>● Shopping 24%</span><span>● Transport 18%</span><span>● Bills 14%</span>
+            </div>
+          </div>
+          <span style="font-size:11px;font-weight:700;color:#4A6378;padding:0 2px">Today</span>
+          <div style="background:#FFFFFF;border:1px solid #DCE3E8;border-radius:18px;display:flex;flex-direction:column">
+            <div class="rowin">
+              <div class="flash" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid #E8EEF1">
+                <div style="width:30px;height:30px;border-radius:10px;background:#FCEFD9;color:#8A5A12;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">S</div>
+                <div style="flex:1;display:flex;flex-direction:column"><span style="font-size:12px;font-weight:600">Swiggy</span><span style="font-size:10px;color:#4A6378">Food · HDFC ••4821</span></div>
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;color:#C0392B">−₹450</span>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid #E8EEF1">
+              <div style="width:30px;height:30px;border-radius:10px;background:#DDF1F4;color:#0F6674;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">U</div>
+              <div style="flex:1;display:flex;flex-direction:column"><span style="font-size:12px;font-weight:600">Uber</span><span style="font-size:10px;color:#4A6378">Transport · ICICI ••1093</span></div>
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;color:#C0392B">−₹212</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid #E8EEF1">
+              <div style="width:30px;height:30px;border-radius:10px;background:#E3F5EA;color:#0E5A34;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">B</div>
+              <div style="flex:1;display:flex;flex-direction:column"><span style="font-size:12px;font-weight:600">BigBasket</span><span style="font-size:10px;color:#4A6378">Groceries · SBI ••7710</span></div>
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;color:#C0392B">−₹1,386</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px">
+              <div style="width:30px;height:30px;border-radius:10px;background:#E3F5EA;color:#0E5A34;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">₹</div>
+              <div style="flex:1;display:flex;flex-direction:column"><span style="font-size:12px;font-weight:600">Salary</span><span style="font-size:10px;color:#4A6378">Income · Axis ••2208</span></div>
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;color:#14804A">+₹68,000</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hide-sm floaty" role="img" aria-label="Altus group for a Goa trip with 4 members. You are owed ₹10,000." style="position:absolute;right:0;bottom:84px;z-index:3;animation-delay:-3s;width:236px;box-sizing:border-box;background:#FFFFFF;color:#012A4A;border-radius:18px;padding:14px 16px;box-shadow:0 24px 48px rgba(0,17,31,.35);display:flex;flex-direction:column;gap:10px">
+        <div aria-hidden="true" style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;font-weight:700">🏖️ Goa trip</span><span style="font-size:11px;font-weight:600;color:#4A6378">4 members</span></div>
+        <div aria-hidden="true" style="display:flex"><span style="width:26px;height:26px;border-radius:999px;background:#012A4A;color:#FFFFFF;border:2px solid #FFFFFF;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700">Y</span><span style="width:26px;height:26px;border-radius:999px;background:#E3F5EA;color:#0E5A34;border:2px solid #FFFFFF;margin-left:-8px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700">R</span><span style="width:26px;height:26px;border-radius:999px;background:#FCEFD9;color:#8A5A12;border:2px solid #FFFFFF;margin-left:-8px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700">K</span><span style="width:26px;height:26px;border-radius:999px;background:#DDF1F4;color:#0F6674;border:2px solid #FFFFFF;margin-left:-8px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700">P</span></div>
+        <div aria-hidden="true" style="background:#E3F5EA;border-radius:12px;padding:8px 10px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;font-weight:600;color:#0E5A34">You are owed</span><span style="font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600;color:#0E5A34">₹10,000</span></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- BANK STRIP -->
+<section style="background:#FFFFFF;border-bottom:1px solid #DCE3E8;padding:28px 0;display:flex;flex-direction:column;gap:16px">
+  <p class="wrap" style="margin:0 auto;width:100%;font-size:13px;font-weight:600;color:#4A6378;text-align:center">Reads bank SMS from HDFC, ICICI, SBI, Axis and many other Indian banks</p>
+  <div style="overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)">
+    <div class="marquee" style="display:flex;gap:72px;width:max-content;font-size:24px;font-weight:700;color:#4A6378;letter-spacing:-0.02em">
+      <span>HDFC Bank</span><span>ICICI Bank</span><span>SBI</span><span>Axis Bank</span><span>Kotak</span><span>Bank of Baroda</span><span>PNB</span><span>Canara</span><span>IDFC FIRST</span><span>Yes Bank</span>
+      <span>HDFC Bank</span><span>ICICI Bank</span><span>SBI</span><span>Axis Bank</span><span>Kotak</span><span>Bank of Baroda</span><span>PNB</span><span>Canara</span><span>IDFC FIRST</span><span>Yes Bank</span>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how" class="wrap" style="padding-top:120px;padding-bottom:40px;display:flex;flex-direction:column;gap:56px">
+  <div style="display:flex;flex-direction:column;gap:16px;max-width:720px">
+    <span style="font-size:13px;font-weight:700;color:#14804A;letter-spacing:.06em;text-transform:uppercase">Track · How it works</span>
+    <h2 style="margin:0;font-size:clamp(34px,4vw,52px);line-height:1.08;letter-spacing:-0.03em;font-weight:700">Three ways in. One ledger out.</h2>
+    <p style="margin:0;font-size:18px;line-height:1.6;color:#4A6378">Start with whichever suits you and add the others later. A payment that shows up in two places is counted once.</p>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:20px;position:relative">
+    <div class="lift" style="background:#FFFFFF;border:1px solid #DCE3E8;border-radius:28px;padding:28px;display:flex;flex-direction:column;gap:18px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="width:52px;height:52px;border-radius:16px;background:#E3F5EA;color:#0E5A34;display:flex;align-items:center;justify-content:center">
+          <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.8 7L4 20l1.1-4.6A8 8 0 1 1 21 12z"></path></svg>
+        </div>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600;color:#4A6378">01</span>
+      </div>
+      <h3 style="margin:0;font-size:22px;font-weight:700;letter-spacing:-0.02em">Turn on bank SMS</h3>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#4A6378">Altus reads debit and credit alerts as they arrive. Personal messages, OTPs and offers are skipped. A new bank sender needs your OK once.</p>
+    </div>
+    <div class="lift" style="background:#FFFFFF;border:1px solid #DCE3E8;border-radius:28px;padding:28px;display:flex;flex-direction:column;gap:18px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="width:52px;height:52px;border-radius:16px;background:#DDF1F4;color:#0F6674;display:flex;align-items:center;justify-content:center">
+          <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"></path><path d="M14 3v5h5"></path><path d="M9 13h6M9 17h6"></path></svg>
+        </div>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600;color:#4A6378">02</span>
+      </div>
+      <h3 style="margin:0;font-size:22px;font-weight:700;letter-spacing:-0.02em">Import a statement</h3>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#4A6378">Upload a CSV, Excel or PDF statement, even a password-protected PDF. Check the rows, skip the ones already in your ledger, then add them in one tap.</p>
+    </div>
+    <div class="lift" style="background:#012A4A;color:#FFFFFF;border:1px solid #012A4A;border-radius:28px;padding:28px;display:flex;flex-direction:column;gap:18px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="width:52px;height:52px;border-radius:16px;background:rgba(46,204,113,0.18);color:#2ECC71;display:flex;align-items:center;justify-content:center">
+          <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"></path></svg>
+        </div>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600;color:#9FC3D8">03</span>
+      </div>
+      <h3 style="margin:0;font-size:22px;font-weight:700;letter-spacing:-0.02em">Add cash by hand</h3>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#CFE0EA">For chai, autos and anything your bank never sees. Type the amount, pick a category, done. It lands in the same ledger as everything else.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SHOWCASE (V2: tabbed, replaces bento) -->
+<section class="wrap" style="padding-top:100px;padding-bottom:40px;display:flex;flex-direction:column;gap:48px">
+  <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:24px">
+    <div style="display:flex;flex-direction:column;gap:16px;max-width:680px">
+      <span style="font-size:13px;font-weight:700;color:#14804A;letter-spacing:.06em;text-transform:uppercase">Track · What you get</span>
+      <h2 style="margin:0;font-size:clamp(34px,4vw,52px);line-height:1.08;letter-spacing:-0.03em;font-weight:700">Track and plan your own month</h2>
+    </div>
+    <a href="/features" style="font-weight:700;font-size:16px;text-decoration:none;display:inline-flex;align-items:center;gap:8px;min-height:44px">See every feature <span aria-hidden="true">→</span></a>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:48px;align-items:center;background:#FFFFFF;border:1px solid #DCE3E8;border-radius:36px;padding:clamp(20px,4vw,48px)">
+    <div role="tablist" aria-label="Altus features" style="display:flex;flex-direction:column;gap:10px">
+      {tabs.map((t, i) => (
+        <button type="button" role="tab" class="tab" id={`tab-${i}`} aria-controls={`panel-${i}`} aria-selected={i === 0 ? 'true' : 'false'} tabindex={i === 0 ? 0 : -1} data-tab={i}>
+          <span style="display:flex;align-items:center;gap:14px">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;opacity:.7">0{i + 1} · {t.name}</span>
+            <span style="font-size:19px;font-weight:700;letter-spacing:-0.01em">{t.title}</span>
+          </span>
+          <span class="tab-body" style="display:block;font-size:15px;line-height:1.6;opacity:.85;padding-left:36px;padding-top:8px;font-weight:500">{t.body}</span>
+          <span class="tab-bar" aria-hidden="true" style="display:block;margin:14px 0 0 36px;height:3px;border-radius:999px;background:rgba(255,255,255,0.18);overflow:hidden"><span class="prog" style="display:block;height:100%;width:100%;background:#2ECC71;transform-origin:left center"></span></span>
+        </button>
+      ))}
+      <button type="button" class="tab-pause" data-pause aria-pressed="false">Pause</button>
+    </div>
+
+    <div style="display:flex;justify-content:center;background:#F2F6F8;border-radius:28px;padding:36px 16px;position:relative;overflow:hidden">
+      <svg aria-hidden="true" viewBox="0 0 400 200" style="position:absolute;left:0;right:0;bottom:0;width:100%;height:200px"><path d="M-20 200 L120 60 L260 200 Z" fill="#17A2B8" opacity="0.10"></path><path d="M120 200 L290 20 L460 200 Z" fill="#2ECC71" opacity="0.10"></path></svg>
+      <div role="img" aria-label={tabs[0].alt} data-screen style="width:290px;height:560px;border-radius:42px;background:#00111F;padding:9px;box-sizing:border-box;box-shadow:0 30px 60px rgba(1,42,74,.22);position:relative">
+        <div style="width:100%;height:100%;border-radius:34px;background:#F8F9F9;overflow:hidden;padding:24px 14px 14px;box-sizing:border-box">
+
+          <div class="panel" id="panel-0" role="tabpanel" aria-labelledby="tab-0">
+            <div class="swap" style="display:flex;flex-direction:column;gap:12px">
+              <span style="font-size:16px;font-weight:700">Messages</span>
+              <div style="background:#FFFFFF;border:1px solid #DCE3E8;border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:4px"><div style="display:flex;justify-content:space-between;font-size:10px;font-weight:600;color:#4A6378"><span>VM-HDFCBK</span><span>9:41</span></div><span style="font-size:11px;line-height:1.45">Rs.450.00 debited from a/c **4821 to SWIGGY on 28-11-26. UPI Ref 6331.</span></div>
+              <div style="background:#FFFFFF;border:1px solid #DCE3E8;border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:4px;opacity:.55"><div style="display:flex;justify-content:space-between;font-size:10px;font-weight:600;color:#4A6378"><span>AX-ICICIT</span><span>9:12</span></div><span style="font-size:11px;line-height:1.45">Your OTP for login is ••••••. Do not share.</span><span style="font-size:10px;font-weight:700;color:#4A6378">Ignored: OTP</span></div>
+              <div style="display:flex;justify-content:center;color:#14804A"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"></path></svg></div>
+              <div class="flash" style="background:#FFFFFF;border:1px solid #DCE3E8;border-radius:16px;padding:12px;display:flex;align-items:center;gap:10px"><span style="width:30px;height:30px;border-radius:10px;background:#FCEFD9;color:#8A5A12;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">S</span><span style="flex:1;display:flex;flex-direction:column"><span style="font-size:12px;font-weight:600">Swiggy</span><span style="font-size:10px;color:#4A6378">Food · HDFC ••4821</span></span><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;color:#C0392B">−₹450</span></div>
+              <span style="font-size:11px;font-weight:600;color:#0E5A34;background:#E3F5EA;border-radius:999px;padding:6px 10px;align-self:center">Parsed on this phone</span>
+            </div>
+          </div>
+
+          <div class="panel" id="panel-1" role="tabpanel" aria-labelledby="tab-1" hidden>
+            <div class="swap" style="display:flex;flex-direction:column;gap:10px">
+              <span style="font-size:16px;font-weight:700">Transactions</span>
+              <div style="display:flex;align-items:center;gap:8px;background:#FFFFFF;border:1px solid #DCE3E8;border-radius:12px;padding:9px 10px;font-size:11px;color:#4A6378"><svg width="13" height="13" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>Search payee or amount</div>
+              <div style="display:flex;gap:6px"><span style="font-size:10px;font-weight:600;background:#012A4A;color:#FFFFFF;padding:5px 10px;border-radius:999px">All</span><span style="font-size:10px;font-weight:600;background:#FFFFFF;border:1px solid #DCE3E8;padding:5px 10px;border-radius:999px">Food</span><span style="font-size:10px;font-weight:600;background:#FFFFFF;border:1px solid #DCE3E8;padding:5px 10px;border-radius:999px">Bills</span></div>
+              <span style="font-size:10px;font-weight:700;color:#4A6378">Today · 28 Nov</span>
+              <div style="background:#FFFFFF;border:1px solid #DCE3E8;border-radius:16px;display:flex;flex-direction:column">
+                <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid #E8EEF1"><span style="width:28px;height:28px;border-radius:9px;background:#FCEFD9;color:#8A5A12;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">S</span><span style="flex:1;display:flex;flex-direction:column"><span style="font-size:12px;font-weight:600">Swiggy</span><span style="font-size:9px;font-weight:600;color:#0E5A34">SMS + statement · merged</span></span><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600">−₹450</span></div>
+                <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid #E8EEF1"><span style="width:28px;height:28px;border-radius:9px;background:#DDF1F4;color:#0F6674;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">U</span><span style="flex:1;display:flex;flex-direction:column"><span style="font-size:12px;font-weight:600">Uber</span><span style="font-size:9px;color:#4A6378">Transport · ICICI ••1093</span></span><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600">−₹212</span></div>
+                <div style="display:flex;align-items:center;gap:10px;padding:10px 12px"><span style="width:28px;height:28px;border-radius:9px;background:#E8EEF1;color:#4A6378;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">₹</span><span style="flex:1;display:flex;flex-direction:column"><span style="font-size:12px;font-weight:600">Chai stall</span><span style="font-size:9px;color:#4A6378">Food · Cash · added by you</span></span><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600">−₹40</span></div>
+              </div>
+              <div style="background:#012A4A;color:#FFFFFF;border-radius:14px;padding:10px 12px;font-size:11px;line-height:1.45"><b style="color:#2ECC71">Zomato → Food.</b> Got it. Future Zomato payments will follow.</div>
+            </div>
+          </div>
+
+          <div class="panel" id="panel-2" role="tabpanel" aria-labelledby="tab-2" hidden>
+            <div class="swap" style="display:flex;flex-direction:column;gap:12px">
+              <span style="font-size:16px;font-weight:700">Plan</span>
+              <div style="background:#012A4A;border-radius:20px;padding:14px;display:flex;flex-direction:column;gap:8px;color:#FFFFFF"><span style="font-size:10px;font-weight:600;color:#9FC3D8">Allowance today</span><span style="font-family:'IBM Plex Mono',monospace;font-size:28px;font-weight:600;letter-spacing:-1px">₹986</span><div style="height:6px;background:rgba(255,255,255,0.14);border-radius:999px;overflow:hidden"><div class="grow" style="width:38%;height:100%;background:#2ECC71"></div></div><span style="font-size:10px;color:#9FC3D8">Spent today ₹375 · 9-day streak</span></div>
+              <div style="background:#FFFFFF;border:1px solid #DCE3E8;border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:10px">
+                <div style="display:flex;flex-direction:column;gap:4px"><div style="display:flex;justify-content:space-between;font-size:11px"><span>Eating out</span><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;color:#8A5A12">88%</span></div><div style="height:6px;background:#E8EEF1;border-radius:999px;overflow:hidden"><div class="grow" style="width:88%;height:100%;background:#E8A33D"></div></div></div>
+                <div style="display:flex;flex-direction:column;gap:4px"><div style="display:flex;justify-content:space-between;font-size:11px"><span>Groceries</span><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;color:#14804A">42%</span></div><div style="height:6px;background:#E8EEF1;border-radius:999px;overflow:hidden"><div class="grow" style="width:42%;height:100%;background:#2ECC71"></div></div></div>
+              </div>
+              <div style="background:#FFFFFF;border:1px solid #DCE3E8;border-radius:16px;padding:12px;display:flex;align-items:center;gap:12px"><svg width="52" height="52" viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="46" fill="none" stroke="#E8EEF1" stroke-width="14"></circle><circle class="ring" cx="60" cy="60" r="46" fill="none" stroke="#17A2B8" stroke-width="14" stroke-linecap="round" stroke-dasharray="289" stroke-dashoffset="116" transform="rotate(-90 60 60)"></circle></svg><span style="display:flex;flex-direction:column;gap:2px"><span style="font-size:12px;font-weight:700">Goa trip fund</span><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600">₹18,000 <span style="color:#4A6378">of ₹30,000</span></span></span></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SPLIT (V3) -->
+<section id="split" class="wrap" aria-labelledby="split-h" style="padding-top:100px;display:flex;flex-direction:column">
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:48px;align-items:center;background:#FFFFFF;border:1px solid #DCE3E8;border-radius:36px;padding:clamp(20px,4vw,48px)">
+    <div style="display:flex;flex-direction:column;gap:20px">
+      <span style="font-size:13px;font-weight:700;color:#0F6674;letter-spacing:.06em;text-transform:uppercase">Split · With friends</span>
+      <h2 id="split-h" style="margin:0;font-size:clamp(34px,4vw,52px);line-height:1.08;letter-spacing:-0.03em;font-weight:700">Split with friends, without a second app</h2>
+      <p style="margin:0;font-size:18px;line-height:1.6;color:#4A6378;max-width:520px">Make a group, log who paid, and Altus works out who owes whom.</p>
+      <ul style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:12px;font-size:15px;line-height:1.5">
+        <li style="display:flex;gap:12px;align-items:flex-start"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#17A2B8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px"><path d="M5 12l5 5L20 7"></path></svg><span><h3 style="display:inline;margin:0;font-size:inherit;font-weight:700">Add people by name.</h3> Friends don't need Altus to be in the group.</span></li>
+        <li style="display:flex;gap:12px;align-items:flex-start"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#17A2B8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px"><path d="M5 12l5 5L20 7"></path></svg><span><h3 style="display:inline;margin:0;font-size:inherit;font-weight:700">Share one link on WhatsApp.</h3> Friends on Android join with it. Nothing else from your account is shared.</span></li>
+        <li style="display:flex;gap:12px;align-items:flex-start"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#17A2B8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px"><path d="M5 12l5 5L20 7"></path></svg><span><h3 style="display:inline;margin:0;font-size:inherit;font-weight:700">Split equally or by exact amounts.</h3> Shares add up to the paisa.</span></li>
+        <li style="display:flex;gap:12px;align-items:flex-start"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#17A2B8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px"><path d="M5 12l5 5L20 7"></path></svg><span><h3 style="display:inline;margin:0;font-size:inherit;font-weight:700">Settle up and keep a record.</h3> Altus suggests who pays whom. No money moves through Altus.</span></li>
+      </ul>
+      <div style="display:flex;flex-wrap:wrap;gap:8px 28px">
+        <a href="/features#together" style="font-size:16px;font-weight:700;color:#14804A;min-height:44px;display:inline-flex;align-items:center;gap:8px;text-decoration:none">How groups work <span aria-hidden="true">→</span></a>
+        <a href="/compare#splitwise" style="font-size:16px;font-weight:700;color:#14804A;min-height:44px;display:inline-flex;align-items:center;gap:8px;text-decoration:none">Already on Splitwise? <span aria-hidden="true">→</span></a>
+      </div>
+    </div>
+
+    <div class="split-stage" style="display:flex;justify-content:center;background:#F2F6F8;border-radius:28px;padding:36px 16px;position:relative;overflow:hidden">
+      <svg aria-hidden="true" viewBox="0 0 400 200" style="position:absolute;left:0;right:0;bottom:0;width:100%;height:200px"><path d="M120 200 L290 20 L460 200 Z" fill="#2ECC71" opacity="0.08"></path><path d="M-20 200 L120 60 L260 200 Z" fill="#17A2B8" opacity="0.14"></path></svg>
+      <div role="img" aria-label="Altus group for a Goa trip. You are owed ₹10,000 of ₹23,200 spent. Settle up: Priya pays you ₹5,800, Kabir pays you ₹4,200, Kabir pays Riya ₹200." style="position:relative;width:min(100%,360px);box-sizing:border-box;background:#FFFFFF;border:1px solid #DCE3E8;border-radius:28px;padding:20px;display:flex;flex-direction:column;gap:14px;box-shadow:0 30px 60px rgba(1,42,74,.12)">
+        <div aria-hidden="true" style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:17px;font-weight:700">🏖️ Goa trip</span>
+          <span style="display:flex"><span style="width:26px;height:26px;border-radius:999px;background:#012A4A;color:#FFFFFF;border:2px solid #FFFFFF;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700">Y</span><span style="width:26px;height:26px;border-radius:999px;background:#E3F5EA;color:#0E5A34;border:2px solid #FFFFFF;margin-left:-8px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700">R</span><span style="width:26px;height:26px;border-radius:999px;background:#FCEFD9;color:#8A5A12;border:2px solid #FFFFFF;margin-left:-8px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700">K</span><span style="width:26px;height:26px;border-radius:999px;background:#DDF1F4;color:#0F6674;border:2px solid #FFFFFF;margin-left:-8px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700">P</span></span>
+        </div>
+        <div aria-hidden="true" style="display:flex;flex-direction:column;gap:6px">
+          <div style="background:#E3F5EA;border-radius:16px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;font-weight:600;color:#0E5A34">You are owed</span><span style="font-family:'IBM Plex Mono',monospace;font-size:24px;font-weight:600;color:#0E5A34">₹10,000</span></div>
+          <span style="font-size:12px;font-weight:500;color:#4A6378;padding-left:4px">Total spent <b style="font-family:'IBM Plex Mono',monospace;font-weight:600;color:#012A4A">₹23,200</b></span>
+        </div>
+        <span aria-hidden="true" style="font-size:11px;font-weight:700;color:#4A6378;letter-spacing:.04em;text-transform:uppercase">Settle up</span>
+        <div aria-hidden="true" style="border:1px solid #DCE3E8;border-radius:16px;display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;gap:10px;padding:11px 12px"><span style="width:22px;height:22px;border-radius:999px;background:#DDF1F4;color:#0F6674;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex:none">P</span><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#9FB2BF" stroke-width="3" stroke-linecap="round" style="flex:none"><path d="M5 12h14M13 6l6 6-6 6"></path></svg><span style="width:22px;height:22px;border-radius:999px;background:#012A4A;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex:none">Y</span><span style="flex:1;font-size:13px;font-weight:600">Priya pays You</span><span style="flex:none;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600">₹5,800</span></div>
+          <div style="display:flex;align-items:center;gap:10px;padding:11px 12px;border-top:1px solid #E8EEF1"><span style="width:22px;height:22px;border-radius:999px;background:#FCEFD9;color:#8A5A12;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex:none">K</span><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#9FB2BF" stroke-width="3" stroke-linecap="round" style="flex:none"><path d="M5 12h14M13 6l6 6-6 6"></path></svg><span style="width:22px;height:22px;border-radius:999px;background:#012A4A;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex:none">Y</span><span style="flex:1;font-size:13px;font-weight:600">Kabir pays You</span><span style="flex:none;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600">₹4,200</span></div>
+          <div style="display:flex;align-items:center;gap:10px;padding:11px 12px;border-top:1px solid #E8EEF1"><span style="width:22px;height:22px;border-radius:999px;background:#FCEFD9;color:#8A5A12;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex:none">K</span><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#9FB2BF" stroke-width="3" stroke-linecap="round" style="flex:none"><path d="M5 12h14M13 6l6 6-6 6"></path></svg><span style="width:22px;height:22px;border-radius:999px;background:#E3F5EA;color:#0E5A34;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex:none">R</span><span style="flex:1;font-size:13px;font-weight:600">Kabir pays Riya</span><span style="flex:none;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600">₹200</span></div>
+        </div>
+        <div aria-hidden="true" style="display:flex;gap:8px;align-items:flex-start;font-size:12px;line-height:1.5;color:#4A6378"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex:none;margin-top:2px"><circle cx="12" cy="12" r="9"></circle><path d="M12 8h.01M11 12h1v5h1"></path></svg><span>Pay back by UPI or cash, then record it. Group expenses aren't added to your own spending.</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRIVACY -->
+<section id="privacy" style="background:#00111F;color:#EAF2F6;margin-top:100px">
+  <div class="wrap" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,440px),1fr));gap:64px;align-items:center;padding-top:110px;padding-bottom:110px">
+    <div style="display:flex;flex-direction:column;gap:24px">
+      <span style="font-size:13px;font-weight:700;color:#2ECC71;letter-spacing:.06em;text-transform:uppercase">Privacy</span>
+      <h2 style="margin:0;font-size:clamp(34px,4vw,52px);line-height:1.08;letter-spacing:-0.03em;font-weight:700;color:#FFFFFF">Your messages stay on your phone</h2>
+      <p style="margin:0;font-size:18px;line-height:1.6;color:#9DB3C2">Altus reads bank alerts so you don't have to type them. This is exactly what happens to them.</p>
+      <ul style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:14px;font-size:16px;line-height:1.55">
+        <li style="display:flex;gap:12px;align-items:flex-start"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#2ECC71" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:2px"><path d="M5 12l5 5L20 7"></path></svg>Each SMS is read on your phone. The text of a message is never sent anywhere.</li>
+        <li style="display:flex;gap:12px;align-items:flex-start"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#2ECC71" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:2px"><path d="M5 12l5 5L20 7"></path></svg>Only business senders are read, and a sender Altus doesn't know needs your OK first. Messages from people, OTPs and promotions are skipped.</li>
+        <li style="display:flex;gap:12px;align-items:flex-start"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#2ECC71" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:2px"><path d="M5 12l5 5L20 7"></path></svg>A statement password is used once to open the file and never stored. The file is deleted after it's read.</li>
+        <li style="display:flex;gap:12px;align-items:flex-start"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#2ECC71" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:2px"><path d="M5 12l5 5L20 7"></path></svg>Export your transactions as CSV, or delete your account from Settings any time. Your own data goes with it. Groups you shared keep your name, so the others' balances stay right.</li>
+      </ul>
+      <a href="/download#permissions" style="color:#2ECC71;font-weight:700;text-decoration:none;min-height:44px;display:inline-flex;align-items:center">What Altus asks for, and why <span aria-hidden="true" style="margin-left:8px">→</span></a>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:0;align-items:stretch">
+      <div style="background:#071D30;border:1px solid #14324B;border-radius:24px;padding:22px;display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:13px;font-weight:700;color:#9DB3C2">ON YOUR PHONE</span><span style="font-size:12px;font-weight:600;color:#7EE2A8;background:#0D3B2A;padding:4px 10px;border-radius:999px">Parser runs here</span></div>
+        <div style="background:#0A3354;border-radius:14px;padding:14px;font-size:13px;line-height:1.5;color:#9FC3D8;text-decoration:line-through;text-decoration-color:rgba(255,138,128,.7)">Rs.450.00 debited from a/c **4821 to SWIGGY on 28-11-26. UPI Ref 6331. Not you? Call 1800…</div>
+        <span style="font-size:12px;color:#FF8A80;font-weight:600">Message text: stays on your phone</span>
+      </div>
+      <svg width="100%" height="64" viewBox="0 0 400 64" aria-hidden="true" preserveAspectRatio="none"><line class="dash" x1="200" y1="0" x2="200" y2="64" stroke="#2ECC71" stroke-width="2"></line></svg>
+      <div style="background:#071D30;border:1px solid #1F6B47;border-radius:24px;padding:22px;display:flex;flex-direction:column;gap:12px">
+        <span style="font-size:13px;font-weight:700;color:#9DB3C2">WHAT REACHES YOUR LEDGER</span>
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600">
+          <div style="background:#0A3354;border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:2px"><span style="color:#9DB3C2;font-size:11px">amount</span><span style="color:#FFFFFF;font-weight:600">₹450.00</span></div>
+          <div style="background:#0A3354;border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:2px"><span style="color:#9DB3C2;font-size:11px">type</span><span style="color:#FFFFFF;font-weight:600">Debit</span></div>
+          <div style="background:#0A3354;border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:2px"><span style="color:#9DB3C2;font-size:11px">date and time</span><span style="color:#FFFFFF;font-weight:600">28 Nov, 9:41</span></div>
+          <div style="background:#0A3354;border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:2px"><span style="color:#9DB3C2;font-size:11px">bank</span><span style="color:#FFFFFF;font-weight:600">HDFC Bank</span></div>
+          <div style="background:#0A3354;border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:2px"><span style="color:#9DB3C2;font-size:11px">merchant</span><span style="color:#FFFFFF;font-weight:600">SWIGGY</span></div>
+          <div style="background:#0A3354;border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:2px"><span style="color:#9DB3C2;font-size:11px">account</span><span style="color:#FFFFFF;font-weight:600">••4821</span></div>
+          <div style="background:#0A3354;border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:2px"><span style="color:#9DB3C2;font-size:11px">reference</span><span style="color:#FFFFFF;font-weight:600">UPI 6331</span></div>
+          <div style="background:#0A3354;border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:2px"><span style="color:#9DB3C2;font-size:11px">kind</span><span style="color:#FFFFFF;font-weight:600">UPI</span></div>
+        </div>
+        <span style="font-size:12px;line-height:1.5;color:#9DB3C2">Plus a one-way fingerprint of each message, so the same SMS is never counted twice. It can't be turned back into the message.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARE TEASER -->
+<section class="wrap" style="padding-top:120px;padding-bottom:40px;display:flex;flex-direction:column;gap:40px">
+  <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:24px">
+    <div style="display:flex;flex-direction:column;gap:16px;max-width:640px">
+      <span style="font-size:13px;font-weight:700;color:#14804A;letter-spacing:.06em;text-transform:uppercase">Compare</span>
+      <h2 style="margin:0;font-size:clamp(34px,4vw,52px);line-height:1.08;letter-spacing:-0.03em;font-weight:700">One app, or two?</h2>
+      <p style="margin:0;font-size:17px;line-height:1.6;color:#4A6378">Most people track spends in one app and split with friends in another. Here's how Altus compares with both.</p>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px 24px"><a href="/compare" style="font-weight:700;font-size:16px;text-decoration:none;display:inline-flex;align-items:center;gap:8px;min-height:44px">See the full comparison <span aria-hidden="true">→</span></a><a href="/compare#splitwise" style="font-weight:700;font-size:16px;text-decoration:none;display:inline-flex;align-items:center;gap:8px;min-height:44px">Altus vs Splitwise <span aria-hidden="true">→</span></a></div>
+  </div>
+  <div style="overflow-x:auto;border:1px solid #DCE3E8;border-radius:28px;background:#FFFFFF">
+    <table style="width:100%;min-width:760px;border-collapse:collapse;font-size:15px">
+      <thead><tr style="text-align:left"><th scope="col" style="padding:22px 28px;font-weight:600;color:#4A6378;font-size:13px">&nbsp;</th><th scope="col" style="padding:22px 20px;background:#012A4A;color:#FFFFFF;font-weight:700">Altus</th><th scope="col" style="padding:22px 20px;font-weight:700;color:#4A6378">Other expense trackers [VERIFY]</th><th scope="col" style="padding:22px 20px;font-weight:700;color:#4A6378">Splitwise [VERIFY]</th></tr></thead>
+      <tbody>
+        <tr style="border-top:1px solid #E8EEF1"><th scope="row" style="padding:18px 28px;font-weight:600;text-align:left">Adds bank SMS automatically</th><td style="padding:18px 20px;background:#F2FBF6;color:#0E5A34;font-weight:700">Yes, in the Android APK (Play version after Google's approval)</td><td style="padding:18px 20px;color:#4A6378">SMS-based trackers only</td><td style="padding:18px 20px;color:#4A6378">No</td></tr>
+        <tr style="border-top:1px solid #E8EEF1"><th scope="row" style="padding:18px 28px;font-weight:600;text-align:left">Imports PDF statements, even password-protected ones</th><td style="padding:18px 20px;background:#F2FBF6;color:#0E5A34;font-weight:700">Yes</td><td style="padding:18px 20px;color:#4A6378">Rarely</td><td style="padding:18px 20px;color:#4A6378">No</td></tr>
+        <tr style="border-top:1px solid #E8EEF1"><th scope="row" style="padding:18px 28px;font-weight:600;text-align:left">Splits with friends and suggests who pays whom</th><td style="padding:18px 20px;background:#F2FBF6;color:#0E5A34;font-weight:700">Yes, equal or exact amounts</td><td style="padding:18px 20px;color:#4A6378">Rarely</td><td style="padding:18px 20px;color:#4A6378">Yes, with more ways to split</td></tr>
+        <tr style="border-top:1px solid #E8EEF1"><th scope="row" style="padding:18px 28px;font-weight:600;text-align:left">Works on iPhone</th><td style="padding:18px 20px;background:#F2FBF6;color:#4A6378">Not yet, waitlist open</td><td style="padding:18px 20px;color:#4A6378">Varies by app</td><td style="padding:18px 20px;color:#4A6378">Yes</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="only-sm" style="margin:0;font-size:13px;color:#4A6378">Scroll to see Splitwise →</p>
+</section>
+
+<!-- FINAL CTA -->
+<section class="wrap" style="padding-top:100px;padding-bottom:120px">
+  <div style="background:#012A4A;color:#FFFFFF;border-radius:36px;padding:clamp(36px,6vw,72px);position:relative;overflow:hidden;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:48px;align-items:center">
+    <svg aria-hidden="true" viewBox="0 0 600 300" style="position:absolute;right:-60px;bottom:-40px;width:600px;height:300px;pointer-events:none"><path d="M40 300 L230 80 L420 300 Z" fill="#17A2B8" opacity="0.12"></path><path d="M180 300 L400 10 L620 300 Z" fill="#2ECC71" opacity="0.12"></path></svg>
+    <div style="display:flex;flex-direction:column;gap:20px;position:relative">
+      <h2 style="margin:0;font-size:clamp(34px,4.4vw,56px);line-height:1.05;letter-spacing:-0.03em;font-weight:700">Find out where the month went, and who owes you.</h2>
+      <p style="margin:0;font-size:18px;line-height:1.6;color:#CFE0EA;max-width:460px">Set up in a few minutes. [PRICING]</p>
+      <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:center">
+        <a class="btn-primary" href="/download#android" style="display:inline-flex;align-items:center;gap:10px;background:#2ECC71;color:#012A4A;text-decoration:none;font-weight:700;font-size:16px;padding:16px 26px;border-radius:999px">Get Altus for Android</a>
+        <a href="/download#iphone" style="display:inline-flex;align-items:center;gap:8px;font-size:15px;font-weight:600;color:#FFFFFF;padding:14px 18px;border-radius:999px;border:1px solid #1B4C74;text-decoration:none">Join the iPhone waitlist</a>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;position:relative" class="hide-sm">
+      <div style="background:#FFFFFF;border-radius:24px;padding:18px;display:flex;flex-direction:column;align-items:center;gap:10px;color:#012A4A">
+        <Qr size={148} />
+        <span style="font-size:13px;font-weight:600">Scan to download</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<Footer />
+<script>
+  import { initFeatureTabs } from '../scripts/feature-tabs';
+  initFeatureTabs();
+</script>
+</Base>
+
+<style is:global>
+b,strong,th,h1,h2,h3,h4{font-weight:700}
+a{color:#14804A}a:hover{color:#0E5A34}
+.wrap{max-width:1200px;margin:0 auto;padding:0 32px;box-sizing:border-box}
+.navlink{color:#CFE0EA;text-decoration:none;font-weight:500;font-size:15px;padding:10px 4px;transition:color .2s}
+.navlink:hover{color:#FFFFFF}
+.btn-primary{transition:transform .2s,box-shadow .2s}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(46,204,113,.28);color:#012A4A}
+.btn-ghost{transition:background .2s}
+.btn-ghost:hover{background:rgba(255,255,255,.08);color:#FFFFFF}
+.lift{transition:transform .3s cubic-bezier(.2,.7,.2,1),box-shadow .3s}
+.lift:hover{transform:translateY(-4px);box-shadow:0 18px 40px rgba(1,42,74,.10)}
+.bento{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:20px}
+.s4{grid-column:span 4}.s5{grid-column:span 5}.s6{grid-column:span 6}.s7{grid-column:span 7}
+.flink{color:#9DB3C2;text-decoration:none;font-size:14px}.flink:hover{color:#FFFFFF}
+@keyframes rise{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+.rise{animation:rise .9s cubic-bezier(.2,.7,.2,1) both}
+.d1{animation-delay:.08s}.d2{animation-delay:.18s}.d3{animation-delay:.28s}.d4{animation-delay:.4s}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.floaty{animation:floaty 6s ease-in-out infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(46,204,113,.6)}70%{box-shadow:0 0 0 10px rgba(46,204,113,0)}100%{box-shadow:0 0 0 0 rgba(46,204,113,0)}}
+.pulse{animation:pulse 2s infinite}
+@keyframes sms{0%{opacity:0;transform:translate(-16px,12px) scale(.96)}8%,36%{opacity:1;transform:none}48%,100%{opacity:0;transform:translate(70px,0) scale(.9)}}
+.sms{animation:sms 7s cubic-bezier(.2,.7,.2,1) infinite}
+@keyframes chip{0%,34%{opacity:0;transform:translateY(6px)}40%,52%{opacity:1;transform:none}60%,100%{opacity:0}}
+.chip{animation:chip 7s ease infinite}
+@keyframes rowin{0%,46%{opacity:0;max-height:0;transform:translateY(-8px)}54%,94%{opacity:1;max-height:64px;transform:none}100%{opacity:0;max-height:0}}
+.rowin{animation:rowin 7s cubic-bezier(.2,.7,.2,1) infinite;overflow:hidden}
+@keyframes flash{0%,50%{background:#E3F5EA}80%,100%{background:#FFFFFF}}
+.flash{animation:flash 7s ease infinite}
+@keyframes marquee{to{transform:translateX(-50%)}}
+.marquee{animation:marquee 28s linear infinite}
+@keyframes grow{from{transform:scaleX(0)}}
+.grow{transform-origin:left center;animation:grow 1.4s cubic-bezier(.2,.7,.2,1) both .5s}
+@keyframes dash{to{stroke-dashoffset:-24}}
+.dash{stroke-dasharray:6 6;animation:dash 1.2s linear infinite}
+@keyframes ring{from{stroke-dashoffset:302}}
+.ring{animation:ring 1.8s cubic-bezier(.2,.7,.2,1) both .4s}
+.pill{transition:background .2s}.pill:hover{background:rgba(46,204,113,0.24);color:#BFF2D4}
+.tab{width:100%;text-align:left;font:inherit;border:0;border-radius:20px;padding:18px 20px;cursor:pointer;transition:background .3s,color .3s}
+.tab:hover{background:#F2F6F8}
+.tab[aria-selected="true"]:hover{background:#012A4A}
+.tab:focus-visible{outline:3px solid #17A2B8;outline-offset:2px}
+@keyframes swap{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:none}}
+.swap{animation:swap .5s cubic-bezier(.2,.7,.2,1) both}
+@keyframes prog{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.prog{animation:prog 6s linear both}
+@media (max-width:900px){.bento>*{grid-column:span 12}.hide-sm{display:none}}
+.hlink:hover{color:#BFF2D4}
+.only-sm{display:none}
+@media (max-width:640px){.wrap{padding:0 16px}.split-stage{padding:28px 12px !important}#split{padding-top:80px !important}.only-sm{display:block}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+.tab[aria-selected="false"]{background:transparent;color:#012A4A}
+.tab[aria-selected="true"]{background:#012A4A;color:#FFFFFF}
+.tab[aria-selected="false"] .tab-body,.tab[aria-selected="false"] .tab-bar{display:none !important}
+.tabs-paused .prog{animation:none !important}
+.tab-pause{align-self:flex-start;font:inherit;font-size:13px;font-weight:600;color:#4A6378;background:none;border:1px solid #DCE3E8;border-radius:999px;padding:8px 14px;min-height:44px;cursor:pointer;margin-left:20px}
+.tab-pause:hover{color:#012A4A;border-color:#9FB2BF}
+@media (prefers-reduced-motion:reduce){.tab-pause{display:none}}
+</style>

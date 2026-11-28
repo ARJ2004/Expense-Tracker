@@ -19,6 +19,7 @@ import { NotificationsModule } from './notifications';
 import { RewardsModule } from './rewards';
 import { TransactionsModule } from './transactions';
 import { UsersModule } from './users';
+import { WaitlistModule } from './waitlist';
 import { tunables } from './config/tunables';
 
 @Module({
@@ -51,6 +52,7 @@ import { tunables } from './config/tunables';
     BudgetsModule,
     RewardsModule,
     NotificationsModule,
+    WaitlistModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

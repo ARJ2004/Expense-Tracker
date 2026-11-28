@@ -1,0 +1,325 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >-
+  Altus website and HTTPS front door. A private S3 bucket and one CloudFront distribution serve the
+  static site, and the same distribution forwards /v1/* (the API) and /j/* (invite pages) to the
+  EC2 instance. Deploy in ap-south-1. See docs/deploy-web.md.
+
+Parameters:
+  Ec2OriginDomain:
+    Type: String
+    Description: >-
+      Public DNS name of the EC2 instance AFTER its Elastic IP is associated,
+      e.g. ec2-13-200-10-20.ap-south-1.compute.amazonaws.com. CloudFront can't use a bare IP.
+    AllowedPattern: '^ec2-[0-9-]+\.[a-z0-9-]+\.compute\.amazonaws\.com$'
+  OriginSecret:
+    Type: String
+    NoEcho: true
+    MinLength: 32
+    Description: >-
+      Random value CloudFront sends as X-Origin-Verify; Nginx refuses origin requests without it.
+      Generate with: openssl rand -hex 32
+  GitHubRepo:
+    Type: String
+    Description: GitHub repository allowed to deploy the site, as owner/name (e.g. ARJ2004/Expense-Tracker).
+    AllowedPattern: '^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$'
+  CreateGitHubOidcProvider:
+    Type: String
+    AllowedValues: ['true', 'false']
+    Default: 'true'
+    Description: >-
+      Set to false if this AWS account already has the token.actions.githubusercontent.com
+      OIDC provider (IAM, Identity providers).
+
+Conditions:
+  MakeOidcProvider: !Equals [!Ref CreateGitHubOidcProvider, 'true']
+
+Resources:
+  # ---------- Storage ----------
+  SiteBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: !Sub 'altus-web-${AWS::AccountId}-${AWS::Region}'
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: expire-old-versions
+            Status: Enabled
+            NoncurrentVersionExpiration:
+              NoncurrentDays: 30
+
+  SiteBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref SiteBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: CloudFrontReadOnly
+            Effect: Allow
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Action: s3:GetObject
+            Resource: !Sub '${SiteBucket.Arn}/*'
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${Distribution}'
+
+  SiteOac:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: altus-web-oac
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  # ---------- Edge logic ----------
+  # Holds "routes" (the site's pages, written on every deploy) and "apk_latest" (where /get goes,
+  # written by infra/web/publish-apk.sh). Changing a key takes effect without redeploying anything.
+  SiteKvs:
+    Type: AWS::CloudFront::KeyValueStore
+    Properties:
+      Name: altus-site
+      Comment: Altus site routes and the latest APK path
+
+  SiteRequestFunction:
+    Type: AWS::CloudFront::Function
+    Properties:
+      Name: altus-site-request
+      AutoPublish: true
+      FunctionConfig:
+        Comment: Clean URLs, /get, and the 404 page (site behaviour only)
+        Runtime: cloudfront-js-2.0
+        KeyValueStoreAssociations:
+          - KeyValueStoreARN: !GetAtt SiteKvs.Arn
+      FunctionCode: !Sub |
+        import cf from 'cloudfront';
+        const kvs = cf.kvs('${SiteKvs.Id}');
+
+        async function read(key, fallback) {
+          try { return await kvs.get(key); } catch (e) { return fallback; }
+        }
+
+        function query(qs) {
+          const parts = [];
+          for (const k in qs) parts.push(qs[k].multiValue ? qs[k].multiValue.map((v) => k + '=' + v.value).join('&') : k + '=' + qs[k].value);
+          return parts.length ? '?' + parts.join('&') : '';
+        }
+
+        async function handler(event) {
+          const req = event.request;
+          const uri = req.uri;
+          if (uri === '/get') {
+            const target = await read('apk_latest', '/download');
+            return { statusCode: 302, statusDescription: 'Found', headers: { location: { value: target }, 'cache-control': { value: 'no-store' } } };
+          }
+          if (uri.length > 1 && uri.endsWith('/')) {
+            return { statusCode: 301, statusDescription: 'Moved Permanently', headers: { location: { value: uri.slice(0, -1) + query(req.querystring) } } };
+          }
+          if (uri === '/') { req.uri = '/index.html'; return req; }
+          // A file (has an extension): assets, fonts, the APK, assetlinks.json, robots.txt.
+          if (uri.lastIndexOf('.') > uri.lastIndexOf('/')) return req;
+          const routes = JSON.parse(await read('routes', '[]'));
+          req.uri = routes.indexOf(uri) !== -1 ? uri + '/index.html' : '/404.html';
+          return req;
+        }
+
+  SiteResponseFunction:
+    Type: AWS::CloudFront::Function
+    Properties:
+      Name: altus-site-response
+      AutoPublish: true
+      FunctionConfig:
+        Comment: Sends the 404 page with a real 404 status
+        Runtime: cloudfront-js-2.0
+      FunctionCode: |
+        async function handler(event) {
+          const res = event.response;
+          if (res.headers['x-amz-meta-altus-status']) {
+            res.statusCode = 404;
+            res.statusDescription = 'Not Found';
+            delete res.headers['x-amz-meta-altus-status'];
+          }
+          return res;
+        }
+
+  # ---------- Response headers ----------
+  SiteHeadersPolicy:
+    Type: AWS::CloudFront::ResponseHeadersPolicy
+    Properties:
+      ResponseHeadersPolicyConfig:
+        Name: altus-site
+        Comment: Security headers for the website
+        SecurityHeadersConfig:
+          StrictTransportSecurity: { AccessControlMaxAgeSec: 31536000, IncludeSubdomains: false, Preload: false, Override: true }
+          ContentTypeOptions: { Override: true }
+          FrameOptions: { FrameOption: DENY, Override: true }
+          ReferrerPolicy: { ReferrerPolicy: strict-origin-when-cross-origin, Override: true }
+          ContentSecurityPolicy:
+            Override: true
+            ContentSecurityPolicy: >-
+              default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline';
+              script-src 'self'; font-src 'self'; connect-src 'self'; form-action 'self';
+              frame-ancestors 'none'; base-uri 'self'; object-src 'none'
+        CustomHeadersConfig:
+          Items:
+            - Header: Permissions-Policy
+              Value: camera=(), microphone=(), geolocation=(), interest-cohort=()
+              Override: true
+
+  ApiHeadersPolicy:
+    Type: AWS::CloudFront::ResponseHeadersPolicy
+    Properties:
+      ResponseHeadersPolicyConfig:
+        Name: altus-api
+        Comment: Security headers for the API and invite pages (the API sets its own CSP on /j/)
+        SecurityHeadersConfig:
+          StrictTransportSecurity: { AccessControlMaxAgeSec: 31536000, IncludeSubdomains: false, Preload: false, Override: true }
+          ContentTypeOptions: { Override: true }
+
+  # ---------- The distribution ----------
+  # Treat it as permanent: its *.cloudfront.net name is the app's API address, the invite-link host
+  # and the QR code target until there is a domain. Never change a property that replaces it.
+  Distribution:
+    Type: AWS::CloudFront::Distribution
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      DistributionConfig:
+        Comment: Altus website, API and invite links
+        Enabled: true
+        HttpVersion: http2and3
+        IPV6Enabled: true
+        PriceClass: PriceClass_200
+        DefaultRootObject: index.html
+        Origins:
+          - Id: site
+            DomainName: !GetAtt SiteBucket.RegionalDomainName
+            OriginAccessControlId: !GetAtt SiteOac.Id
+            S3OriginConfig:
+              OriginAccessIdentity: ''
+          - Id: api
+            DomainName: !Ref Ec2OriginDomain
+            CustomOriginConfig:
+              HTTPPort: 80
+              # Plain HTTP to EC2 until there is a domain for an origin certificate (docs/deploy-web.md, Phase 5).
+              OriginProtocolPolicy: http-only
+              OriginReadTimeout: 60
+              OriginKeepaliveTimeout: 5
+            OriginCustomHeaders:
+              - HeaderName: X-Origin-Verify
+                HeaderValue: !Ref OriginSecret
+        DefaultCacheBehavior:
+          TargetOriginId: site
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods: [GET, HEAD]
+          CachedMethods: [GET, HEAD]
+          Compress: true
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6 # Managed-CachingOptimized
+          ResponseHeadersPolicyId: !Ref SiteHeadersPolicy
+          FunctionAssociations:
+            - EventType: viewer-request
+              FunctionARN: !GetAtt SiteRequestFunction.FunctionMetadata.FunctionARN
+            - EventType: viewer-response
+              FunctionARN: !GetAtt SiteResponseFunction.FunctionMetadata.FunctionARN
+        CacheBehaviors:
+          - PathPattern: /v1/*
+            TargetOriginId: api
+            ViewerProtocolPolicy: https-only
+            AllowedMethods: [GET, HEAD, OPTIONS, PUT, POST, PATCH, DELETE]
+            CachedMethods: [GET, HEAD]
+            Compress: true
+            CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad # Managed-CachingDisabled
+            OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac # Managed-AllViewerExceptHostHeader
+            ResponseHeadersPolicyId: !Ref ApiHeadersPolicy
+          - PathPattern: /j/*
+            TargetOriginId: api
+            ViewerProtocolPolicy: redirect-to-https
+            AllowedMethods: [GET, HEAD]
+            CachedMethods: [GET, HEAD]
+            Compress: true
+            CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad # Managed-CachingDisabled
+            OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac # Managed-AllViewerExceptHostHeader
+            ResponseHeadersPolicyId: !Ref ApiHeadersPolicy
+        ViewerCertificate:
+          CloudFrontDefaultCertificate: true
+
+  # ---------- Deploying from GitHub Actions (no stored keys) ----------
+  GitHubOidcProvider:
+    Type: AWS::IAM::OIDCProvider
+    Condition: MakeOidcProvider
+    Properties:
+      Url: https://token.actions.githubusercontent.com
+      ClientIdList: [sts.amazonaws.com]
+
+  DeployRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: altus-web-deploy
+      Description: Assumed by GitHub Actions (environment "production") to publish the website
+      MaxSessionDuration: 3600
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: !If
+                - MakeOidcProvider
+                - !Ref GitHubOidcProvider
+                - !Sub 'arn:aws:iam::${AWS::AccountId}:oidc-provider/token.actions.githubusercontent.com'
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                token.actions.githubusercontent.com:aud: sts.amazonaws.com
+                token.actions.githubusercontent.com:sub: !Sub 'repo:${GitHubRepo}:environment:production'
+      Policies:
+        - PolicyName: publish-site
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: s3:ListBucket
+                Resource: !GetAtt SiteBucket.Arn
+              - Effect: Allow
+                Action: [s3:PutObject, s3:DeleteObject, s3:GetObject]
+                Resource: !Sub '${SiteBucket.Arn}/*'
+              # APKs are uploaded by the owner, never by CI.
+              - Effect: Deny
+                Action: [s3:PutObject, s3:DeleteObject]
+                Resource: !Sub '${SiteBucket.Arn}/apk/*'
+              - Effect: Allow
+                Action: cloudfront:CreateInvalidation
+                Resource: !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${Distribution}'
+              - Effect: Allow
+                Action: [cloudfront-keyvaluestore:DescribeKeyValueStore, cloudfront-keyvaluestore:GetKey, cloudfront-keyvaluestore:PutKey]
+                Resource: !GetAtt SiteKvs.Arn
+
+Outputs:
+  SiteUrl:
+    Description: The public HTTPS address (SITE_URL, the app's API_BASE_URL and PUBLIC_WEB_BASE_URL)
+    Value: !Sub 'https://${Distribution.DomainName}'
+  DistributionDomain:
+    Value: !GetAtt Distribution.DomainName
+  DistributionId:
+    Value: !Ref Distribution
+  BucketName:
+    Value: !Ref SiteBucket
+  KeyValueStoreArn:
+    Value: !GetAtt SiteKvs.Arn
+  DeployRoleArn:
+    Value: !GetAtt DeployRole.Arn

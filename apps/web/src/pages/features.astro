@@ -1,0 +1,316 @@
+---
+// Built from the approved V3 design (Features). Copy: content-v2/v3; see docs/deploy-web.md.
+import Base from '../layouts/Base.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import { breadcrumbs } from '../data/jsonld';
+const jsonLd = [breadcrumbs(Astro.site!, 'Features', '/features')];
+const host = Astro.site!.host;
+---
+<Base title={'Features: SMS, Statements, Budgets and Bill Splitting, Altus'} description={'Bank SMS capture, PDF and Excel statement import, no duplicates, a daily spending limit, budgets, goals and bill splitting. See what Altus does.'} jsonLd={jsonLd}>
+
+
+<header style="background:#012A4A;color:#FFFFFF;position:relative;overflow:hidden">
+  <svg aria-hidden="true" viewBox="0 0 1440 300" preserveAspectRatio="xMidYMax slice" style="position:absolute;left:0;bottom:0;width:100%;height:300px;pointer-events:none"><path d="M760 300 L1040 60 L1320 300 Z" fill="#17A2B8" opacity="0.07"></path><path d="M960 300 L1260 0 L1560 300 Z" fill="#2ECC71" opacity="0.06"></path></svg>
+  <Nav current="/features" />
+  <div id="main" tabindex="-1" class="wrap" style="padding-top:64px;padding-bottom:96px;display:flex;flex-direction:column;gap:28px;position:relative">
+    <span class="rise" style="font-size:13px;font-weight:700;color:#2ECC71;letter-spacing:.06em;text-transform:uppercase">Features</span>
+    <h1 class="rise d1" style="margin:0;font-size:clamp(42px,5.6vw,72px);line-height:1.03;letter-spacing:-0.035em;font-weight:700;max-width:900px">Less typing. More knowing.</h1>
+    <p class="rise d2" style="margin:0;font-size:19px;line-height:1.55;color:#CFE0EA;max-width:640px">Everything the Altus automatic expense tracker does today, from bank SMS and PDF statements to budgets, a daily allowance and splitting bills with friends. If it isn't on this page, it isn't built yet.</p>
+    <div class="rise d3" style="display:flex;flex-wrap:wrap;gap:10px">
+      <a class="jump" href="#capture">01 Capture</a><a class="jump" href="#ledger">02 Ledger</a><a class="jump" href="#plan">03 Plan</a><a class="jump" href="#together">04 Split with friends</a><a class="jump" href="#informed">05 Stay informed</a><a class="jump" href="#control">06 Your data</a>
+    </div>
+  </div>
+</header>
+
+<!-- 01 CAPTURE -->
+<section id="capture" class="wrap" style="padding-top:120px;padding-bottom:40px;display:flex;flex-direction:column;gap:56px">
+  <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:baseline">
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:600;color:#14804A">01</span>
+    <h2 style="margin:0;font-size:clamp(32px,3.6vw,46px);line-height:1.1;letter-spacing:-0.03em;font-weight:700">Capture: payments arrive on their own</h2>
+  </div>
+  <div class="split">
+    <div style="display:flex;flex-direction:column;gap:20px">
+      <h3 style="margin:0;font-size:28px;font-weight:700;letter-spacing:-0.02em">Bank SMS capture</h3>
+      <p style="margin:0;font-size:17px;line-height:1.65;color:#4A6378">Turn it on once, and debit and credit alerts become transactions as they arrive. Altus reads each message on your phone and sends only the transaction details, never the message text.</p>
+      <ul style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:12px;font-size:15px">
+        <li style="display:flex;gap:12px"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#14804A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M5 12l5 5L20 7"></path></svg>Exact formats for HDFC, ICICI, SBI and Axis. Alerts from other banks are read by their wording.</li>
+        <li style="display:flex;gap:12px"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#14804A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M5 12l5 5L20 7"></path></svg>Skips personal messages, OTPs, offers and "will be debited" reminders.</li>
+        <li style="display:flex;gap:12px"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#14804A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M5 12l5 5L20 7"></path></svg>A sender Altus doesn't know asks "Is this your bank?" once.</li>
+        <li style="display:flex;gap:12px"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#14804A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M5 12l5 5L20 7"></path></svg>Android only. SMS reading is in the APK on our Download page now, and comes to the Google Play version once Google approves it.</li>
+      </ul>
+    </div>
+    <div style="background:#012A4A;border-radius:32px;padding:32px;display:flex;flex-direction:column;gap:14px">
+      <div style="background:#FFFFFF;border-radius:18px;padding:14px 16px;display:flex;flex-direction:column;gap:6px"><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;color:#4A6378"><span>AX-ICICIT</span><span>9:41</span></div><div style="font-size:13px;line-height:1.45">INR 212.00 spent using ICICI Bank Card XX1093 on 28-Nov-26 on UBER INDIA. Avl Limit: INR…</div></div>
+      <div style="display:flex;justify-content:center;color:#2ECC71"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"></path></svg></div>
+      <div style="background:#0A3354;border:1px solid #1B4C74;border-radius:18px;padding:16px;display:flex;align-items:center;gap:12px;color:#FFFFFF">
+        <div style="width:40px;height:40px;border-radius:12px;background:#DDF1F4;color:#0F6674;display:flex;align-items:center;justify-content:center;font-weight:700">U</div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-weight:600">Uber</span><span style="font-size:12px;color:#9FC3D8">Transport · ICICI card ••1093 · 9:41</span></div>
+        <span style="font-family:'IBM Plex Mono',monospace;font-weight:600;color:#FF8A80">−₹212</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;padding-top:6px"><span style="font-size:12px;font-weight:600;color:#BFF2D4;background:rgba(46,204,113,0.18);padding:6px 12px;border-radius:999px">HDFC</span><span style="font-size:12px;font-weight:600;color:#BFF2D4;background:rgba(46,204,113,0.18);padding:6px 12px;border-radius:999px">ICICI</span><span style="font-size:12px;font-weight:600;color:#BFF2D4;background:rgba(46,204,113,0.18);padding:6px 12px;border-radius:999px">SBI</span><span style="font-size:12px;font-weight:600;color:#BFF2D4;background:rgba(46,204,113,0.18);padding:6px 12px;border-radius:999px">Axis</span><span style="font-size:12px;font-weight:600;color:#9FC3D8;border:1px dashed #1B4C74;padding:6px 12px;border-radius:999px">+ other banks, by wording</span></div>
+    </div>
+  </div>
+  <div class="split">
+    <div style="background:#FFFFFF;border:1px solid #DCE3E8;border-radius:32px;padding:32px;display:flex;flex-direction:column;gap:16px">
+      <div role="img" aria-label="Altus import review showing rows already in the ledger" style="position:relative;border:2px dashed #9FB2BF;border-radius:20px;padding:28px;display:flex;flex-direction:column;align-items:center;gap:10px;overflow:hidden">
+        <span class="scan" style="position:absolute;left:0;right:0;height:3px;background:#2ECC71;opacity:.7"></span>
+        <svg width="36" height="36" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#0F6674" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"></path><path d="M14 3v5h5"></path></svg>
+        <span style="font-weight:700">HDFC_Statement_Oct.pdf</span>
+        <span style="font-size:13px;color:#4A6378">Password used once, never stored</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px">
+        <div style="background:#F8F9F9;border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:2px"><span style="font-family:'IBM Plex Mono',monospace;font-size:24px;font-weight:600">128</span><span style="font-size:12px;color:#4A6378;font-weight:600">found</span></div>
+        <div style="background:#FCEFD9;border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:2px"><span style="font-family:'IBM Plex Mono',monospace;font-size:24px;font-weight:600;color:#8A5A12">6</span><span style="font-size:12px;color:#8A5A12;font-weight:600">already in ledger</span></div>
+        <div style="background:#E3F5EA;border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:2px"><span style="font-family:'IBM Plex Mono',monospace;font-size:24px;font-weight:600;color:#0E5A34">122</span><span style="font-size:12px;color:#0E5A34;font-weight:600">added</span></div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:20px">
+      <h3 style="margin:0;font-size:28px;font-weight:700;letter-spacing:-0.02em">Statement import</h3>
+      <p style="margin:0;font-size:17px;line-height:1.65;color:#4A6378">Upload the statement you download from net banking. Altus reads it, shows you every row, and marks the ones already in your ledger before anything is added.</p>
+      <ul style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:12px;font-size:15px">
+        <li style="display:flex;gap:12px"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#14804A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M5 12l5 5L20 7"></path></svg>CSV, Excel (.xlsx) and PDF, up to 10 MB.</li>
+        <li style="display:flex;gap:12px"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#14804A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M5 12l5 5L20 7"></path></svg>Password-protected PDFs open with your password, which is used once and never stored.</li>
+        <li style="display:flex;gap:12px"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#14804A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M5 12l5 5L20 7"></path></svg>HDFC, ICICI, SBI and Axis have their own readers. Other banks work when the statement has clear date, description and amount columns.</li>
+        <li style="display:flex;gap:12px"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#14804A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M5 12l5 5L20 7"></path></svg>Scanned PDFs can't be read. Download the statement from net banking instead.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="cards">
+    <div class="lift" style="background:#FFFFFF;border:1px solid #DCE3E8;border-radius:24px;padding:24px;display:flex;flex-direction:column;gap:10px"><span style="font-family:'IBM Plex Mono',monospace;font-size:28px;font-weight:600">₹ 250<span class="caret" style="color:#2ECC71">|</span></span><h4 style="margin:0;font-size:18px;font-weight:700">Manual entry</h4><p style="margin:0;font-size:14px;line-height:1.6;color:#4A6378">For cash and anything your bank never tells you about. Tap Add, enter the amount on the number pad, and pick a category and account.</p></div>
+    <div class="lift" style="background:#FFFFFF;border:1px solid #DCE3E8;border-radius:24px;padding:24px;display:flex;flex-direction:column;gap:10px"><div style="display:flex;gap:6px;flex-wrap:wrap"><span style="font-size:12px;font-weight:600;background:#E3F5EA;color:#0E5A34;padding:5px 10px;border-radius:999px">Savings</span><span style="font-size:12px;font-weight:600;background:#DDF1F4;color:#0F6674;padding:5px 10px;border-radius:999px">Credit card</span><span style="font-size:12px;font-weight:600;background:#FCEFD9;color:#8A5A12;padding:5px 10px;border-radius:999px">Wallet</span><span style="font-size:12px;font-weight:600;background:#E8EEF1;color:#4A6378;padding:5px 10px;border-radius:999px">Cash</span></div><h4 style="margin:0;font-size:18px;font-weight:700">Accounts</h4><p style="margin:0;font-size:14px;line-height:1.6;color:#4A6378">Savings, Credit card, Wallet or Cash. Shown as "HDFC Bank ••1234": Altus keeps only the last 4 digits, never the full number.</p></div>
+  </div>
+</section>
+
+<!-- 02 LEDGER -->
+<section id="ledger" style="background:#FFFFFF;border-top:1px solid #DCE3E8;border-bottom:1px solid #DCE3E8;margin-top:100px">
+  <div class="wrap" style="padding-top:110px;padding-bottom:110px;display:flex;flex-direction:column;gap:56px">
+    <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:baseline">
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:600;color:#14804A">02</span>
+      <h2 style="margin:0;font-size:clamp(32px,3.6vw,46px);line-height:1.1;letter-spacing:-0.03em;font-weight:700">Ledger: one clean list you can trust</h2>
+    </div>
+    <div class="split">
+      <div style="display:flex;flex-direction:column;gap:20px">
+        <h3 style="margin:0;font-size:28px;font-weight:700;letter-spacing:-0.02em">No duplicates</h3>
+        <p style="margin:0;font-size:17px;line-height:1.65;color:#4A6378">Paid ₹450 at Swiggy, got an SMS, then imported the statement? You see one transaction. Altus matches on bank reference, account, amount, day and merchant. When it isn't sure, it marks the row "Possible duplicate" and you decide.</p>
+      </div>
+      <div style="background:#F8F9F9;border:1px solid #DCE3E8;border-radius:32px;padding:32px;display:flex;flex-direction:column;gap:14px;min-height:260px;justify-content:center;position:relative">
+        <div class="m1" style="background:#FFFFFF;border:1px solid #DCE3E8;border-radius:16px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:14px"><b>Swiggy</b> <span style="color:#4A6378">· from SMS</span></span><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;color:#C0392B">−₹450</span></div>
+        <div class="mm" style="background:#012A4A;color:#FFFFFF;border-radius:16px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:14px;display:flex;align-items:center;gap:8px"><b>Swiggy</b><span style="font-size:11px;font-weight:600;color:#BFF2D4;background:rgba(46,204,113,0.18);padding:3px 8px;border-radius:999px">SMS + statement</span></span><span style="font-family:'IBM Plex Mono',monospace;font-weight:600">−₹450</span></div>
+        <div class="m2" style="background:#FFFFFF;border:1px solid #DCE3E8;border-radius:16px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:14px"><b>SWIGGY BANGALORE</b> <span style="color:#4A6378">· from statement</span></span><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;color:#C0392B">−₹450</span></div>
+      </div>
+    </div>
+    <div class="cards">
+      <div class="lift" style="background:#F8F9F9;border:1px solid #DCE3E8;border-radius:24px;padding:24px;display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;align-items:center;gap:10px;background:#FFFFFF;border:1px solid #DCE3E8;border-radius:12px;padding:10px 12px;font-size:14px;color:#4A6378"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>zomato<span class="caret">|</span></div>
+        <h4 style="margin:0;font-size:18px;font-weight:700">Search and filters</h4><p style="margin:0;font-size:14px;line-height:1.6;color:#4A6378">Find any payment by merchant or note. Narrow the list by date, debit or credit, category, account, source or amount range.</p>
+      </div>
+      <div class="lift" style="background:#F8F9F9;border:1px solid #DCE3E8;border-radius:24px;padding:24px;display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;gap:6px;flex-wrap:wrap"><span style="font-size:12px;font-weight:600;background:#012A4A;color:#FFFFFF;padding:6px 12px;border-radius:999px">Food</span><span style="font-size:12px;font-weight:600;background:#FFFFFF;border:1px solid #DCE3E8;padding:6px 12px;border-radius:999px">Travel</span><span style="font-size:12px;font-weight:600;background:#FFFFFF;border:1px solid #DCE3E8;padding:6px 12px;border-radius:999px">Bills</span></div>
+        <h4 style="margin:0;font-size:18px;font-weight:700">Categories that learn</h4><p style="margin:0;font-size:14px;line-height:1.6;color:#4A6378">Payments are sorted as they come in. Change one and turn on "Apply to all from Swiggy": past and future payments follow.</p>
+      </div>
+      <div class="lift" style="background:#F8F9F9;border:1px solid #DCE3E8;border-radius:24px;padding:24px;display:flex;flex-direction:column;gap:12px">
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:600">₹1,386<span style="color:#4A6378">.50</span></span>
+        <h4 style="margin:0;font-size:18px;font-weight:700">Exact to the paisa</h4><p style="margin:0;font-size:14px;line-height:1.6;color:#4A6378">Every amount is kept in whole paise from the SMS to the screen. Indian grouping (₹1,00,000), and dates in IST.</p>
+      </div>
+      <div class="lift" style="background:#F8F9F9;border:1px solid #DCE3E8;border-radius:24px;padding:24px;display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;gap:6px;flex-wrap:wrap"><span style="font-size:12px;font-weight:600;background:#FFFFFF;border:1px solid #DCE3E8;padding:6px 12px;border-radius:999px">Food &amp; Dining</span><span style="font-size:12px;font-weight:600;background:#FFFFFF;border:1px solid #DCE3E8;padding:6px 12px;border-radius:999px">Rent</span><span style="font-size:12px;font-weight:600;background:#FFFFFF;border:1px solid #DCE3E8;padding:6px 12px;border-radius:999px">+12</span></div>
+        <h4 style="margin:0;font-size:18px;font-weight:700">14 categories to start</h4><p style="margin:0;font-size:14px;line-height:1.6;color:#4A6378">From Food &amp; Dining to Rent, Travel and Cash. Transfers and income are kept apart from spending.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 03 PLAN -->
+<section id="plan" class="wrap" style="padding-top:120px;padding-bottom:40px;display:flex;flex-direction:column;gap:56px">
+  <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:baseline">
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:600;color:#14804A">03</span>
+    <h2 style="margin:0;font-size:clamp(32px,3.6vw,46px);line-height:1.1;letter-spacing:-0.03em;font-weight:700">Plan: budgets, goals and a daily number</h2>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:20px">
+    <div class="lift" style="background:#012A4A;color:#FFFFFF;border-radius:28px;padding:32px;display:flex;flex-direction:column;gap:18px">
+      <span style="font-size:13px;font-weight:600;color:#9FC3D8">Allowance today</span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:44px;font-weight:600;letter-spacing:-1.6px">₹986</span>
+      <div style="height:8px;background:rgba(255,255,255,0.14);border-radius:999px;overflow:hidden"><div class="grow" style="width:38%;height:100%;background:#2ECC71"></div></div>
+      <span style="font-size:13px;color:#9FC3D8">Spent today <b style="font-family:'IBM Plex Mono',monospace;color:#FFFFFF;font-weight:600">₹375</b></span>
+      <h3 style="margin:0;font-size:22px;font-weight:700;padding-top:8px">Daily allowance</h3>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#CFE0EA">Altus starts from your monthly income, holds back fixed costs and goal savings, takes off what you've spent, and spreads the rest over the days left. Go over today, and tomorrow's number is a little lower.</p>
+    </div>
+    <div class="lift" style="background:#FFFFFF;border:1px solid #DCE3E8;border-radius:28px;padding:32px;display:flex;flex-direction:column;gap:18px">
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;flex-direction:column;gap:6px"><div style="display:flex;justify-content:space-between;font-size:14px"><span>Eating out</span><span style="font-family:'IBM Plex Mono',monospace;font-weight:600">₹5,280 / ₹6,000</span></div><div style="height:8px;background:#E8EEF1;border-radius:999px;overflow:hidden"><div class="grow" style="width:88%;height:100%;background:#E8A33D"></div></div></div>
+        <div style="display:flex;flex-direction:column;gap:6px"><div style="display:flex;justify-content:space-between;font-size:14px"><span>Groceries</span><span style="font-family:'IBM Plex Mono',monospace;font-weight:600">₹3,360 / ₹8,000</span></div><div style="height:8px;background:#E8EEF1;border-radius:999px;overflow:hidden"><div class="grow" style="width:42%;height:100%;background:#2ECC71"></div></div></div>
+        <div style="display:flex;flex-direction:column;gap:6px"><div style="display:flex;justify-content:space-between;font-size:14px"><span>Shopping</span><span style="font-family:'IBM Plex Mono',monospace;font-weight:600;color:#C0392B">₹9,220 / ₹8,000</span></div><div style="height:8px;background:#E8EEF1;border-radius:999px;overflow:hidden"><div class="grow" style="width:100%;height:100%;background:#C0392B"></div></div></div>
+      </div>
+      <h3 style="margin:0;font-size:22px;font-weight:700;padding-top:8px">Budgets</h3>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#4A6378">Set a monthly limit for the categories you watch, and mark rent and EMIs as fixed. Altus warns you when you're on pace to go over, then at 80% and 100%.</p>
+    </div>
+    <div class="lift" style="background:#FFFFFF;border:1px solid #DCE3E8;border-radius:28px;padding:32px;display:flex;flex-direction:column;gap:18px">
+      <div style="display:flex;align-items:center;gap:20px">
+        <svg width="96" height="96" viewBox="0 0 120 120" role="img" aria-label="Goal 60 percent saved"><circle cx="60" cy="60" r="48" fill="none" stroke="#E8EEF1" stroke-width="12"></circle><circle cx="60" cy="60" r="48" fill="none" stroke="#17A2B8" stroke-width="12" stroke-linecap="round" stroke-dasharray="302" stroke-dashoffset="121" transform="rotate(-90 60 60)"></circle></svg>
+        <div style="display:flex;flex-direction:column;gap:4px"><span style="font-weight:700">Emergency fund</span><span style="font-family:'IBM Plex Mono',monospace;font-weight:600">₹60,000 <span style="color:#4A6378;font-weight:500">of ₹1,00,000</span></span><span style="font-size:12px;font-weight:600;color:#0F6674;background:#DDF1F4;padding:4px 10px;border-radius:999px;align-self:flex-start">Halfway there</span></div>
+      </div>
+      <h3 style="margin:0;font-size:22px;font-weight:700;padding-top:8px">Goals</h3>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#4A6378">Pick what you're saving for, what it costs and when. ₹50,000 for a phone in 3 months becomes ₹556 a day. Altus tracks what you log; it doesn't move or hold your money.</p>
+    </div>
+  </div>
+  <div class="split">
+    <div style="display:flex;flex-direction:column;gap:20px">
+      <h3 style="margin:0;font-size:28px;font-weight:700;letter-spacing:-0.02em">Streaks and badges</h3>
+      <p style="margin:0;font-size:17px;line-height:1.65;color:#4A6378">Every day you stay within your allowance adds to your streak, and you'll hear about it at 3, 7, 14 and 30 days. Nine badges to earn, including Planner, Saver, No-spend day, Week under budget and Month on budget.</p>
+    </div>
+    <div style="background:#FFFFFF;border:1px solid #DCE3E8;border-radius:32px;padding:28px;display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:14px">
+      <div style="background:#E3F5EA;border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:8px;align-items:flex-start"><svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#0E5A34" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c2 3 5 5 5 9a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3 1-6 1-8z"></path></svg><span style="font-size:14px;font-weight:700;color:#0E5A34">3 days in a row</span></div>
+      <div style="background:#E3F5EA;border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:8px;align-items:flex-start"><svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#0E5A34" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg><span style="font-size:14px;font-weight:700;color:#0E5A34">A whole week</span></div>
+      <div style="background:#F8F9F9;border:1px dashed #9FB2BF;border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:8px;align-items:flex-start"><svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#4A6378" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="6"></circle><path d="M8.5 14L7 22l5-3 5 3-1.5-8"></path></svg><span style="font-size:14px;font-weight:700;color:#4A6378">30 days in a row</span></div>
+      <div style="background:#DDF1F4;border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:8px;align-items:flex-start"><svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#0F6674" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 3v9h9"></path></svg><span style="font-size:14px;font-weight:700;color:#0F6674">Halfway there</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- 04 SPLIT WITH FRIENDS (V3) -->
+<section id="together" style="background:#012A4A;color:#FFFFFF;margin-top:100px">
+  <div class="wrap band" style="padding-top:110px;padding-bottom:110px;display:flex;flex-direction:column;gap:56px">
+    <div class="split">
+      <div style="display:flex;flex-direction:column;gap:22px">
+        <div style="display:flex;gap:24px;align-items:baseline"><span style="font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:600;color:#2ECC71">04</span><span style="font-size:13px;font-weight:700;color:#9FC3D8;letter-spacing:.06em;text-transform:uppercase">Split with friends</span></div>
+        <h2 style="margin:0;font-size:clamp(32px,3.6vw,46px);line-height:1.1;letter-spacing:-0.03em;font-weight:700">Split expenses with friends</h2>
+        <p style="margin:0;font-size:17px;line-height:1.65;color:#CFE0EA">For rent with flatmates or a Goa trip. Make a group, log who paid, and Altus keeps each group's balances, separate from your own ledger.</p>
+        <ul style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:12px;font-size:15px;line-height:1.55">
+          <li style="display:flex;gap:12px"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#2ECC71" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M5 12l5 5L20 7"></path></svg>Groups for a trip, flat or party, with up to 50 people. Open them from Settings, Groups.</li>
+          <li style="display:flex;gap:12px"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#2ECC71" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M5 12l5 5L20 7"></path></svg>Add friends by name. They don't need Altus, and take over their name if they join on Android.</li>
+          <li style="display:flex;gap:12px"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#2ECC71" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M5 12l5 5L20 7"></path></svg>Everyone sees the same numbers. "See who changed what" lists every edit and who made it.</li>
+          <li style="display:flex;gap:12px"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#2ECC71" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M5 12l5 5L20 7"></path></svg>Hear when someone joins, adds an expense with your share, or pays you. Switch each one off.</li>
+          <li style="display:flex;gap:12px"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#2ECC71" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M5 12l5 5L20 7"></path></svg>Leave any time. Your name and what you paid stay, so nobody's balance changes.</li>
+        </ul>
+      </div>
+      <div role="img" aria-label="Altus bill splitting group for a Goa trip showing who owes whom, ₹23,200 total spent, and a settle up list" style="background:#F8F9F9;color:#012A4A;border-radius:32px;padding:28px;display:flex;flex-direction:column;gap:14px">
+        <div aria-hidden="true" style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:20px;font-weight:700">🏖️ Goa trip</span><span style="font-size:13px;color:#4A6378">4 members</span></div>
+        <div aria-hidden="true" style="display:flex;flex-direction:column;gap:6px"><div style="background:#E3F5EA;border-radius:16px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:15px;font-weight:600;color:#0E5A34">You are owed</span><span style="font-family:'IBM Plex Mono',monospace;font-size:24px;font-weight:600;color:#0E5A34">₹10,000</span></div><span style="font-size:12px;color:#4A6378;padding-left:4px">Total spent <b style="font-family:'IBM Plex Mono',monospace;color:#012A4A;font-weight:600">₹23,200</b></span></div>
+        <span aria-hidden="true" style="font-size:12px;font-weight:700;color:#4A6378">Balances</span>
+        <div aria-hidden="true" style="background:#FFFFFF;border:1px solid #DCE3E8;border-radius:16px;display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;gap:12px;padding:12px 14px"><span style="width:36px;height:36px;border-radius:999px;background:#E3F5EA;color:#0E5A34;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex:none">R</span><span style="flex:1;display:flex;flex-direction:column"><span style="font-size:14px;font-weight:600">Riya</span><span style="font-size:12px;font-weight:600;color:#14804A">gets back</span></span><span style="font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600">₹200</span></div>
+          <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-top:1px solid #E8EEF1"><span style="width:36px;height:36px;border-radius:999px;background:#FCEFD9;color:#8A5A12;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex:none">K</span><span style="flex:1;display:flex;flex-direction:column"><span style="font-size:14px;font-weight:600">Kabir</span><span style="font-size:12px;font-weight:600;color:#4A6378">owes</span></span><span style="font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600">₹4,400</span></div>
+          <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-top:1px solid #E8EEF1"><span style="width:36px;height:36px;border-radius:999px;background:#DDF1F4;color:#0F6674;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex:none">P</span><span style="flex:1;display:flex;flex-direction:column"><span style="font-size:14px;font-weight:600">Priya</span><span style="font-size:12px;font-weight:600;color:#4A6378">owes</span></span><span style="font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600">₹5,800</span></div>
+        </div>
+        <span aria-hidden="true" style="font-size:12px;font-weight:700;color:#4A6378">Settle up</span>
+        <div aria-hidden="true" style="background:#FFFFFF;border:1px solid #DCE3E8;border-radius:16px;display:flex;flex-direction:column;font-size:14px">
+          <div style="display:flex;justify-content:space-between;padding:12px 14px"><span style="font-weight:600">Priya pays You</span><span style="font-family:'IBM Plex Mono',monospace;font-weight:600">₹5,800</span></div>
+          <div style="display:flex;justify-content:space-between;padding:12px 14px;border-top:1px solid #E8EEF1"><span style="font-weight:600">Kabir pays You</span><span style="font-family:'IBM Plex Mono',monospace;font-weight:600">₹4,200</span></div>
+          <div style="display:flex;justify-content:space-between;padding:12px 14px;border-top:1px solid #E8EEF1"><span style="font-weight:600">Kabir pays Riya</span><span style="font-family:'IBM Plex Mono',monospace;font-weight:600">₹200</span></div>
+        </div>
+        <span aria-hidden="true" style="font-size:13px;font-weight:700;color:#14804A;text-align:center">Record a payment</span>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:20px">
+      <span style="font-size:13px;font-weight:700;color:#9FC3D8;letter-spacing:.06em;text-transform:uppercase">How a group works</span>
+      <div class="steps4" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px">
+        <div class="lift" style="background:#0A3354;border:1px solid #1B4C74;border-radius:24px;padding:22px;display:flex;flex-direction:column;gap:12px">
+          <div aria-hidden="true" style="background:#F8F9F9;color:#012A4A;border-radius:16px;padding:12px;min-height:120px;box-sizing:border-box;display:flex;flex-direction:column;gap:8px;font-size:11px"><span style="font-size:12px;font-weight:700">Invite people</span><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#4A6378;font-weight:600">{host}/j/K7Q2M9XP4R</span><span style="align-self:flex-start;background:#012A4A;color:#FFFFFF;font-size:11px;font-weight:700;border-radius:999px;padding:8px 14px">Share invite link</span><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#4A6378;font-weight:600">Code K7Q2-M9XP4R</span></div>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:#2ECC71">01</span>
+          <h3 style="margin:0;font-size:18px;font-weight:700">Invite link and join code</h3>
+          <p style="margin:0;font-size:14px;line-height:1.55;color:#CFE0EA">Share the link on WhatsApp, or read out the 10-character code.</p>
+        </div>
+        <div class="lift" style="background:#0A3354;border:1px solid #1B4C74;border-radius:24px;padding:22px;display:flex;flex-direction:column;gap:12px">
+          <div aria-hidden="true" style="background:#F8F9F9;color:#012A4A;border-radius:16px;padding:12px;min-height:120px;box-sizing:border-box;display:flex;flex-direction:column;gap:8px;font-size:11px"><span style="font-size:12px;font-weight:700">Which one are you?</span><span style="display:flex;justify-content:space-between;align-items:center;background:#FFFFFF;border:1px solid #DCE3E8;border-radius:10px;padding:7px 9px"><b>Riya</b><span style="background:#DDF1F4;color:#0F6674;border-radius:999px;padding:3px 8px;font-size:10px;font-weight:700">That's me</span></span><span style="display:flex;justify-content:space-between;align-items:center;background:#FFFFFF;border:1px solid #DCE3E8;border-radius:10px;padding:7px 9px"><b>Kabir</b><span style="color:#4A6378;font-size:10px;font-weight:600">Already joined</span></span></div>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:#2ECC71">02</span>
+          <h3 style="margin:0;font-size:18px;font-weight:700">Friends pick "That's me"</h3>
+          <p style="margin:0;font-size:14px;line-height:1.55;color:#CFE0EA">They take over their name and its history, or tap "I'm not on the list".</p>
+        </div>
+        <div class="lift" style="background:#0A3354;border:1px solid #1B4C74;border-radius:24px;padding:22px;display:flex;flex-direction:column;gap:12px">
+          <div aria-hidden="true" style="background:#F8F9F9;color:#012A4A;border-radius:16px;padding:12px;min-height:120px;box-sizing:border-box;display:flex;flex-direction:column;gap:8px;font-size:11px"><span style="display:flex;gap:4px"><span style="background:#012A4A;color:#FFFFFF;border-radius:999px;padding:4px 9px;font-size:10px;font-weight:700">Split equally</span><span style="background:#FFFFFF;border:1px solid #DCE3E8;border-radius:999px;padding:4px 9px;font-size:10px;font-weight:700">Exact amounts</span></span><span style="font-family:'IBM Plex Mono',monospace;font-weight:600">₹1,000 ÷ 3</span><span style="font-family:'IBM Plex Mono',monospace;font-weight:600">₹333.34 · ₹333.33 · ₹333.33</span><span style="align-self:flex-start;background:#E3F5EA;color:#0E5A34;border-radius:999px;padding:4px 9px;font-size:10px;font-weight:700">Adds up to the total</span></div>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:#2ECC71">03</span>
+          <h3 style="margin:0;font-size:18px;font-weight:700">Split equally or by exact amounts</h3>
+          <p style="margin:0;font-size:14px;line-height:1.55;color:#CFE0EA">Everyone or just a few. Shares always add up to the paisa.</p>
+        </div>
+        <div class="lift" style="background:#0A3354;border:1px solid #1B4C74;border-radius:24px;padding:22px;display:flex;flex-direction:column;gap:12px">
+          <div aria-hidden="true" style="background:#F8F9F9;color:#012A4A;border-radius:16px;padding:12px;min-height:120px;box-sizing:border-box;display:flex;flex-direction:column;gap:8px;font-size:11px"><span style="font-size:12px;font-weight:700">Settle up</span><span style="display:flex;justify-content:space-between;background:#FFFFFF;border:1px solid #DCE3E8;border-radius:10px;padding:7px 9px"><b>Priya pays You</b><span style="font-family:'IBM Plex Mono',monospace;font-weight:600">₹5,800</span></span><span style="display:flex;justify-content:space-between;background:#FFFFFF;border:1px solid #DCE3E8;border-radius:10px;padding:7px 9px"><b>Kabir pays You</b><span style="font-family:'IBM Plex Mono',monospace;font-weight:600">₹4,200</span></span></div>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:#2ECC71">04</span>
+          <h3 style="margin:0;font-size:18px;font-weight:700">Settle up and record it</h3>
+          <p style="margin:0;font-size:14px;line-height:1.55;color:#CFE0EA">Altus suggests a short list of payments. Pay by UPI or cash, then record it.</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:16px">
+      <div id="groups-and-your-spending" style="border:1px dashed #1B4C74;border-radius:20px;padding:20px 22px;display:flex;flex-direction:column;gap:10px">
+        <h3 style="margin:0;font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#9FC3D8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>How groups and your own spending fit together</h3>
+        <p style="margin:0;font-size:14px;line-height:1.6;color:#CFE0EA">Group expenses and recorded paybacks stay in the group. They aren't added to your spending, budgets, daily allowance or income. Your bank alerts still count: if you paid the whole ₹8,000 villa by card, your ledger shows ₹8,000, not your ₹2,000 share, and a friend's UPI payback shows as money in. Your share isn't added to your budget automatically yet.</p>
+      </div>
+      <div style="border:1px dashed #1B4C74;border-radius:20px;padding:20px 22px;display:flex;flex-direction:column;gap:10px">
+        <h3 style="margin:0;font-size:15px;font-weight:700;color:#FCEFD9">Not built yet</h3>
+        <p style="margin:0;font-size:14px;line-height:1.6;color:#CFE0EA">Percentage or share-based splits, more than one payer on an expense, other currencies, recurring group expenses, receipt photos, paying through the app, one running balance with a friend across groups, and adding just your share to your budget. Friends on iPhone can be added by name, but can't join until there's an iPhone app.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 05 INFORMED + 06 CONTROL -->
+<section class="wrap" style="padding-top:120px;padding-bottom:120px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,440px),1fr));gap:20px">
+  <div id="informed" style="background:#FFFFFF;border:1px solid #DCE3E8;border-radius:32px;padding:36px;display:flex;flex-direction:column;gap:22px">
+    <div style="display:flex;gap:16px;align-items:baseline"><span style="font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:600;color:#14804A">05</span><h2 style="margin:0;font-size:30px;line-height:1.15;letter-spacing:-0.02em;font-weight:700">Stay informed, quietly</h2></div>
+    <p style="margin:0;font-size:16px;line-height:1.65;color:#4A6378">Pick what you hear about, in four groups. No pushes between 10 pm and 8 am, and no more than 3 a day plus the evening summary. Anything held back waits in your inbox.</p>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:#F8F9F9;border-radius:14px"><span style="font-weight:600">Daily: allowance, summary, weekly recap</span><span aria-hidden="true" style="width:40px;height:24px;border-radius:999px;background:#2ECC71;position:relative"><span style="position:absolute;right:3px;top:3px;width:18px;height:18px;border-radius:999px;background:#FFFFFF"></span></span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:#F8F9F9;border-radius:14px"><span style="font-weight:600">Spending alerts: big spends, budgets</span><span aria-hidden="true" style="width:40px;height:24px;border-radius:999px;background:#2ECC71;position:relative"><span style="position:absolute;right:3px;top:3px;width:18px;height:18px;border-radius:999px;background:#FFFFFF"></span></span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:#F8F9F9;border-radius:14px"><span style="font-weight:600">Streaks and goals</span><span aria-hidden="true" style="width:40px;height:24px;border-radius:999px;background:#2ECC71;position:relative"><span style="position:absolute;right:3px;top:3px;width:18px;height:18px;border-radius:999px;background:#FFFFFF"></span></span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:#F8F9F9;border-radius:14px"><span style="font-weight:600">Groups: joins, expenses, payments</span><span aria-hidden="true" style="width:40px;height:24px;border-radius:999px;background:#9FB2BF;position:relative"><span style="position:absolute;left:3px;top:3px;width:18px;height:18px;border-radius:999px;background:#FFFFFF"></span></span></div>
+    </div>
+  </div>
+  <div id="control" style="background:#00111F;color:#EAF2F6;border-radius:32px;padding:36px;display:flex;flex-direction:column;gap:22px">
+    <div style="display:flex;gap:16px;align-items:baseline"><span style="font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:600;color:#2ECC71">06</span><h2 style="margin:0;font-size:30px;line-height:1.15;letter-spacing:-0.02em;font-weight:700;color:#FFFFFF">Your data, your call</h2></div>
+    <p style="margin:0;font-size:16px;line-height:1.65;color:#9DB3C2">Leaving is as easy as joining. Altus offers to export your data before you delete.</p>
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+      <div style="background:#071D30;border:1px solid #14324B;border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:8px"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#2ECC71" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"></path></svg><span style="font-weight:700">CSV export</span><span style="font-size:13px;color:#9DB3C2">All transactions, from Settings</span></div>
+      <div style="background:#071D30;border:1px solid #14324B;border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:8px"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#FF8A80" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg><span style="font-weight:700">Delete account</span><span style="font-size:13px;color:#9DB3C2">Removed straight away, signed out everywhere</span></div>
+      <div style="background:#071D30;border:1px solid #14324B;border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:8px"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#7FD3E0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 13A9 9 0 1 1 11 3a7 7 0 0 0 10 10z"></path></svg><span style="font-weight:700">Light and dark</span><span style="font-size:13px;color:#9DB3C2">Follows your phone</span></div>
+      <div style="background:#071D30;border:1px solid #14324B;border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:8px"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#F0BE73" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg><span style="font-weight:700">Google sign-in</span><span style="font-size:13px;color:#9DB3C2">Never your bank password</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" style="padding-bottom:120px">
+  <div style="background:#012A4A;color:#FFFFFF;border-radius:36px;padding:clamp(32px,5vw,56px);display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:28px">
+    <h2 style="margin:0;font-size:clamp(28px,3.4vw,42px);line-height:1.1;letter-spacing:-0.03em;font-weight:700;max-width:620px">Try it on this month's spends.</h2>
+    <div style="display:flex;flex-wrap:wrap;gap:14px"><a class="btn-primary" href="/download#android" style="background:#2ECC71;color:#012A4A;text-decoration:none;font-weight:700;font-size:16px;padding:16px 26px;border-radius:999px">Get Altus for Android</a><a href="/compare" style="color:#FFFFFF;text-decoration:none;font-weight:600;font-size:16px;padding:16px 24px;border-radius:999px;border:1px solid #1B4C74">Compare with other apps</a></div>
+  </div>
+</section>
+
+<Footer />
+</Base>
+
+<style is:global>
+b,strong,th,h1,h2,h3,h4{font-weight:700}
+a{color:#14804A}a:hover{color:#0E5A34}
+.wrap{max-width:1200px;margin:0 auto;padding:0 32px;box-sizing:border-box}
+.navlink{color:#CFE0EA;text-decoration:none;font-weight:500;font-size:15px;padding:10px 4px;transition:color .2s}
+.navlink:hover,.navlink.on{color:#FFFFFF}
+.navlink.on{box-shadow:inset 0 -2px 0 #2ECC71}
+.btn-primary{transition:transform .2s,box-shadow .2s}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(46,204,113,.28);color:#012A4A}
+.jump{min-height:44px;display:inline-flex;align-items:center;box-sizing:border-box;color:#FFFFFF;text-decoration:none;font-size:14px;font-weight:600;padding:10px 16px;border-radius:999px;border:1px solid #1B4C74;transition:background .2s,border-color .2s}
+.jump:hover{background:rgba(46,204,113,.14);border-color:#2ECC71;color:#FFFFFF}
+.lift{transition:transform .3s cubic-bezier(.2,.7,.2,1),box-shadow .3s}
+.lift:hover{transform:translateY(-4px);box-shadow:0 18px 40px rgba(1,42,74,.10)}
+.flink{color:#9DB3C2;text-decoration:none;font-size:14px}.flink:hover{color:#FFFFFF}
+.split{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,440px),1fr));gap:56px;align-items:center}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:20px}
+@keyframes rise{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+.rise{animation:rise .9s cubic-bezier(.2,.7,.2,1) both}
+.d1{animation-delay:.1s}.d2{animation-delay:.2s}.d3{animation-delay:.3s}
+@keyframes grow{from{transform:scaleX(0)}}
+.grow{transform-origin:left center;animation:grow 1.4s cubic-bezier(.2,.7,.2,1) both .4s}
+@keyframes merge1{0%,20%{transform:translateY(0);opacity:1}45%,100%{transform:translateY(58px);opacity:0}}
+@keyframes merge2{0%,20%{transform:translateY(0);opacity:1}45%,100%{transform:translateY(-58px);opacity:0}}
+@keyframes merged{0%,40%{opacity:0;transform:scale(.94)}55%,92%{opacity:1;transform:none}100%{opacity:0}}
+.m1{animation:merge1 5s cubic-bezier(.6,0,.3,1) infinite}.m2{animation:merge2 5s cubic-bezier(.6,0,.3,1) infinite}.mm{animation:merged 5s ease infinite}
+@keyframes scan{0%{top:0}100%{top:calc(100% - 3px)}}
+.scan{animation:scan 2.4s ease-in-out infinite alternate}
+@keyframes blink{50%{opacity:0}}
+.caret{animation:blink 1s step-end infinite}
+@media (max-width:900px){.steps4{grid-template-columns:repeat(2,minmax(0,1fr)) !important}}
+@media (max-width:600px){.steps4{grid-template-columns:minmax(0,1fr) !important}}
+@media (max-width:640px){.wrap{padding:0 16px}.band{padding-top:80px !important;padding-bottom:80px !important}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
