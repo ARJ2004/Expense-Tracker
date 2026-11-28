@@ -75,7 +75,8 @@ export function GroupsScreen({ navigation }: Props) {
         </Card>
       )}
       {!!groups.data?.length && <Button variant="text" label="Join with code" onPress={() => setJoining(true)} />}
-      <JoinWithCodeSheet visible={joining} onClose={() => setJoining(false)} onCode={(code) => navigation.navigate('JoinGroup', { code })} />
+      {/* Mounted only while open: the list doesn't pay for a hidden modal. */}
+      {joining && <JoinWithCodeSheet visible onClose={() => setJoining(false)} onCode={(code) => navigation.navigate('JoinGroup', { code })} />}
     </Screen>
   );
 }
